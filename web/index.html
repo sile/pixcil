@@ -1,0 +1,92 @@
+<html>
+  <head>
+    <meta charset="utf-8">
+    <link rel="icon" type="image/png" href="favicon.png" sizes="48x48" />
+    <title>Pixcil</title>
+  </head>
+  <body style="background-color:rgb(122,191,74)" >
+    <canvas id="canvas" style="background-color:black; padding:0; margin:auto; display:block"></canvas>
+    <script src="https://cdn.jsdelivr.net/npm/pagurus@0.3.0/dist/pagurus.min.js"></script>
+    <script>
+      var system = undefined;
+      var game = undefined;
+
+      {
+          const initialCanvas = document.getElementById("canvas");
+          initialCanvas.height = document.body.clientHeight * 0.98;
+          initialCanvas.width = document.body.clientWidth * 0.98;
+      }
+
+      function saveWorkspace(name, kind) {
+          const element = document.createElement("a");
+          const data = game.query(system, kind);
+          element.download = name + ".png";
+
+          let blob = new Blob([data], {type: 'image/png'});
+          element.href = URL.createObjectURL(blob);
+
+          element.click();
+      }
+
+      function loadWorkspace() {
+          const input = document.createElement("input")
+          input.setAttribute("type", "file");
+          input.setAttribute("accept", "image/png");
+          input.onchange = async () => {
+              const files = input.files;
+              if (files.length === 0) {
+                  return;
+              }
+
+              const file = files[0];
+
+              const data = new Uint8Array(await file.arrayBuffer());
+              game.command(system, "workspace.load", data);
+          };
+          input.click();
+      }
+
+      Pagurus.Game.load("pixcil.wasm").then(async gameObject => {
+          game = gameObject;
+
+          const canvas = document.getElementById("canvas");
+          system = await Pagurus.System.create(game.memory, canvas);
+
+          const resizeCanvas = () => {
+              canvas.height = document.body.clientHeight * 0.98;
+              canvas.width = document.body.clientWidth * 0.98;
+              system.notifyRedrawNeeded();
+          }
+          resizeCanvas();
+          window.addEventListener('resize', resizeCanvas);
+
+          game.initialize(system);
+          while (true) {
+              const event = await system.nextEvent();
+              if (!game.handleEvent(system, event)) {
+                  break;
+              }
+
+              const actionBytes = game.query(system, "game.next_action");
+              if (actionBytes.length > 0) {
+                  const actionJson = JSON.parse(new TextDecoder("utf-8").decode(actionBytes));
+                  switch (actionJson){
+                  case "saveWorkspace":
+                      // TODO: Use "yyyymmdd-hhMMss" format
+                      const workspaceName =
+                          prompt("Please input your workspace name",
+                                 "pixcil-" + new Date().toISOString());
+                      if (workspaceWorkspace) {
+                          savePngFile(workspaceName, "png.workspace");
+                      }
+                      break;
+                  case "loadWorkspace":
+                      loadWorkspace();
+                      break;
+                  }
+              }
+          }
+      });
+    </script>
+  </body>
+</html>
