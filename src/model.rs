@@ -3,21 +3,27 @@ use pagurus::{failure::OrFail, Result};
 use png::chunk::ChunkType;
 use std::io::{Read, Write};
 
-pub trait Model: Default + Serialize + Deserialize {}
+use self::{config::ConfigModel, pixel_canvas::PixelCanvasModel};
+
+pub mod config;
+pub mod pixel_canvas;
 
 pub const PNG_CHUNK_TYPE: ChunkType = ChunkType(*b"sile");
 pub const MAGIC_NUMBER: [u8; 6] = *b"PIXCIL";
 pub const FORMAT_VERSION: u16 = 0;
 
 #[derive(Debug, Default)]
-pub struct Models {}
-
-impl Model for Models {}
+pub struct Models {
+    pub config: ConfigModel,
+    pub pixel_canvas: PixelCanvasModel,
+}
 
 impl Serialize for Models {
     fn serialize<W: Write>(&self, writer: &mut W) -> Result<()> {
         MAGIC_NUMBER.serialize(writer).or_fail()?;
         FORMAT_VERSION.serialize(writer).or_fail()?;
+        self.config.serialize(writer).or_fail()?;
+        self.pixel_canvas.serialize(writer).or_fail()?;
         Ok(())
     }
 }
@@ -30,6 +36,9 @@ impl Deserialize for Models {
         let version: u16 = Deserialize::deserialize(reader).or_fail()?;
         (version == FORMAT_VERSION).or_fail()?;
 
-        Ok(Self {})
+        Ok(Self {
+            config: Deserialize::deserialize(reader).or_fail()?,
+            pixel_canvas: Deserialize::deserialize(reader).or_fail()?,
+        })
     }
 }
