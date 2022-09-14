@@ -1,4 +1,4 @@
-use crate::{asset::Assets, io::IoRequest, model::Models};
+use crate::{asset::Assets, io::IoRequest, model::Models, window::Window};
 use pagurus::{
     failure::OrFail,
     spatial::{Region, Size},
@@ -11,6 +11,7 @@ pub struct App {
     screen_size: Size,
     assets: Assets,
     models: Models,
+    spawned_windows: Vec<Box<dyn Window>>,
     io_requests: VecDeque<IoRequest>,
     redraw_requests: Vec<Region>,
 }
@@ -21,6 +22,7 @@ impl App {
             screen_size: Size::default(),
             assets: Assets::load().or_fail()?,
             models: Models::default(),
+            spawned_windows: Vec::new(),
             io_requests: VecDeque::new(),
             redraw_requests: Vec::new(),
         })
@@ -28,6 +30,10 @@ impl App {
 
     pub fn screen_size(&self) -> Size {
         self.screen_size
+    }
+
+    pub fn set_screen_size(&mut self, size: Size) {
+        self.screen_size = size;
     }
 
     pub fn assets(&self) -> &Assets {
@@ -56,5 +62,14 @@ impl App {
 
     pub fn dequeue_io_request(&mut self) -> Option<IoRequest> {
         self.io_requests.pop_front()
+    }
+
+    pub fn spawn_window(&mut self, window: impl Window) {
+        self.request_redraw(window.region());
+        self.spawned_windows.push(Box::new(window));
+    }
+
+    pub fn take_spawned_windows(&mut self) -> Vec<Box<dyn Window>> {
+        std::mem::take(&mut self.spawned_windows)
     }
 }

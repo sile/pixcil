@@ -1,5 +1,8 @@
 pub mod app;
 pub mod asset;
+pub mod canvas_ext;
+pub mod color;
+pub mod event;
 pub mod game;
 pub mod io;
 pub mod model;

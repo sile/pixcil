@@ -67,10 +67,10 @@
                   break;
               }
 
-              const actionBytes = game.query(system, "game.next_action");
-              if (actionBytes.length > 0) {
-                  const actionJson = JSON.parse(new TextDecoder("utf-8").decode(actionBytes));
-                  switch (actionJson){
+              const requestBytes = game.query(system, "nextIoRequest");
+              if (requestBytes.length > 0) {
+                  const requestJson = JSON.parse(new TextDecoder("utf-8").decode(requestBytes));
+                  switch (requestJson){
                   case "saveWorkspace":
                       // TODO: Use "yyyymmdd-hhMMss" format
                       const workspaceName =
