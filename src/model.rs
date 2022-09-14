@@ -3,10 +3,11 @@ use pagurus::{failure::OrFail, Result};
 use png::chunk::ChunkType;
 use std::io::{Read, Write};
 
-use self::{config::ConfigModel, pixel_canvas::PixelCanvasModel};
+use self::{config::ConfigModel, pixel_canvas::PixelCanvasModel, tool::Tool};
 
 pub mod config;
 pub mod pixel_canvas;
+pub mod tool;
 
 pub const PNG_CHUNK_TYPE: ChunkType = ChunkType(*b"sile");
 pub const MAGIC_NUMBER: [u8; 6] = *b"PIXCIL";
@@ -16,6 +17,9 @@ pub const FORMAT_VERSION: u16 = 0;
 pub struct Models {
     pub config: ConfigModel,
     pub pixel_canvas: PixelCanvasModel,
+
+    // The following fields are not serialized / deserialized.
+    pub tool: Tool,
 }
 
 impl Serialize for Models {
@@ -39,6 +43,7 @@ impl Deserialize for Models {
         Ok(Self {
             config: Deserialize::deserialize(reader).or_fail()?,
             pixel_canvas: Deserialize::deserialize(reader).or_fail()?,
+            ..Default::default()
         })
     }
 }
