@@ -9,7 +9,7 @@ use pagurus::{
 };
 use std::{
     io::{Read, Write},
-    ops::Add,
+    ops::{Add, Sub},
 };
 
 #[derive(Debug, Default)]
@@ -52,9 +52,16 @@ impl PixelPosition {
         }
 
         Self::from_xy(
-            camera.x.saturating_add(offset(screen.x, center.x, zoom)),
-            camera.y.saturating_add(offset(screen.y, center.y, zoom)),
-        )
+            offset(screen.x, center.x, zoom),
+            offset(screen.y, center.y, zoom),
+        ) + camera
+    }
+
+    pub fn to_screen_position(self, app: &App) -> Position {
+        let zoom = app.models().config.zoom.get();
+        let center = app.screen_size().to_region().center() - i32::from(zoom) / 2;
+        let Self { x, y } = self - app.models().config.camera.get();
+        Position::from_xy(i32::from(x), i32::from(y)) * u32::from(zoom) + center
     }
 }
 
@@ -85,6 +92,26 @@ impl Add<i16> for PixelPosition {
     }
 }
 
+impl Add for PixelPosition {
+    type Output = Self;
+
+    fn add(mut self, rhs: Self) -> Self::Output {
+        self.x += rhs.x;
+        self.y += rhs.y;
+        self
+    }
+}
+
+impl Sub for PixelPosition {
+    type Output = Self;
+
+    fn sub(mut self, rhs: Self) -> Self::Output {
+        self.x -= rhs.x;
+        self.y -= rhs.y;
+        self
+    }
+}
+
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct PixelRegion {
     pub start: PixelPosition,
@@ -96,5 +123,12 @@ impl PixelRegion {
         let start = PixelPosition::from_screen_position(app, screen.start());
         let end = PixelPosition::from_screen_position(app, screen.end() - 1) + 1;
         Self { start, end }
+    }
+
+    pub fn to_screen_region(self, app: &App) -> Region {
+        Region::from_positions(
+            self.start.to_screen_position(app),
+            self.end.to_screen_position(app),
+        )
     }
 }
