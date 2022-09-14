@@ -6,5 +6,6 @@ pub mod event;
 pub mod game;
 pub mod io;
 pub mod model;
+pub mod serialize;
 pub mod widget;
 pub mod window;

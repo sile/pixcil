@@ -8,13 +8,20 @@ pub struct PixelCanvasWidget {
     region: Region,
 }
 
+impl PixelCanvasWidget {
+    fn render_grid(&self, app: &App, canvas: &mut Canvas) {
+        // TODO
+    }
+}
+
 impl Widget for PixelCanvasWidget {
     fn region(&self) -> Region {
         self.region
     }
 
-    fn render(&self, _app: &App, canvas: &mut Canvas) {
+    fn render(&self, app: &App, canvas: &mut Canvas) {
         canvas.fill_rectangle(self.region, color::CANVAS_BACKGROUND);
+        self.render_grid(app, canvas);
     }
 
     fn handle_event(&mut self, app: &mut App, event: &mut Event) -> Result<()> {
