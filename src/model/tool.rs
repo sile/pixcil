@@ -1,12 +1,12 @@
 #[derive(Debug)]
-pub enum Tool {
+pub enum ToolModel {
     Draw(DrawKind),
     Erase(EraseKind),
     Select(SelectKind),
     Move,
 }
 
-impl Default for Tool {
+impl Default for ToolModel {
     fn default() -> Self {
         Self::Draw(Default::default())
     }

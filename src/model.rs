@@ -3,9 +3,10 @@ use pagurus::{failure::OrFail, Result};
 use png::chunk::ChunkType;
 use std::io::{Read, Write};
 
-use self::{config::ConfigModel, pixel_canvas::PixelCanvasModel, tool::Tool};
+use self::{config::ConfigModel, mode::ModeModel, pixel_canvas::PixelCanvasModel, tool::ToolModel};
 
 pub mod config;
+pub mod mode;
 pub mod pixel_canvas;
 pub mod tool;
 
@@ -19,7 +20,8 @@ pub struct Models {
     pub pixel_canvas: PixelCanvasModel,
 
     // The following fields are not serialized / deserialized.
-    pub tool: Tool,
+    pub tool: ToolModel,
+    pub mode: ModeModel,
 }
 
 impl Serialize for Models {
