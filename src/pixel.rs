@@ -104,6 +104,18 @@ pub struct PixelRegion {
 }
 
 impl PixelRegion {
+    pub fn from_positions(positions: impl Iterator<Item = PixelPosition>) -> Self {
+        let mut start = PixelPosition::from_xy(i16::MAX, i16::MAX);
+        let mut end = PixelPosition::from_xy(i16::MIN, i16::MIN);
+        for p in positions {
+            start.x = std::cmp::min(start.x, p.x);
+            start.y = std::cmp::min(start.y, p.y);
+            end.x = std::cmp::max(start.x, p.x + 1);
+            end.y = std::cmp::max(start.y, p.y + 1);
+        }
+        Self { start, end }
+    }
+
     pub fn from_screen_region(app: &App, screen: Region) -> Self {
         let start = PixelPosition::from_screen_position(app, screen.start());
         let end = PixelPosition::from_screen_position(app, screen.end() - 1) + 1;
