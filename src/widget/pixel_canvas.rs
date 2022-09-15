@@ -1,7 +1,5 @@
 use super::{VariableSizeWidget, Widget};
-use crate::{
-    app::App, canvas_ext::CanvasExt, color, event::Event, model::pixel_canvas::PixelRegion,
-};
+use crate::{app::App, canvas_ext::CanvasExt, color, event::Event, pixel::PixelRegion};
 use pagurus::{spatial::Region, Result};
 use pagurus_game_std::{color::Color, image::Canvas};
 

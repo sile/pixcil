@@ -1,5 +1,7 @@
-use super::pixel_canvas::PixelPosition;
-use crate::serialize::{Deserialize, Serialize};
+use crate::{
+    pixel::PixelPosition,
+    serialize::{Deserialize, Serialize},
+};
 use pagurus::{failure::OrFail, Result};
 use std::io::{Read, Write};
 
