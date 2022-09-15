@@ -1,5 +1,6 @@
 use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
 use pagurus::{failure::OrFail, Result};
+use pagurus_game_std::color::Rgba;
 use std::io::{Read, Write};
 
 pub trait Serialize {
@@ -103,5 +104,26 @@ impl Deserialize for usize {
     fn deserialize<R: Read>(reader: &mut R) -> Result<Self> {
         let n = reader.read_u32::<BigEndian>().or_fail()?;
         usize::try_from(n).or_fail()
+    }
+}
+
+impl Serialize for Rgba {
+    fn serialize<W: Write>(&self, writer: &mut W) -> Result<()> {
+        self.r.serialize(writer).or_fail()?;
+        self.g.serialize(writer).or_fail()?;
+        self.b.serialize(writer).or_fail()?;
+        self.a.serialize(writer).or_fail()?;
+        Ok(())
+    }
+}
+
+impl Deserialize for Rgba {
+    fn deserialize<R: Read>(reader: &mut R) -> Result<Self> {
+        Ok(Self {
+            r: u8::deserialize(reader).or_fail()?,
+            g: u8::deserialize(reader).or_fail()?,
+            b: u8::deserialize(reader).or_fail()?,
+            a: u8::deserialize(reader).or_fail()?,
+        })
     }
 }

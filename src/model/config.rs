@@ -3,6 +3,7 @@ use crate::{
     serialize::{Deserialize, Serialize},
 };
 use pagurus::{failure::OrFail, Result};
+use pagurus_game_std::color::Rgba;
 use std::io::{Read, Write};
 
 #[derive(Debug, Default)]
@@ -10,6 +11,7 @@ pub struct ConfigModel {
     pub zoom: Zoom,
     pub camera: Camera,
     pub unit: Unit,
+    pub color: DrawingColor,
 }
 
 impl Serialize for ConfigModel {
@@ -21,6 +23,7 @@ impl Serialize for ConfigModel {
         self.zoom.serialize(writer).or_fail()?;
         self.camera.serialize(writer).or_fail()?;
         self.unit.serialize(writer).or_fail()?;
+        self.color.serialize(writer).or_fail()?;
         Ok(())
     }
 }
@@ -34,6 +37,7 @@ impl Deserialize for ConfigModel {
             zoom: Deserialize::deserialize_or_default(&mut reader).or_fail()?,
             camera: Deserialize::deserialize_or_default(&mut reader).or_fail()?,
             unit: Deserialize::deserialize_or_default(&mut reader).or_fail()?,
+            color: Deserialize::deserialize_or_default(&mut reader).or_fail()?,
         };
 
         // Ignore unknown fields.
@@ -152,4 +156,31 @@ impl Deserialize for Unit {
 
 fn clip<T: Ord>(min: T, value: T, max: T) -> T {
     std::cmp::min(std::cmp::max(min, value), max)
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct DrawingColor(Rgba);
+
+impl DrawingColor {
+    pub const fn get(self) -> Rgba {
+        self.0
+    }
+}
+
+impl Default for DrawingColor {
+    fn default() -> Self {
+        Self(Rgba::new(0, 0, 0, 255))
+    }
+}
+
+impl Serialize for DrawingColor {
+    fn serialize<W: Write>(&self, writer: &mut W) -> Result<()> {
+        self.0.serialize(writer).or_fail()
+    }
+}
+
+impl Deserialize for DrawingColor {
+    fn deserialize<R: Read>(reader: &mut R) -> Result<Self> {
+        Rgba::deserialize(reader).map(Self).or_fail()
+    }
 }

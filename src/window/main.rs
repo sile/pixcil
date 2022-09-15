@@ -36,7 +36,6 @@ impl Window for MainWindow {
     fn render(&self, app: &App, canvas: &mut Canvas) {
         self.pixel_canvas.render(app, canvas);
         canvas.draw_rectangle(self.region(), color::WINDOW_BORDER);
-        log::info!("render: {:?}", self.size);
     }
 
     fn is_terminated(&self) -> bool {

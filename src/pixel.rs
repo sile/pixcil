@@ -4,7 +4,7 @@ use crate::{
 };
 use pagurus::{
     failure::OrFail,
-    spatial::{Position, Region},
+    spatial::{Position, Region, Size},
     Result,
 };
 use std::{
@@ -47,6 +47,13 @@ impl PixelPosition {
         let center = app.screen_size().to_region().center() - i32::from(zoom) / 2;
         let Self { x, y } = self - app.models().config.camera.get();
         Position::from_xy(i32::from(x), i32::from(y)) * u32::from(zoom) + center
+    }
+
+    pub fn to_screen_region(self, app: &App) -> Region {
+        let zoom = app.models().config.zoom.get();
+        let position = self.to_screen_position(app);
+        let size = Size::square(u32::from(zoom));
+        Region::new(position, size)
     }
 }
 
@@ -110,8 +117,8 @@ impl PixelRegion {
         for p in positions {
             start.x = std::cmp::min(start.x, p.x);
             start.y = std::cmp::min(start.y, p.y);
-            end.x = std::cmp::max(start.x, p.x + 1);
-            end.y = std::cmp::max(start.y, p.y + 1);
+            end.x = std::cmp::max(end.x, p.x + 1);
+            end.y = std::cmp::max(end.y, p.y + 1);
         }
         Self { start, end }
     }
