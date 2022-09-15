@@ -6,6 +6,10 @@ use crate::{
 use pagurus::Result;
 use std::collections::HashSet;
 
+use self::line::LineMarker;
+
+pub mod line;
+
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum MouseState {
     #[default]
@@ -19,15 +23,64 @@ pub trait Mark: Default {
     fn marked_pixels(&self) -> Box<dyn '_ + Iterator<Item = PixelPosition>>;
 }
 
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum MarkerKind {
+    #[default]
+    Line,
+}
+
+#[derive(Debug)]
+pub enum Marker {
+    Line(LineMarker),
+}
+
+impl Marker {
+    fn from_kind(kind: MarkerKind) -> Self {
+        match kind {
+            MarkerKind::Line => Self::Line(Default::default()),
+        }
+    }
+}
+
+impl Default for Marker {
+    fn default() -> Self {
+        Self::Line(Default::default())
+    }
+}
+
+impl Mark for Marker {
+    fn mark(&mut self, app: &App, position: PixelPosition, mouse: MouseState) {
+        match self {
+            Marker::Line(x) => x.mark(app, position, mouse),
+        }
+    }
+
+    fn marked_pixels(&self) -> Box<dyn '_ + Iterator<Item = PixelPosition>> {
+        match self {
+            Marker::Line(x) => x.marked_pixels(),
+        }
+    }
+}
+
 #[derive(Debug, Default)]
-pub struct MarkerHandler<M> {
-    marker: M,
+pub struct MarkerHandler {
+    marker: Marker,
     mouse: MouseState,
     last_event: Option<(PixelPosition, MouseAction)>,
     last_marked: HashSet<PixelPosition>,
 }
 
-impl<M: Mark> MarkerHandler<M> {
+impl MarkerHandler {
+    pub fn marker_kind(&self) -> MarkerKind {
+        match self.marker {
+            Marker::Line(_) => MarkerKind::Line,
+        }
+    }
+
+    pub fn set_marker_kind(&mut self, kind: MarkerKind) {
+        self.marker = Marker::from_kind(kind);
+    }
+
     pub fn marked_pixels(&self) -> Box<dyn '_ + Iterator<Item = PixelPosition>> {
         self.marker.marked_pixels()
     }
@@ -40,7 +93,12 @@ impl<M: Mark> MarkerHandler<M> {
         let (pixel_position, action) = match event {
             Event::Mouse { consumed: true, .. } => {
                 self.request_redraw(app, self.last_marked.iter().copied());
-                *self = Self::default();
+
+                let kind = self.marker_kind();
+                *self = Self {
+                    marker: Marker::from_kind(kind),
+                    ..Self::default()
+                };
                 return Ok(());
             }
             Event::Mouse {

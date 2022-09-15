@@ -1,5 +1,5 @@
 use crate::{
-    pixel::PixelPosition,
+    pixel::{PixelPosition, PixelSize},
     serialize::{Deserialize, Serialize},
 };
 use pagurus::{failure::OrFail, Result};
@@ -9,6 +9,7 @@ use std::io::{Read, Write};
 pub struct ConfigModel {
     pub zoom: Zoom,
     pub camera: Camera,
+    pub unit: Unit,
 }
 
 impl Serialize for ConfigModel {
@@ -19,6 +20,7 @@ impl Serialize for ConfigModel {
 
         self.zoom.serialize(writer).or_fail()?;
         self.camera.serialize(writer).or_fail()?;
+        self.unit.serialize(writer).or_fail()?;
         Ok(())
     }
 }
@@ -31,6 +33,7 @@ impl Deserialize for ConfigModel {
         let this = Self {
             zoom: Deserialize::deserialize_or_default(&mut reader).or_fail()?,
             camera: Deserialize::deserialize_or_default(&mut reader).or_fail()?,
+            unit: Deserialize::deserialize_or_default(&mut reader).or_fail()?,
         };
 
         // Ignore unknown fields.
@@ -111,6 +114,39 @@ impl Deserialize for Camera {
         let x = clip(Self::MIN.0.x, p.x, Self::MAX.0.x);
         let y = clip(Self::MIN.0.y, p.y, Self::MAX.0.y);
         Ok(Self(PixelPosition::from_xy(x, y)))
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct Unit(PixelSize);
+
+impl Unit {
+    pub const MIN: Self = Self(PixelSize::square(1));
+    pub const MAX: Self = Self(PixelSize::square(64));
+
+    pub const fn get(self) -> PixelSize {
+        self.0
+    }
+}
+
+impl Default for Unit {
+    fn default() -> Self {
+        Self(PixelSize::square(2)) // TODO: change to 1
+    }
+}
+
+impl Serialize for Unit {
+    fn serialize<W: Write>(&self, writer: &mut W) -> Result<()> {
+        self.0.serialize(writer).or_fail()
+    }
+}
+
+impl Deserialize for Unit {
+    fn deserialize<R: Read>(reader: &mut R) -> Result<Self> {
+        let mut size = PixelSize::deserialize(reader).or_fail()?;
+        size.width = clip(Self::MIN.0.width, size.width, Self::MAX.0.width);
+        size.height = clip(Self::MIN.0.height, size.height, Self::MAX.0.height);
+        Ok(Self(size))
     }
 }
 
