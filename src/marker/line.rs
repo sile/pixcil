@@ -1,26 +1,42 @@
 use std::collections::HashSet;
 
 use super::{Mark, MouseState};
-use crate::{app::App, pixel::PixelPosition};
+use crate::{
+    app::App,
+    model::config::Unit,
+    pixel::{PixelLine, PixelPosition},
+};
 
 #[derive(Debug, Default)]
 pub struct LineMarker {
     start: Option<PixelPosition>,
+    unit: Unit,
     marked: HashSet<PixelPosition>,
 }
 
 impl Mark for LineMarker {
     fn mark(&mut self, app: &App, position: PixelPosition, mouse: MouseState) {
+        self.unit = app.models().config.unit;
         match mouse {
             MouseState::Neutral => {
                 self.start = None;
                 self.marked = [position].into_iter().collect();
             }
-            MouseState::Pressing | MouseState::Clicked => {
-                if self.start.is_none() {
+            MouseState::Pressing => {
+                if let Some(start) = self.start {
+                    self.marked = PixelLine::new(start, position).pixels().collect();
+                } else {
                     self.start = Some(position);
+                    self.marked = [position].into_iter().collect()
                 }
-                self.marked = [position].into_iter().collect()
+            }
+            MouseState::Clicked => {
+                if let Some(start) = self.start {
+                    self.marked = PixelLine::new(start, position).pixels().collect();
+                    self.start = None;
+                } else {
+                    self.marked = [position].into_iter().collect()
+                }
             }
         }
     }

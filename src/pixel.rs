@@ -135,9 +135,16 @@ impl PixelRegion {
             self.end.to_screen_position(app),
         )
     }
+
+    pub fn size(self) -> PixelSize {
+        PixelSize::from_wh(
+            std::cmp::max(0, self.end.x - self.start.x) as u16,
+            std::cmp::max(0, self.end.y - self.start.y) as u16,
+        )
+    }
 }
 
-#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct PixelSize {
     pub width: u16,
     pub height: u16,
@@ -167,5 +174,59 @@ impl Deserialize for PixelSize {
             width: u16::deserialize(reader).or_fail()?,
             height: u16::deserialize(reader).or_fail()?,
         })
+    }
+}
+
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct PixelLine {
+    pub start: PixelPosition,
+    pub finish: PixelPosition,
+}
+
+impl PixelLine {
+    pub const fn new(start: PixelPosition, finish: PixelPosition) -> Self {
+        Self { start, finish }
+    }
+
+    pub fn pixels(self) -> impl Iterator<Item = PixelPosition> {
+        let mut pixels = Vec::new();
+
+        let mut start = self.start;
+        let mut finish = self.finish;
+        let size = PixelRegion::from_positions([start, finish].into_iter()).size();
+
+        if size.width < size.height {
+            if finish.y < start.y {
+                std::mem::swap(&mut start, &mut finish);
+            }
+
+            let mut delta_x = size.width as f64 / size.height as f64;
+            let mut x = start.x as f64;
+            if finish.x < start.x {
+                delta_x = -delta_x;
+            }
+
+            for y in start.y..=finish.y {
+                pixels.push(PixelPosition::from_xy(x.round() as i16, y));
+                x += delta_x;
+            }
+        } else {
+            if finish.x < start.x {
+                std::mem::swap(&mut start, &mut finish);
+            }
+
+            let mut delta_y = size.height as f64 / size.width as f64;
+            let mut y = start.y as f64;
+            if finish.y < start.y {
+                delta_y = -delta_y;
+            }
+
+            for x in start.x..=finish.x {
+                pixels.push(PixelPosition::from_xy(x, y.round() as i16));
+                y += delta_y;
+            }
+        }
+
+        pixels.into_iter()
     }
 }

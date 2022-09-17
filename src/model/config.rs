@@ -131,6 +131,22 @@ impl Unit {
     pub const fn get(self) -> PixelSize {
         self.0
     }
+
+    // pub fn normalize(self, mut position: PixelPosition) -> PixelPosition {
+    //     if position.x >= 0 {
+    //         position.x /= self.0.width as i16;
+    //     } else {
+    //     }
+    //     if position.y >= 0 {
+    //         position.y /= self.0.height as i16;
+    //     } else {
+    //     }
+    //     position
+    // }
+
+    // pub fn to_pixel_positions(position: PixelPosition) -> impl Iterator<Item = PixelPosition> {
+    //     todo!()
+    // }
 }
 
 impl Default for Unit {
