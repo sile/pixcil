@@ -11,7 +11,18 @@ pub struct LineMarker {
 
 impl Mark for LineMarker {
     fn mark(&mut self, app: &App, position: PixelPosition, mouse: MouseState) {
-        self.marked = [position].into_iter().collect()
+        match mouse {
+            MouseState::Neutral => {
+                self.start = None;
+                self.marked = [position].into_iter().collect();
+            }
+            MouseState::Pressing | MouseState::Clicked => {
+                if self.start.is_none() {
+                    self.start = Some(position);
+                }
+                self.marked = [position].into_iter().collect()
+            }
+        }
     }
 
     fn marked_pixels(&self) -> Box<dyn '_ + Iterator<Item = PixelPosition>> {
