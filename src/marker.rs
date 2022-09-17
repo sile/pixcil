@@ -6,9 +6,10 @@ use crate::{
 use pagurus::Result;
 use std::collections::HashSet;
 
-use self::line::LineMarker;
+use self::{line::LineMarker, stroke::StrokeMarker};
 
 pub mod line;
+pub mod stroke;
 
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum MouseState {
@@ -26,17 +27,20 @@ pub trait Mark: Default {
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum MarkerKind {
     #[default]
+    Stroke,
     Line,
 }
 
 #[derive(Debug)]
 pub enum Marker {
+    Stroke(StrokeMarker),
     Line(LineMarker),
 }
 
 impl Marker {
     fn from_kind(kind: MarkerKind) -> Self {
         match kind {
+            MarkerKind::Stroke => Self::Stroke(Default::default()),
             MarkerKind::Line => Self::Line(Default::default()),
         }
     }
@@ -44,19 +48,21 @@ impl Marker {
 
 impl Default for Marker {
     fn default() -> Self {
-        Self::Line(Default::default())
+        Self::Stroke(Default::default())
     }
 }
 
 impl Mark for Marker {
     fn mark(&mut self, app: &App, position: PixelPosition, mouse: MouseState) {
         match self {
+            Marker::Stroke(x) => x.mark(app, position, mouse),
             Marker::Line(x) => x.mark(app, position, mouse),
         }
     }
 
     fn marked_pixels(&self) -> Box<dyn '_ + Iterator<Item = PixelPosition>> {
         match self {
+            Marker::Stroke(x) => x.marked_pixels(),
             Marker::Line(x) => x.marked_pixels(),
         }
     }
@@ -73,6 +79,7 @@ pub struct MarkerHandler {
 impl MarkerHandler {
     pub fn marker_kind(&self) -> MarkerKind {
         match self.marker {
+            Marker::Stroke(_) => MarkerKind::Stroke,
             Marker::Line(_) => MarkerKind::Line,
         }
     }

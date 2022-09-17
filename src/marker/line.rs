@@ -1,11 +1,10 @@
-use std::collections::HashSet;
-
 use super::{Mark, MouseState};
 use crate::{
     app::App,
     model::config::Unit,
     pixel::{PixelLine, PixelPosition},
 };
+use std::collections::HashSet;
 
 #[derive(Debug, Default)]
 pub struct LineMarker {
