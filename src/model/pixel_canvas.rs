@@ -101,8 +101,8 @@ impl PixelCanvasModel {
         &self.command_log
     }
 
-    pub fn take_dirty_positions(&mut self) -> impl Iterator<Item = PixelPosition> {
-        std::mem::take(&mut self.dirty_positions).into_iter()
+    pub fn take_dirty_positions(&mut self) -> BTreeSet<PixelPosition> {
+        std::mem::take(&mut self.dirty_positions)
     }
 }
 

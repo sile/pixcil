@@ -6,6 +6,7 @@ use pagurus::{
 use pagurus_game_std::image::Canvas;
 
 pub mod pixel_canvas;
+pub mod preview;
 
 pub trait Widget {
     fn region(&self) -> Region;
