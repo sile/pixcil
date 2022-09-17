@@ -72,7 +72,7 @@ impl PixelCanvasModel {
     }
 
     pub fn redo_command(&mut self) -> Result<()> {
-        if let Some(command) = self.command_log.get(self.command_log_tail + 1) {
+        if let Some(command) = self.command_log.get(self.command_log_tail) {
             for &pixel in &command.erase {
                 self.pixels.erase_pixel(pixel).or_fail()?;
                 self.dirty_positions.insert(pixel.position);

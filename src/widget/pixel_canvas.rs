@@ -1,6 +1,11 @@
 use super::{VariableSizeWidget, Widget};
 use crate::{
-    app::App, canvas_ext::CanvasExt, color, event::Event, marker::MarkerHandler, pixel::PixelRegion,
+    app::App,
+    canvas_ext::CanvasExt,
+    color,
+    event::Event,
+    marker::MarkerHandler,
+    pixel::{Pixel, PixelRegion},
 };
 use pagurus::{failure::OrFail, spatial::Region, Result};
 use pagurus_game_std::{color::Color, image::Canvas};
@@ -64,6 +69,14 @@ impl PixelCanvasWidget {
             canvas.fill_rectangle(region, color.into());
         }
     }
+
+    fn render_pixels(&self, app: &App, canvas: &mut Canvas) {
+        let pixel_region = PixelRegion::from_screen_region(app, canvas.drawing_region());
+        for pixel in app.models().pixel_canvas.get_pixels(pixel_region) {
+            let region = pixel.position.to_screen_region(app);
+            canvas.fill_rectangle(region, pixel.color.into());
+        }
+    }
 }
 
 impl Widget for PixelCanvasWidget {
@@ -74,14 +87,22 @@ impl Widget for PixelCanvasWidget {
     fn render(&self, app: &App, canvas: &mut Canvas) {
         canvas.fill_rectangle(self.region, color::CANVAS_BACKGROUND);
         self.render_grid(app, canvas);
-        // TODO: render_pixels
+        self.render_pixels(app, canvas);
         self.render_marked_pixels(app, canvas);
     }
 
     fn handle_event(&mut self, app: &mut App, event: &mut Event) -> Result<()> {
         self.marker_handler.handle_event(app, event).or_fail()?;
         if self.marker_handler.is_completed() {
-            // TODO
+            let color = app.models().config.color.get();
+            let pixels = self
+                .marker_handler
+                .marked_pixels()
+                .map(|pos| Pixel::new(pos, color));
+            app.models_mut()
+                .pixel_canvas
+                .draw_pixels(pixels)
+                .or_fail()?;
         }
         Ok(())
     }
