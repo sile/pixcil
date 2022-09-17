@@ -7,10 +7,23 @@ use pagurus::{
     spatial::{Position, Region, Size},
     Result,
 };
+use pagurus_game_std::color::Rgba;
 use std::{
     io::{Read, Write},
     ops::{Add, Sub},
 };
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct Pixel {
+    pub position: PixelPosition,
+    pub color: Rgba,
+}
+
+impl Pixel {
+    pub const fn new(position: PixelPosition, color: Rgba) -> Self {
+        Self { position, color }
+    }
+}
 
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct PixelPosition {
@@ -111,6 +124,10 @@ pub struct PixelRegion {
 }
 
 impl PixelRegion {
+    pub const fn new(start: PixelPosition, end: PixelPosition) -> Self {
+        Self { start, end }
+    }
+
     pub fn from_positions(positions: impl Iterator<Item = PixelPosition>) -> Self {
         let mut start = PixelPosition::from_xy(i16::MAX, i16::MAX);
         let mut end = PixelPosition::from_xy(i16::MIN, i16::MIN);

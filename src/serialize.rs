@@ -1,7 +1,10 @@
 use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
 use pagurus::{failure::OrFail, Result};
 use pagurus_game_std::color::Rgba;
-use std::io::{Read, Write};
+use std::{
+    collections::VecDeque,
+    io::{Read, Write},
+};
 
 pub trait Serialize {
     fn serialize<W: Write>(&self, writer: &mut W) -> Result<()>;
@@ -125,5 +128,22 @@ impl Deserialize for Rgba {
             b: u8::deserialize(reader).or_fail()?,
             a: u8::deserialize(reader).or_fail()?,
         })
+    }
+}
+
+impl<T: Serialize> Serialize for VecDeque<T> {
+    fn serialize<W: Write>(&self, writer: &mut W) -> Result<()> {
+        self.len().serialize(writer).or_fail()?;
+        for item in self {
+            item.serialize(writer).or_fail()?;
+        }
+        Ok(())
+    }
+}
+
+impl<T: Deserialize> Deserialize for VecDeque<T> {
+    fn deserialize<R: Read>(reader: &mut R) -> Result<Self> {
+        let n = usize::deserialize(reader).or_fail()?;
+        (0..n).map(|_| T::deserialize(reader).or_fail()).collect()
     }
 }

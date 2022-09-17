@@ -61,7 +61,7 @@ impl PixelCanvasWidget {
             if canvas.drawing_region().intersection(region).is_empty() {
                 continue;
             }
-            canvas.fill_rectangle(region, color.into()); // TODO: apply alpha?
+            canvas.fill_rectangle(region, color.into());
         }
     }
 }
@@ -80,7 +80,9 @@ impl Widget for PixelCanvasWidget {
 
     fn handle_event(&mut self, app: &mut App, event: &mut Event) -> Result<()> {
         self.marker_handler.handle_event(app, event).or_fail()?;
-        // TODO
+        if self.marker_handler.is_completed() {
+            // TODO
+        }
         Ok(())
     }
 }
