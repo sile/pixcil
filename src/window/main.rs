@@ -70,6 +70,9 @@ impl Window for MainWindow {
         let dirty_pixels = app.models_mut().pixel_canvas.take_dirty_positions();
         self.preview.handle_dirty_pixels(app, &dirty_pixels);
 
+        self.pixel_canvas
+            .set_preview_focused(app, self.preview.is_focused());
+
         Ok(())
     }
 }

@@ -14,9 +14,20 @@ use pagurus_game_std::{color::Color, image::Canvas};
 pub struct PixelCanvasWidget {
     region: Region,
     marker_handler: MarkerHandler,
+    preview_focused: bool,
 }
 
 impl PixelCanvasWidget {
+    pub fn set_preview_focused(&mut self, app: &mut App, focused: bool) {
+        if self.preview_focused != focused {
+            self.preview_focused = focused;
+
+            let mut region = app.models().config.frame.get().to_screen_region(app);
+            region.size = region.size + 1;
+            app.request_redraw(self.region.intersection(region));
+        }
+    }
+
     fn render_grid(&self, app: &App, canvas: &mut Canvas) {
         let zoom = app.models().config.zoom.get();
         let pixel_region = PixelRegion::from_screen_region(app, canvas.drawing_region());
@@ -87,10 +98,13 @@ impl Widget for PixelCanvasWidget {
     fn render(&self, app: &App, canvas: &mut Canvas) {
         canvas.fill_rectangle(self.region, color::CANVAS_BACKGROUND);
         self.render_grid(app, canvas);
-        // let frame_region = app.models().config.frame.get().to_screen_region(app);
-        // canvas.draw_rectangle(frame_region, color::CANVAS_FRAME_BORDER);
         self.render_pixels(app, canvas);
         self.render_marked_pixels(app, canvas);
+        if self.preview_focused {
+            let mut region = app.models().config.frame.get().to_screen_region(app);
+            region.size = region.size + 1;
+            canvas.draw_rectangle(region, color::PREVIEW_FOCUSED_BORDER);
+        }
     }
 
     fn handle_event(&mut self, app: &mut App, event: &mut Event) -> Result<()> {

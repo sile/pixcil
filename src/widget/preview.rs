@@ -18,6 +18,7 @@ const BORDER: u32 = 1;
 #[derive(Debug, Default)]
 pub struct PreviewWidget {
     region: Region,
+    focused: bool,
 }
 
 impl PreviewWidget {
@@ -67,6 +68,17 @@ impl PreviewWidget {
         region.size = region.size - (BORDER * 2);
         region
     }
+
+    fn set_focused(&mut self, app: &mut App, focused: bool) {
+        if self.focused != focused {
+            self.focused = focused;
+            app.request_redraw(self.region);
+        }
+    }
+
+    pub fn is_focused(&self) -> bool {
+        self.focused
+    }
 }
 
 impl Widget for PreviewWidget {
@@ -76,15 +88,24 @@ impl Widget for PreviewWidget {
 
     fn render(&self, app: &App, canvas: &mut Canvas) {
         canvas.fill_rectangle(self.region, color::PREVIEW_BACKGROUND);
-        canvas.draw_rectangle(self.region, color::WINDOW_BORDER);
+        if self.focused {
+            canvas.draw_rectangle(self.region, color::PREVIEW_FOCUSED_BORDER);
+        } else {
+            canvas.draw_rectangle(self.region, color::PREVIEW_BORDER);
+        }
         self.render_pixels(app, canvas);
     }
 
-    fn handle_event(&mut self, _app: &mut App, event: &mut Event) -> Result<()> {
+    fn handle_event(&mut self, app: &mut App, event: &mut Event) -> Result<()> {
         if let Some(position) = event.position() {
+            let mut focused = false;
             if self.region.contains(&position) {
-                event.consume();
+                if !event.is_consumed() {
+                    focused = true;
+                    event.consume();
+                }
             }
+            self.set_focused(app, focused);
         }
         Ok(())
     }
