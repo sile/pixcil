@@ -1,5 +1,5 @@
 use crate::{
-    pixel::{PixelPosition, PixelSize},
+    pixel::{PixelPosition, PixelRegion, PixelSize},
     serialize::{Deserialize, Serialize},
 };
 use pagurus::{failure::OrFail, Result};
@@ -132,26 +132,45 @@ impl Unit {
         self.0
     }
 
-    // pub fn normalize(self, mut position: PixelPosition) -> PixelPosition {
-    //     if position.x >= 0 {
-    //         position.x /= self.0.width as i16;
-    //     } else {
-    //     }
-    //     if position.y >= 0 {
-    //         position.y /= self.0.height as i16;
-    //     } else {
-    //     }
-    //     position
-    // }
+    pub fn normalize(self, mut position: PixelPosition) -> PixelPosition {
+        let w = self.0.width as i16;
+        if position.x >= 0 {
+            position.x /= w;
+        } else {
+            position.x = (position.x - (w - 1)) / w;
+        }
 
-    // pub fn to_pixel_positions(position: PixelPosition) -> impl Iterator<Item = PixelPosition> {
-    //     todo!()
-    // }
+        let h = self.0.height as i16;
+        if position.y >= 0 {
+            position.y /= h;
+        } else {
+            position.y = (position.y - (h - 1)) / h;
+        }
+        position
+    }
+
+    pub fn denormalize(self, mut position: PixelPosition) -> PixelPosition {
+        position.x *= self.0.width as i16;
+        position.y *= self.0.height as i16;
+        position
+    }
+
+    pub fn denormalize_to_region(self, position: PixelPosition) -> PixelRegion {
+        let start = self.denormalize(position);
+        let mut end = start;
+        end.x += self.0.width as i16;
+        end.y += self.0.height as i16;
+        PixelRegion { start, end }
+    }
+
+    pub fn to_region(self, position: PixelPosition) -> PixelRegion {
+        self.denormalize_to_region(self.normalize(position))
+    }
 }
 
 impl Default for Unit {
     fn default() -> Self {
-        Self(PixelSize::square(2)) // TODO: change to 1
+        Self(PixelSize::square(1))
     }
 }
 

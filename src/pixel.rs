@@ -142,6 +142,12 @@ impl PixelRegion {
             std::cmp::max(0, self.end.y - self.start.y) as u16,
         )
     }
+
+    pub fn pixels(self) -> impl Iterator<Item = PixelPosition> {
+        (self.start.y..self.end.y).flat_map(move |y| {
+            (self.start.x..self.end.x).map(move |x| PixelPosition::from_xy(x, y))
+        })
+    }
 }
 
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash)]
@@ -193,14 +199,20 @@ impl PixelLine {
 
         let mut start = self.start;
         let mut finish = self.finish;
-        let size = PixelRegion::from_positions([start, finish].into_iter()).size();
-
+        let size = PixelSize::from_wh(
+            (finish.x - start.x).abs() as u16,
+            (finish.y - start.y).abs() as u16,
+        );
         if size.width < size.height {
             if finish.y < start.y {
                 std::mem::swap(&mut start, &mut finish);
             }
 
-            let mut delta_x = size.width as f64 / size.height as f64;
+            let mut delta_x = if size.height == 0 {
+                0.0
+            } else {
+                size.width as f64 / size.height as f64
+            };
             let mut x = start.x as f64;
             if finish.x < start.x {
                 delta_x = -delta_x;
@@ -215,7 +227,11 @@ impl PixelLine {
                 std::mem::swap(&mut start, &mut finish);
             }
 
-            let mut delta_y = size.height as f64 / size.width as f64;
+            let mut delta_y = if size.width == 0 {
+                0.0
+            } else {
+                size.height as f64 / size.width as f64
+            };
             let mut y = start.y as f64;
             if finish.y < start.y {
                 delta_y = -delta_y;

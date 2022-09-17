@@ -17,6 +17,7 @@ pub struct LineMarker {
 impl Mark for LineMarker {
     fn mark(&mut self, app: &App, position: PixelPosition, mouse: MouseState) {
         self.unit = app.models().config.unit;
+        let position = self.unit.normalize(position);
         match mouse {
             MouseState::Neutral => {
                 self.start = None;
@@ -42,6 +43,11 @@ impl Mark for LineMarker {
     }
 
     fn marked_pixels(&self) -> Box<dyn '_ + Iterator<Item = PixelPosition>> {
-        Box::new(self.marked.iter().copied())
+        Box::new(
+            self.marked
+                .iter()
+                .copied()
+                .flat_map(|p| self.unit.denormalize_to_region(p).pixels()),
+        )
     }
 }
