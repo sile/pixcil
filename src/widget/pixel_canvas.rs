@@ -87,6 +87,8 @@ impl Widget for PixelCanvasWidget {
     fn render(&self, app: &App, canvas: &mut Canvas) {
         canvas.fill_rectangle(self.region, color::CANVAS_BACKGROUND);
         self.render_grid(app, canvas);
+        // let frame_region = app.models().config.frame.get().to_screen_region(app);
+        // canvas.draw_rectangle(frame_region, color::CANVAS_FRAME_BORDER);
         self.render_pixels(app, canvas);
         self.render_marked_pixels(app, canvas);
     }

@@ -173,6 +173,23 @@ impl PixelRegion {
     }
 }
 
+impl Serialize for PixelRegion {
+    fn serialize<W: Write>(&self, writer: &mut W) -> Result<()> {
+        self.start.serialize(writer).or_fail()?;
+        self.end.serialize(writer).or_fail()?;
+        Ok(())
+    }
+}
+
+impl Deserialize for PixelRegion {
+    fn deserialize<R: Read>(reader: &mut R) -> Result<Self> {
+        Ok(Self {
+            start: Deserialize::deserialize(reader).or_fail()?,
+            end: Deserialize::deserialize(reader).or_fail()?,
+        })
+    }
+}
+
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct PixelSize {
     pub width: u16,

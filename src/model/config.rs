@@ -12,7 +12,7 @@ pub struct ConfigModel {
     pub camera: Camera,
     pub unit: Unit,
     pub color: DrawingColor,
-    pub frame: FrameSize,
+    pub frame: FrameRegion,
 }
 
 impl Serialize for ConfigModel {
@@ -224,28 +224,31 @@ impl Deserialize for DrawingColor {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct FrameSize(PixelSize);
+pub struct FrameRegion(PixelRegion);
 
-impl FrameSize {
-    pub const fn get(self) -> PixelSize {
+impl FrameRegion {
+    pub const fn get(self) -> PixelRegion {
         self.0
     }
 }
 
-impl Default for FrameSize {
+impl Default for FrameRegion {
     fn default() -> Self {
-        Self(PixelSize::from_wh(64, 64))
+        Self(PixelRegion::new(
+            PixelPosition::from_xy(-32, -32),
+            PixelPosition::from_xy(32, 32),
+        ))
     }
 }
 
-impl Serialize for FrameSize {
+impl Serialize for FrameRegion {
     fn serialize<W: Write>(&self, writer: &mut W) -> Result<()> {
         self.0.serialize(writer).or_fail()
     }
 }
 
-impl Deserialize for FrameSize {
+impl Deserialize for FrameRegion {
     fn deserialize<R: Read>(reader: &mut R) -> Result<Self> {
-        PixelSize::deserialize(reader).map(Self).or_fail()
+        PixelRegion::deserialize(reader).map(Self).or_fail()
     }
 }

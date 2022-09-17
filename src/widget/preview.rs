@@ -23,34 +23,33 @@ pub struct PreviewWidget {
 impl PreviewWidget {
     pub fn handle_dirty_pixels(&self, app: &mut App, dirty_pixels: &BTreeSet<PixelPosition>) {
         let pixel_region = PixelRegion::from_positions(dirty_pixels.iter().copied());
-        let frame_region = self.frame_region();
-        let mut region = frame_region;
-        region.position.x += i32::from(pixel_region.start.x);
-        region.position.y += i32::from(pixel_region.start.y);
-        region.size.width = u32::from(pixel_region.size().width);
-        region.size.height = u32::from(pixel_region.size().height);
-        app.request_redraw(frame_region.intersection(region));
+        let pixel_frame_start = app.models().config.frame.get().start;
+        let preview_frame_region = self.frame_region();
+        let mut drawing_region = preview_frame_region;
+        drawing_region.position.x += i32::from(pixel_region.start.x - pixel_frame_start.x);
+        drawing_region.position.y += i32::from(pixel_region.start.y - pixel_frame_start.y);
+        drawing_region.size.width = u32::from(pixel_region.size().width);
+        drawing_region.size.height = u32::from(pixel_region.size().height);
+        app.request_redraw(preview_frame_region.intersection(drawing_region));
     }
 
     fn render_pixels(&self, app: &App, canvas: &mut Canvas) {
-        log::info!("--------------------------------------");
-        let frame_region = self.frame_region();
-        let pixel_region = frame_region.intersection(canvas.drawing_region());
-        log::info!("{frame_region:?}");
-        log::info!("{pixel_region:?}");
-        log::info!("{:?}", canvas.drawing_region());
-        let offset = frame_region.start();
+        let preview_frame_region = self.frame_region();
+        let drawing_region = preview_frame_region.intersection(canvas.drawing_region());
+        let pixel_frame_start = app.models().config.frame.get().start;
+        let mut offset = preview_frame_region.start();
+        offset.x -= i32::from(pixel_frame_start.x);
+        offset.y -= i32::from(pixel_frame_start.y);
         let pixel_region = PixelRegion::new(
             PixelPosition::from_xy(
-                (pixel_region.start().x - offset.x) as i16,
-                (pixel_region.start().y - offset.y) as i16,
+                (drawing_region.start().x - offset.x) as i16,
+                (drawing_region.start().y - offset.y) as i16,
             ),
             PixelPosition::from_xy(
-                (pixel_region.end().x - offset.x) as i16,
-                (pixel_region.end().y - offset.y) as i16,
+                (drawing_region.end().x - offset.x) as i16,
+                (drawing_region.end().y - offset.y) as i16,
             ),
         );
-        log::info!("{pixel_region:?}");
         for pixel in app.models().pixel_canvas.get_pixels(pixel_region) {
             canvas.draw_pixel(
                 Position::from_xy(
@@ -93,7 +92,7 @@ impl Widget for PreviewWidget {
 
 impl FixedSizeWidget for PreviewWidget {
     fn requiring_size(&self, app: &App) -> Size {
-        let frame = app.models().config.frame.get();
+        let frame = app.models().config.frame.get().size();
         Size::from_wh(u32::from(frame.width), u32::from(frame.height)) + (BORDER * 2)
     }
 
