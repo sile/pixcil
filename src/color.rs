@@ -8,6 +8,8 @@ pub const GRID_LINE_1: Color = rgba(0, 0, 0, 20);
 pub const GRID_LINE_8: Color = rgba(0, 0, 0, 70);
 pub const GRID_LINE_32: Color = rgba(0, 0, 0, 120);
 
+pub const PREVIEW_BACKGROUND: Color = rgba(255, 255, 255, 255);
+
 const fn rgb(r: u8, g: u8, b: u8) -> Color {
     Color::rgb(r, g, b)
 }

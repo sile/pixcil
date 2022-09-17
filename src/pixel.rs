@@ -131,13 +131,19 @@ impl PixelRegion {
     pub fn from_positions(positions: impl Iterator<Item = PixelPosition>) -> Self {
         let mut start = PixelPosition::from_xy(i16::MAX, i16::MAX);
         let mut end = PixelPosition::from_xy(i16::MIN, i16::MIN);
+        let mut empty = true;
         for p in positions {
             start.x = std::cmp::min(start.x, p.x);
             start.y = std::cmp::min(start.y, p.y);
             end.x = std::cmp::max(end.x, p.x + 1);
             end.y = std::cmp::max(end.y, p.y + 1);
+            empty = false;
         }
-        Self { start, end }
+        if empty {
+            Self::default()
+        } else {
+            Self { start, end }
+        }
     }
 
     pub fn from_screen_region(app: &App, screen: Region) -> Self {

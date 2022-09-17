@@ -74,6 +74,7 @@ pub struct MarkerHandler {
     mouse: MouseState,
     last_event: Option<(PixelPosition, MouseAction)>,
     last_marked: HashSet<PixelPosition>,
+    updated: bool,
 }
 
 impl MarkerHandler {
@@ -89,7 +90,11 @@ impl MarkerHandler {
     }
 
     pub fn marked_pixels(&self) -> Box<dyn '_ + Iterator<Item = PixelPosition>> {
-        self.marker.marked_pixels()
+        if self.updated {
+            self.marker.marked_pixels()
+        } else {
+            Box::new(std::iter::empty())
+        }
     }
 
     pub fn is_completed(&self) -> bool {
@@ -97,6 +102,8 @@ impl MarkerHandler {
     }
 
     pub fn handle_event(&mut self, app: &mut App, event: &mut Event) -> Result<()> {
+        self.updated = false;
+
         let (pixel_position, action) = match event {
             Event::Mouse { consumed: true, .. } => {
                 self.request_redraw(app, self.last_marked.iter().copied());
@@ -144,11 +151,13 @@ impl MarkerHandler {
             self.request_redraw(app, marked.symmetric_difference(&self.last_marked).copied());
         }
         self.last_marked = marked;
+        self.updated = true;
 
         Ok(())
     }
 
     fn request_redraw(&self, app: &mut App, pixels: impl Iterator<Item = PixelPosition>) {
-        app.request_redraw(PixelRegion::from_positions(pixels).to_screen_region(app));
+        let region = PixelRegion::from_positions(pixels).to_screen_region(app);
+        app.request_redraw(region);
     }
 }

@@ -12,6 +12,7 @@ pub struct ConfigModel {
     pub camera: Camera,
     pub unit: Unit,
     pub color: DrawingColor,
+    pub frame: FrameSize,
 }
 
 impl Serialize for ConfigModel {
@@ -24,6 +25,7 @@ impl Serialize for ConfigModel {
         self.camera.serialize(writer).or_fail()?;
         self.unit.serialize(writer).or_fail()?;
         self.color.serialize(writer).or_fail()?;
+        self.frame.serialize(writer).or_fail()?;
         Ok(())
     }
 }
@@ -38,6 +40,7 @@ impl Deserialize for ConfigModel {
             camera: Deserialize::deserialize_or_default(&mut reader).or_fail()?,
             unit: Deserialize::deserialize_or_default(&mut reader).or_fail()?,
             color: Deserialize::deserialize_or_default(&mut reader).or_fail()?,
+            frame: Deserialize::deserialize_or_default(&mut reader).or_fail()?,
         };
 
         // Ignore unknown fields.
@@ -217,5 +220,32 @@ impl Serialize for DrawingColor {
 impl Deserialize for DrawingColor {
     fn deserialize<R: Read>(reader: &mut R) -> Result<Self> {
         Rgba::deserialize(reader).map(Self).or_fail()
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct FrameSize(PixelSize);
+
+impl FrameSize {
+    pub const fn get(self) -> PixelSize {
+        self.0
+    }
+}
+
+impl Default for FrameSize {
+    fn default() -> Self {
+        Self(PixelSize::from_wh(64, 64))
+    }
+}
+
+impl Serialize for FrameSize {
+    fn serialize<W: Write>(&self, writer: &mut W) -> Result<()> {
+        self.0.serialize(writer).or_fail()
+    }
+}
+
+impl Deserialize for FrameSize {
+    fn deserialize<R: Read>(reader: &mut R) -> Result<Self> {
+        PixelSize::deserialize(reader).map(Self).or_fail()
     }
 }

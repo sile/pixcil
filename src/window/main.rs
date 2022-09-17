@@ -4,11 +4,14 @@ use crate::{
     canvas_ext::CanvasExt,
     color,
     event::Event,
-    widget::{pixel_canvas::PixelCanvasWidget, preview::PreviewWidget, VariableSizeWidget, Widget},
+    widget::{
+        pixel_canvas::PixelCanvasWidget, preview::PreviewWidget, FixedSizeWidget,
+        VariableSizeWidget, Widget,
+    },
 };
 use pagurus::{
     failure::OrFail,
-    spatial::{Region, Size},
+    spatial::{Position, Region, Size},
     Result,
 };
 use pagurus_game_std::image::Canvas;
@@ -37,7 +40,7 @@ impl Window for MainWindow {
 
     fn render(&self, app: &App, canvas: &mut Canvas) {
         self.pixel_canvas.render(app, canvas);
-        self.preview.render(app, canvas);
+        self.preview.render_if_need(app, canvas);
         canvas.draw_rectangle(self.region(), color::WINDOW_BORDER);
     }
 
@@ -48,7 +51,15 @@ impl Window for MainWindow {
     fn handle_screen_resized(&mut self, app: &mut App) -> Result<()> {
         self.size = app.screen_size();
         self.pixel_canvas.set_region(app, self.region());
-        // TODO: preview
+
+        let preview_margin = 16 + 1;
+        let preview_size = self.preview.requiring_size(app);
+        let preview_position = Position::from_xy(
+            app.screen_size().width as i32 - preview_size.width as i32 - preview_margin,
+            preview_margin,
+        );
+        self.preview.set_position(app, preview_position);
+
         Ok(())
     }
 

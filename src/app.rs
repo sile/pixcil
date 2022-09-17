@@ -49,6 +49,9 @@ impl App {
     }
 
     pub fn request_redraw(&mut self, region: Region) {
+        if region.is_empty() {
+            return;
+        }
         self.redraw_requests.push(region);
     }
 

@@ -1,6 +1,6 @@
 use crate::{app::App, event::Event};
 use pagurus::{
-    spatial::{Position, Region},
+    spatial::{Position, Region, Size},
     Result,
 };
 use pagurus_game_std::image::Canvas;
@@ -25,6 +25,7 @@ pub trait Widget {
 }
 
 pub trait FixedSizeWidget: Widget {
+    fn requiring_size(&self, app: &App) -> Size;
     fn set_position(&mut self, app: &App, position: Position);
 }
 
