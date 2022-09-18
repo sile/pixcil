@@ -267,7 +267,7 @@ impl MaxUndo {
 
 impl Default for MaxUndo {
     fn default() -> Self {
-        Self(10) // TODO:
+        Self(100)
     }
 }
 

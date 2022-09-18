@@ -42,7 +42,7 @@ impl PixcilGame {
             _ => {}
         };
 
-        if let Some(mut event) = Event::from_pagurus_event(event) {
+        if let Some(mut event) = Event::from_pagurus_event(app, event) {
             let mut terminated = false;
             for window in self.windows.iter_mut().rev() {
                 window.handle_event(app, &mut event).or_fail()?;
@@ -57,6 +57,7 @@ impl PixcilGame {
             }
         }
         self.windows.extend(app.take_spawned_windows());
+        app.set_pending_timeouts(system);
 
         self.render(system).or_fail()?;
 

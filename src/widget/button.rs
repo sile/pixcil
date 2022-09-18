@@ -3,13 +3,14 @@ use crate::{
     app::App,
     asset::{ButtonKind, IconId},
     canvas_ext::CanvasExt,
-    event::{Event, MouseAction},
+    event::{Event, MouseAction, TimeoutId},
 };
 use pagurus::{
     spatial::{Contains, Position, Region, Size},
     Result,
 };
 use pagurus_game_std::image::{Canvas, Sprite};
+use std::time::Duration;
 
 const DISABLED_ALPHA: u8 = 100;
 
@@ -21,6 +22,8 @@ pub struct ButtonWidget {
     disabled: Option<fn(&App) -> bool>,
     number: Option<fn(&App) -> u32>,
     number_margin: u32,
+    long_press: Option<LongPressState>,
+    long_press_timed_out: bool,
     prev_state: ButtonState,
     prev_disabled: bool,
     prev_number: u32,
@@ -33,6 +36,8 @@ impl ButtonWidget {
             kind,
             icon,
             state: ButtonState::default(),
+            long_press: None,
+            long_press_timed_out: false,
             disabled: None,
             number: None,
             number_margin: 0,
@@ -43,6 +48,12 @@ impl ButtonWidget {
     }
 
     pub fn take_clicked(&mut self, app: &mut App) -> bool {
+        if self.long_press_timed_out {
+            self.long_press_timed_out = false;
+            app.request_redraw(self.region);
+            return true;
+        }
+
         if self.state == ButtonState::Clicked {
             app.request_redraw(self.region);
             self.state = ButtonState::Focused;
@@ -50,6 +61,10 @@ impl ButtonWidget {
         } else {
             false
         }
+    }
+
+    pub fn enable_long_press(&mut self) {
+        self.long_press = Some(LongPressState::default());
     }
 
     pub fn set_disabled_callback(&mut self, f: fn(&App) -> bool) {
@@ -153,6 +168,13 @@ impl Widget for ButtonWidget {
             self.prev_number = number;
             app.request_redraw(self.region);
         }
+
+        if let Some(long_press) = &mut self.long_press {
+            if self.state != ButtonState::Pressed {
+                long_press.stop();
+            }
+        }
+
         Ok(())
     }
 
@@ -171,6 +193,9 @@ impl Widget for ButtonWidget {
                         }
                         MouseAction::Down => {
                             self.state = ButtonState::Pressed;
+                            if let Some(long_press) = &mut self.long_press {
+                                long_press.start(app);
+                            }
                         }
                         MouseAction::Up if self.state == ButtonState::Pressed => {
                             self.state = ButtonState::Clicked;
@@ -182,7 +207,13 @@ impl Widget for ButtonWidget {
                     self.state = ButtonState::Neutral;
                 }
             }
-            Event::Timeout(_) => {}
+            Event::Timeout(id) => {
+                if let Some(long_press) = &mut self.long_press {
+                    if long_press.handle_timeout(app, *id) {
+                        self.long_press_timed_out = true;
+                    }
+                }
+            }
             Event::Mouse { .. } => {}
         }
         Ok(())
@@ -233,5 +264,43 @@ impl ButtonState {
                 ButtonState::Clicked => offset.move_y(8),
             },
         }
+    }
+}
+
+#[derive(Debug, Default)]
+pub struct LongPressState {
+    timeout: Option<(TimeoutId, Duration)>,
+    repeat_count: usize,
+}
+
+impl LongPressState {
+    fn start(&mut self, app: &mut App) {
+        if self.timeout.is_none() {
+            let duration = Duration::from_millis(800);
+            let timeout_id = app.set_timeout(duration);
+            self.timeout = Some((timeout_id, duration));
+        }
+    }
+
+    fn stop(&mut self) {
+        self.timeout = None;
+        self.repeat_count = 0;
+    }
+
+    fn handle_timeout(&mut self, app: &mut App, id: TimeoutId) -> bool {
+        if let Some((timeout_id, mut duration)) = self.timeout {
+            if timeout_id == id {
+                self.repeat_count += 1;
+                if self.repeat_count % 4 == 0 {
+                    duration /= 2;
+                    duration = std::cmp::max(Duration::from_millis(100), duration);
+                }
+
+                let timeout_id = app.set_timeout(duration);
+                self.timeout = Some((timeout_id, duration));
+                return true;
+            }
+        }
+        false
     }
 }

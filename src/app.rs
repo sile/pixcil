@@ -1,10 +1,13 @@
-use crate::{asset::Assets, io::IoRequest, model::Models, window::Window};
+use crate::{asset::Assets, event::TimeoutId, io::IoRequest, model::Models, window::Window};
 use pagurus::{
     failure::OrFail,
     spatial::{Region, Size},
-    Result,
+    ActionId, Result, System,
 };
-use std::collections::VecDeque;
+use std::{
+    collections::{HashMap, VecDeque},
+    time::Duration,
+};
 
 #[derive(Debug)]
 pub struct App {
@@ -14,6 +17,9 @@ pub struct App {
     spawned_windows: Vec<Box<dyn Window>>,
     io_requests: VecDeque<IoRequest>,
     redraw_requests: Vec<Region>,
+    next_timeout_id: TimeoutId,
+    pending_timeouts: Vec<(TimeoutId, Duration)>,
+    timeouts: HashMap<ActionId, TimeoutId>,
 }
 
 impl App {
@@ -25,6 +31,9 @@ impl App {
             spawned_windows: Vec::new(),
             io_requests: VecDeque::new(),
             redraw_requests: Vec::new(),
+            next_timeout_id: TimeoutId::default(),
+            pending_timeouts: Vec::new(),
+            timeouts: HashMap::new(),
         })
     }
 
@@ -74,5 +83,21 @@ impl App {
 
     pub fn take_spawned_windows(&mut self) -> Vec<Box<dyn Window>> {
         std::mem::take(&mut self.spawned_windows)
+    }
+
+    pub fn set_timeout(&mut self, duration: Duration) -> TimeoutId {
+        let id = self.next_timeout_id.next();
+        self.pending_timeouts.push((id, duration));
+        id
+    }
+
+    pub fn take_timeout_id(&mut self, action_id: ActionId) -> Option<TimeoutId> {
+        self.timeouts.remove(&action_id)
+    }
+
+    pub fn set_pending_timeouts<S: System>(&mut self, system: &mut S) {
+        for (id, durtion) in self.pending_timeouts.drain(..) {
+            self.timeouts.insert(system.clock_set_timeout(durtion), id);
+        }
     }
 }

@@ -3,9 +3,11 @@ use pagurus::input::MouseButton;
 use pagurus::spatial::{Contains, Region};
 use pagurus::{spatial::Position, ActionId};
 
+use crate::app::App;
+
 #[derive(Debug)]
 pub enum Event {
-    Timeout(ActionId),
+    Timeout(TimeoutId),
     Mouse {
         action: MouseAction,
         position: Position,
@@ -45,9 +47,9 @@ impl Event {
         matches!(self, Self::Mouse { consumed: true, .. })
     }
 
-    pub fn from_pagurus_event(event: PagurusEvent) -> Option<Self> {
+    pub fn from_pagurus_event(app: &mut App, event: PagurusEvent) -> Option<Self> {
         match event {
-            PagurusEvent::Timeout(e) => Some(Self::Timeout(e.id)),
+            PagurusEvent::Timeout(e) => app.take_timeout_id(e.id).map(Self::Timeout),
             PagurusEvent::Mouse(e) => match e {
                 MouseEvent::Move { position } => Some(Self::Mouse {
                     action: MouseAction::Move,
@@ -82,4 +84,15 @@ pub enum MouseAction {
     Up,
     Down,
     Move,
+}
+
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct TimeoutId(ActionId);
+
+impl TimeoutId {
+    pub fn next(&mut self) -> Self {
+        let id = *self;
+        self.0.increment();
+        id
+    }
 }
