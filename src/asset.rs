@@ -1,3 +1,4 @@
+use pagurus::spatial::Size;
 use pagurus::{failure::OrFail, Result};
 use pagurus_game_std::image::Sprite;
 use pagurus_game_std::png::decode_sprite;
@@ -39,6 +40,14 @@ pub enum IconId {
 #[derive(Debug, Clone, Copy)]
 pub enum ButtonKind {
     Basic,
+}
+
+impl ButtonKind {
+    pub fn size(self) -> Size {
+        match self {
+            ButtonKind::Basic => Size::square(64),
+        }
+    }
 }
 
 #[derive(Debug)]

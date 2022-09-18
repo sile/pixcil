@@ -5,8 +5,8 @@ use crate::{
     color,
     event::Event,
     widget::{
-        pixel_canvas::PixelCanvasWidget, preview::PreviewWidget, FixedSizeWidget,
-        VariableSizeWidget, Widget,
+        pixel_canvas::PixelCanvasWidget, preview::PreviewWidget, side_bar::SideBarWidget,
+        FixedSizeWidget, VariableSizeWidget, Widget,
     },
 };
 use pagurus::{
@@ -16,20 +16,17 @@ use pagurus::{
 };
 use pagurus_game_std::image::Canvas;
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct MainWindow {
     size: Size,
     pixel_canvas: PixelCanvasWidget,
     preview: PreviewWidget,
+    side_bar: SideBarWidget,
 }
 
 impl MainWindow {
     pub fn new() -> Self {
-        Self {
-            size: Size::default(),
-            pixel_canvas: PixelCanvasWidget::default(),
-            preview: PreviewWidget::default(),
-        }
+        Self::default()
     }
 }
 
@@ -41,6 +38,7 @@ impl Window for MainWindow {
     fn render(&self, app: &App, canvas: &mut Canvas) {
         self.pixel_canvas.render(app, canvas);
         self.preview.render_if_need(app, canvas);
+        self.side_bar.render_if_need(app, canvas);
         canvas.draw_rectangle(self.region(), color::WINDOW_BORDER);
     }
 
@@ -50,6 +48,7 @@ impl Window for MainWindow {
 
     fn handle_screen_resized(&mut self, app: &mut App) -> Result<()> {
         self.size = app.screen_size();
+
         self.pixel_canvas.set_region(app, self.region());
 
         let preview_margin = 16 + 1;
@@ -60,17 +59,22 @@ impl Window for MainWindow {
         );
         self.preview.set_position(app, preview_position);
 
+        self.side_bar.set_region(app, self.region());
+
         Ok(())
     }
 
     fn handle_event(&mut self, app: &mut App, event: &mut Event) -> Result<()> {
         if !self.pixel_canvas.marker_handler().is_operating() {
             self.preview.handle_event(app, event).or_fail()?;
+            self.side_bar.handle_event(app, event).or_fail()?;
         }
         self.pixel_canvas.handle_event(app, event).or_fail()?;
 
         let dirty_pixels = app.models_mut().pixel_canvas.take_dirty_positions();
-        self.preview.handle_dirty_pixels(app, &dirty_pixels);
+        if !dirty_pixels.is_empty() {
+            self.preview.handle_dirty_pixels(app, &dirty_pixels);
+        }
 
         self.pixel_canvas
             .set_preview_focused(app, self.preview.is_focused());

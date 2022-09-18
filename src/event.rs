@@ -1,5 +1,6 @@
 use pagurus::event::{Event as PagurusEvent, MouseEvent};
 use pagurus::input::MouseButton;
+use pagurus::spatial::{Contains, Region};
 use pagurus::{spatial::Position, ActionId};
 
 #[derive(Debug)]
@@ -24,6 +25,19 @@ impl Event {
     pub fn consume(&mut self) {
         if let Self::Mouse { consumed, .. } = self {
             *consumed = true;
+        }
+    }
+
+    pub fn consume_if_contained(&mut self, region: Region) {
+        match self {
+            Self::Mouse {
+                consumed: false,
+                position,
+                ..
+            } if region.contains(position) => {
+                self.consume();
+            }
+            _ => {}
         }
     }
 

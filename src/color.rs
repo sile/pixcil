@@ -12,6 +12,8 @@ pub const PREVIEW_BACKGROUND: Color = rgba(255, 255, 255, 255);
 pub const PREVIEW_BORDER: Color = WINDOW_BORDER;
 pub const PREVIEW_FOCUSED_BORDER: Color = rgb(255, 0, 0);
 
+pub const BUTTONS_BACKGROUND: Color = rgb(221, 220, 213); // W-3
+
 const fn rgb(r: u8, g: u8, b: u8) -> Color {
     Color::rgb(r, g, b)
 }
