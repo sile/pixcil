@@ -29,6 +29,7 @@ impl PixelCanvasModel {
                 command.erase.push(Pixel::new(pixel.position, color));
             }
         }
+        self.command_log.truncate(self.command_log_tail);
         self.command_log.push_back(command);
         self.redo_command().or_fail()?;
         Ok(())
@@ -42,6 +43,7 @@ impl PixelCanvasModel {
             }
         }
         command.erase.sort_by_key(|x| x.position);
+        self.command_log.truncate(self.command_log_tail);
         self.command_log.push_back(command);
         self.redo_command().or_fail()?;
         Ok(())
