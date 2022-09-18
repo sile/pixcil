@@ -1,9 +1,8 @@
+use self::{config::ConfigModel, pixel_canvas::PixelCanvasModel};
 use crate::serialize::{Deserialize, Serialize};
 use pagurus::{failure::OrFail, Result};
 use png::chunk::ChunkType;
 use std::io::{Read, Write};
-
-use self::{config::ConfigModel, mode::ModeModel, pixel_canvas::PixelCanvasModel, tool::ToolModel};
 
 pub mod config;
 pub mod mode;
@@ -18,10 +17,6 @@ pub const FORMAT_VERSION: u16 = 0;
 pub struct Models {
     pub config: ConfigModel,
     pub pixel_canvas: PixelCanvasModel,
-
-    // The following fields are not serialized / deserialized.
-    pub tool: ToolModel,
-    pub mode: ModeModel,
 }
 
 impl Serialize for Models {
