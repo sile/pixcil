@@ -25,6 +25,13 @@ impl Assets {
             IconId::Redo => &self.icons.redo,
             IconId::ZoomIn => &self.icons.zoom_in,
             IconId::ZoomOut => &self.icons.zoom_out,
+            IconId::Null => &self.icons.null,
+            IconId::Settings => &self.icons.settings,
+            IconId::Draw => &self.icons.draw,
+            IconId::Erase => &self.icons.erase,
+            IconId::Select => &self.icons.select,
+            IconId::ColorPick => &self.icons.color_pick,
+            IconId::Move => &self.icons.camera_move,
         }
     }
 
@@ -41,6 +48,13 @@ pub enum IconId {
     Redo,
     ZoomIn,
     ZoomOut,
+    Null,
+    Settings,
+    Draw,
+    Erase,
+    Select,
+    ColorPick,
+    Move,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -62,6 +76,13 @@ pub struct Icons {
     pub redo: Sprite,
     pub zoom_in: Sprite,
     pub zoom_out: Sprite,
+    pub null: Sprite,
+    pub settings: Sprite,
+    pub draw: Sprite,
+    pub erase: Sprite,
+    pub select: Sprite,
+    pub color_pick: Sprite,
+    pub camera_move: Sprite,
 }
 
 impl Icons {
@@ -71,6 +92,13 @@ impl Icons {
             redo: decode_sprite(include_bytes!("../assets/icon-redo.png")).or_fail()?,
             zoom_in: decode_sprite(include_bytes!("../assets/icon-zoom-in.png")).or_fail()?,
             zoom_out: decode_sprite(include_bytes!("../assets/icon-zoom-out.png")).or_fail()?,
+            null: decode_sprite(include_bytes!("../assets/icon-null.png")).or_fail()?,
+            settings: decode_sprite(include_bytes!("../assets/icon-settings.png")).or_fail()?,
+            draw: decode_sprite(include_bytes!("../assets/icon-draw.png")).or_fail()?,
+            erase: decode_sprite(include_bytes!("../assets/icon-erase.png")).or_fail()?,
+            select: decode_sprite(include_bytes!("../assets/icon-select.png")).or_fail()?,
+            color_pick: decode_sprite(include_bytes!("../assets/icon-color-pick.png")).or_fail()?,
+            camera_move: decode_sprite(include_bytes!("../assets/icon-move.png")).or_fail()?,
         })
     }
 }

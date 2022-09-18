@@ -5,11 +5,13 @@ use pagurus::{
     Result,
 };
 use pagurus_game_std::image::Canvas;
+
 pub mod bottom_bar;
 pub mod button;
 pub mod pixel_canvas;
 pub mod preview;
 pub mod side_bar;
+pub mod tool_box;
 pub mod undo_redo;
 pub mod zoom;
 
