@@ -101,6 +101,10 @@ impl MarkerHandler {
         self.mouse == MouseState::Clicked
     }
 
+    pub fn is_operating(&self) -> bool {
+        self.mouse == MouseState::Pressing
+    }
+
     pub fn handle_event(&mut self, app: &mut App, event: &mut Event) -> Result<()> {
         self.updated = false;
 

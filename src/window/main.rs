@@ -64,7 +64,9 @@ impl Window for MainWindow {
     }
 
     fn handle_event(&mut self, app: &mut App, event: &mut Event) -> Result<()> {
-        self.preview.handle_event(app, event).or_fail()?;
+        if !self.pixel_canvas.marker_handler().is_operating() {
+            self.preview.handle_event(app, event).or_fail()?;
+        }
         self.pixel_canvas.handle_event(app, event).or_fail()?;
 
         let dirty_pixels = app.models_mut().pixel_canvas.take_dirty_positions();

@@ -5,8 +5,10 @@ use pagurus::{
 };
 use pagurus_game_std::image::Canvas;
 
+pub mod button;
 pub mod pixel_canvas;
 pub mod preview;
+pub mod undo_redo;
 
 pub trait Widget {
     fn region(&self) -> Region;

@@ -28,6 +28,10 @@ impl PixelCanvasWidget {
         }
     }
 
+    pub fn marker_handler(&self) -> &MarkerHandler {
+        &self.marker_handler
+    }
+
     fn render_grid(&self, app: &App, canvas: &mut Canvas) {
         let zoom = app.models().config.zoom.get();
         let pixel_region = PixelRegion::from_screen_region(app, canvas.drawing_region());
