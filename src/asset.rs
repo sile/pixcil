@@ -1,4 +1,4 @@
-use pagurus::spatial::Size;
+use pagurus::spatial::{Region, Size};
 use pagurus::{failure::OrFail, Result};
 use pagurus_game_std::image::Sprite;
 use pagurus_game_std::png::decode_sprite;
@@ -7,6 +7,7 @@ use pagurus_game_std::png::decode_sprite;
 pub struct Assets {
     pub icons: Icons,
     pub buttons: Buttons,
+    pub digits_10x14: [Sprite; 10],
 }
 
 impl Assets {
@@ -14,6 +15,7 @@ impl Assets {
         Ok(Self {
             icons: Icons::load().or_fail()?,
             buttons: Buttons::load().or_fail()?,
+            digits_10x14: load_digits_10x14().or_fail()?,
         })
     }
 
@@ -97,4 +99,29 @@ impl Button {
             pressed,
         }
     }
+}
+
+fn load_digits_10x14() -> Result<[Sprite; 10]> {
+    let digits = decode_sprite(include_bytes!("../assets/digits-10x14.png")).or_fail()?;
+    let base = Size::from_wh(12, 16).to_region();
+
+    fn clip(digits: &Sprite, base: Region, y: i32, x: i32) -> Result<Sprite> {
+        let mut region = base.shift_y(y).shift_x(x);
+        region.size.width -= 2;
+        region.size.height -= 2;
+        digits.clip(region).or_fail()
+    }
+
+    Ok([
+        clip(&digits, base, 0, 0).or_fail()?,
+        clip(&digits, base, 0, 1).or_fail()?,
+        clip(&digits, base, 0, 2).or_fail()?,
+        clip(&digits, base, 0, 3).or_fail()?,
+        clip(&digits, base, 0, 4).or_fail()?,
+        clip(&digits, base, 1, 0).or_fail()?,
+        clip(&digits, base, 1, 1).or_fail()?,
+        clip(&digits, base, 1, 2).or_fail()?,
+        clip(&digits, base, 1, 3).or_fail()?,
+        clip(&digits, base, 1, 4).or_fail()?,
+    ])
 }

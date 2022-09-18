@@ -40,9 +40,14 @@ impl Default for UndoRedoWidget {
             let canvas = &app.models().pixel_canvas;
             canvas.command_log().len() == canvas.command_log_tail()
         });
+        redo.set_number_callback(0, |app| {
+            let canvas = &app.models().pixel_canvas;
+            (canvas.command_log().len() - canvas.command_log_tail()) as u32
+        });
 
         let mut undo = ButtonWidget::new(ButtonKind::Basic, IconId::Undo);
         undo.set_disabled_callback(|app| app.models().pixel_canvas.command_log_tail() == 0);
+        undo.set_number_callback(0, |app| app.models().pixel_canvas.command_log_tail() as u32);
         Self {
             region: Default::default(),
             undo,
@@ -77,7 +82,6 @@ impl Widget for UndoRedoWidget {
         }
 
         // TODO: limit handling
-        // TODO: render count
         // TODO: long press
         event.consume_if_contained(self.region);
         Ok(())
