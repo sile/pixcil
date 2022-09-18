@@ -81,9 +81,19 @@ impl Widget for UndoRedoWidget {
             self.request_redraw_dirty_canvas_region(app);
         }
 
-        // TODO: limit handling
         // TODO: long press
         event.consume_if_contained(self.region);
+        Ok(())
+    }
+
+    fn handle_event_after(&mut self, app: &mut App) -> Result<()> {
+        let max_undo = app.models().config.max_undo.get() as usize;
+        while app.models().pixel_canvas.command_log_tail() > max_undo {
+            app.models_mut().pixel_canvas.forget_oldest_command();
+        }
+        for child in self.children() {
+            child.handle_event_after(app).or_fail()?;
+        }
         Ok(())
     }
 

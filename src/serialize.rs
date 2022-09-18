@@ -53,6 +53,12 @@ impl Serialize for i16 {
     }
 }
 
+impl Serialize for u32 {
+    fn serialize<W: Write>(&self, writer: &mut W) -> Result<()> {
+        writer.write_u32::<BigEndian>(*self).or_fail()
+    }
+}
+
 impl Serialize for usize {
     fn serialize<W: Write>(&self, writer: &mut W) -> Result<()> {
         let n = u32::try_from(*self).or_fail()?;
@@ -100,6 +106,12 @@ impl Deserialize for u16 {
 impl Deserialize for i16 {
     fn deserialize<R: Read>(reader: &mut R) -> Result<Self> {
         reader.read_i16::<BigEndian>().or_fail()
+    }
+}
+
+impl Deserialize for u32 {
+    fn deserialize<R: Read>(reader: &mut R) -> Result<Self> {
+        reader.read_u32::<BigEndian>().or_fail()
     }
 }
 

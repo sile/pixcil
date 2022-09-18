@@ -13,6 +13,7 @@ pub struct ConfigModel {
     pub unit: Unit,
     pub color: DrawingColor,
     pub frame: FrameRegion,
+    pub max_undo: MaxUndo,
 }
 
 impl Serialize for ConfigModel {
@@ -26,6 +27,7 @@ impl Serialize for ConfigModel {
         self.unit.serialize(writer).or_fail()?;
         self.color.serialize(writer).or_fail()?;
         self.frame.serialize(writer).or_fail()?;
+        self.max_undo.serialize(writer).or_fail()?;
         Ok(())
     }
 }
@@ -41,6 +43,7 @@ impl Deserialize for ConfigModel {
             unit: Deserialize::deserialize_or_default(&mut reader).or_fail()?,
             color: Deserialize::deserialize_or_default(&mut reader).or_fail()?,
             frame: Deserialize::deserialize_or_default(&mut reader).or_fail()?,
+            max_undo: Deserialize::deserialize_or_default(&mut reader).or_fail()?,
         };
 
         // Ignore unknown fields.
@@ -250,5 +253,32 @@ impl Serialize for FrameRegion {
 impl Deserialize for FrameRegion {
     fn deserialize<R: Read>(reader: &mut R) -> Result<Self> {
         PixelRegion::deserialize(reader).map(Self).or_fail()
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct MaxUndo(u32);
+
+impl MaxUndo {
+    pub const fn get(self) -> u32 {
+        self.0
+    }
+}
+
+impl Default for MaxUndo {
+    fn default() -> Self {
+        Self(10) // TODO:
+    }
+}
+
+impl Serialize for MaxUndo {
+    fn serialize<W: Write>(&self, writer: &mut W) -> Result<()> {
+        self.0.serialize(writer).or_fail()
+    }
+}
+
+impl Deserialize for MaxUndo {
+    fn deserialize<R: Read>(reader: &mut R) -> Result<Self> {
+        u32::deserialize(reader).map(Self).or_fail()
     }
 }
