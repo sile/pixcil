@@ -1,11 +1,15 @@
 use pagurus::spatial::{Position, Region};
-use pagurus_game_std::{color::Color, image::Canvas};
+use pagurus_game_std::{
+    color::Color,
+    image::{Canvas, Sprite},
+};
 
 pub trait CanvasExt {
     fn draw_vertical_line(&mut self, start: Position, height: u32, color: Color);
     fn draw_horizontal_line(&mut self, start: Position, width: u32, color: Color);
     fn draw_rectangle(&mut self, rectangle: Region, color: Color);
     fn fill_rectangle(&mut self, rectangle: Region, color: Color);
+    fn draw_sprite_with_alpha(&mut self, sprite: &Sprite, alpha: u8);
 }
 
 impl<'a> CanvasExt for Canvas<'a> {
@@ -48,5 +52,14 @@ impl<'a> CanvasExt for Canvas<'a> {
 
     fn fill_rectangle(&mut self, rectangle: Region, color: Color) {
         self.mask_region(rectangle).fill_color(color);
+    }
+
+    fn draw_sprite_with_alpha(&mut self, sprite: &Sprite, alpha: u8) {
+        for (pos, mut pixel) in sprite.pixels() {
+            if pixel.a != 0 {
+                pixel.a = alpha;
+            }
+            self.draw_pixel(pos, Color::Rgba(pixel));
+        }
     }
 }

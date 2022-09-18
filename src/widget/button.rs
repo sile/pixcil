@@ -2,6 +2,7 @@ use super::{FixedSizeWidget, Widget};
 use crate::{
     app::App,
     asset::{ButtonKind, IconId},
+    canvas_ext::CanvasExt,
     event::{Event, MouseAction},
 };
 use pagurus::{
@@ -10,12 +11,13 @@ use pagurus::{
 };
 use pagurus_game_std::image::{Canvas, Sprite};
 
-#[derive(Debug)]
 pub struct ButtonWidget {
     region: Region,
     kind: ButtonKind,
     icon: IconId,
     state: ButtonState,
+    disabled: Option<fn(&App) -> bool>,
+    prev_disabled: bool,
 }
 
 impl ButtonWidget {
@@ -25,6 +27,8 @@ impl ButtonWidget {
             kind,
             icon,
             state: ButtonState::default(),
+            disabled: None,
+            prev_disabled: false,
         }
     }
 
@@ -37,6 +41,20 @@ impl ButtonWidget {
             false
         }
     }
+
+    pub fn set_disabled_callback(&mut self, f: fn(&App) -> bool) {
+        self.disabled = Some(f);
+    }
+
+    pub fn is_disabled(&self, app: &App) -> bool {
+        self.disabled.map_or(false, |f| f(app))
+    }
+}
+
+impl std::fmt::Debug for ButtonWidget {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "ButtonWidget {{ .. }}")
+    }
 }
 
 impl Widget for ButtonWidget {
@@ -46,16 +64,34 @@ impl Widget for ButtonWidget {
 
     fn render(&self, app: &App, canvas: &mut Canvas) {
         let mut canvas = canvas.offset(self.region.position);
+        let disabled = self.is_disabled(app);
 
         let button = self.state.get_sprite(app, self.kind);
-        canvas.draw_sprite(button);
+        if disabled {
+            canvas.draw_sprite_with_alpha(button, 100);
+        } else {
+            canvas.draw_sprite(button);
+        }
 
         let mut canvas = canvas.offset(self.state.offset(self.kind));
         let icon = app.assets().get_icon(self.icon);
-        canvas.draw_sprite(icon);
+        if disabled {
+            canvas.draw_sprite_with_alpha(icon, 100);
+        } else {
+            canvas.draw_sprite(icon);
+        }
     }
 
     fn handle_event(&mut self, app: &mut App, event: &mut Event) -> Result<()> {
+        let disabled = self.is_disabled(app);
+        if disabled {
+            if self.state != ButtonState::Neutral {
+                self.state = ButtonState::Neutral;
+                app.request_redraw(self.region);
+            }
+            return Ok(());
+        }
+
         match event {
             Event::Mouse {
                 consumed: false,

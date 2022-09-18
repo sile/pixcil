@@ -5,6 +5,7 @@ use crate::{
     canvas_ext::CanvasExt,
     color,
     event::Event,
+    pixel::PixelRegion,
     region_ext::RegionExt,
 };
 use pagurus::{
@@ -23,12 +24,29 @@ pub struct UndoRedoWidget {
     redo: ButtonWidget,
 }
 
+impl UndoRedoWidget {
+    fn request_redraw_dirty_canvas_region(&self, app: &mut App) {
+        let pixel_region = PixelRegion::from_positions(
+            app.models().pixel_canvas.dirty_positions().iter().copied(),
+        );
+        app.request_redraw(pixel_region.to_screen_region(app));
+    }
+}
+
 impl Default for UndoRedoWidget {
     fn default() -> Self {
+        let mut redo = ButtonWidget::new(ButtonKind::Basic, IconId::Redo);
+        redo.set_disabled_callback(|app| {
+            let canvas = &app.models().pixel_canvas;
+            canvas.command_log().len() == canvas.command_log_tail()
+        });
+
+        let mut undo = ButtonWidget::new(ButtonKind::Basic, IconId::Undo);
+        undo.set_disabled_callback(|app| app.models().pixel_canvas.command_log_tail() == 0);
         Self {
             region: Default::default(),
-            undo: ButtonWidget::new(ButtonKind::Basic, IconId::Undo),
-            redo: ButtonWidget::new(ButtonKind::Basic, IconId::Redo),
+            undo,
+            redo,
         }
     }
 }
@@ -48,14 +66,19 @@ impl Widget for UndoRedoWidget {
     fn handle_event(&mut self, app: &mut App, event: &mut Event) -> Result<()> {
         self.redo.handle_event(app, event).or_fail()?;
         if self.redo.take_clicked(app) {
-            // TODO
+            app.models_mut().pixel_canvas.redo_command().or_fail()?;
+            self.request_redraw_dirty_canvas_region(app);
         }
 
         self.undo.handle_event(app, event).or_fail()?;
         if self.undo.take_clicked(app) {
-            // TODO
+            app.models_mut().pixel_canvas.undo_command().or_fail()?;
+            self.request_redraw_dirty_canvas_region(app);
         }
 
+        // TODO: limit handling
+        // TODO: render count
+        // TODO: long press
         event.consume_if_contained(self.region);
         Ok(())
     }

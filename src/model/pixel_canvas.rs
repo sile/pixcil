@@ -104,6 +104,10 @@ impl PixelCanvasModel {
     pub fn take_dirty_positions(&mut self) -> BTreeSet<PixelPosition> {
         std::mem::take(&mut self.dirty_positions)
     }
+
+    pub fn dirty_positions(&self) -> &BTreeSet<PixelPosition> {
+        &self.dirty_positions
+    }
 }
 
 impl Serialize for PixelCanvasModel {
