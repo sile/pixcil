@@ -5,8 +5,8 @@ use crate::{
     color,
     event::Event,
     widget::{
-        pixel_canvas::PixelCanvasWidget, preview::PreviewWidget, side_bar::SideBarWidget,
-        FixedSizeWidget, VariableSizeWidget, Widget,
+        bottom_bar::BottomBarWidget, pixel_canvas::PixelCanvasWidget, preview::PreviewWidget,
+        side_bar::SideBarWidget, FixedSizeWidget, VariableSizeWidget, Widget,
     },
 };
 use pagurus::{
@@ -22,6 +22,7 @@ pub struct MainWindow {
     pixel_canvas: PixelCanvasWidget,
     preview: PreviewWidget,
     side_bar: SideBarWidget,
+    bottom_bar: BottomBarWidget,
 }
 
 impl MainWindow {
@@ -39,6 +40,7 @@ impl Window for MainWindow {
         self.pixel_canvas.render(app, canvas);
         self.preview.render_if_need(app, canvas);
         self.side_bar.render_if_need(app, canvas);
+        self.bottom_bar.render_if_need(app, canvas);
         canvas.draw_rectangle(self.region(), color::WINDOW_BORDER);
     }
 
@@ -51,7 +53,7 @@ impl Window for MainWindow {
 
         self.pixel_canvas.set_region(app, self.region());
 
-        let preview_margin = 16 + 1;
+        let preview_margin = 16;
         let preview_size = self.preview.requiring_size(app);
         let preview_position = Position::from_xy(
             app.screen_size().width as i32 - preview_size.width as i32 - preview_margin,
@@ -60,6 +62,7 @@ impl Window for MainWindow {
         self.preview.set_position(app, preview_position);
 
         self.side_bar.set_region(app, self.region());
+        self.bottom_bar.set_region(app, self.region());
 
         Ok(())
     }
@@ -68,6 +71,7 @@ impl Window for MainWindow {
         self.pixel_canvas.handle_event_before(app).or_fail()?;
         self.preview.handle_event_before(app).or_fail()?;
         self.side_bar.handle_event_before(app).or_fail()?;
+        self.bottom_bar.handle_event_before(app).or_fail()?;
 
         if !self.pixel_canvas.marker_handler().is_operating() {
             self.preview.handle_event(app, event).or_fail()?;
@@ -77,6 +81,7 @@ impl Window for MainWindow {
         self.pixel_canvas
             .set_preview_focused(app, self.preview.is_focused());
 
+        self.bottom_bar.handle_event_after(app).or_fail()?;
         self.side_bar.handle_event_after(app).or_fail()?;
         self.preview.handle_event_after(app).or_fail()?;
         self.pixel_canvas.handle_event_after(app).or_fail()?;

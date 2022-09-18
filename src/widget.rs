@@ -5,6 +5,7 @@ use pagurus::{
     Result,
 };
 use pagurus_game_std::image::Canvas;
+pub mod bottom_bar;
 pub mod button;
 pub mod pixel_canvas;
 pub mod preview;

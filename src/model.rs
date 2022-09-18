@@ -5,9 +5,7 @@ use png::chunk::ChunkType;
 use std::io::{Read, Write};
 
 pub mod config;
-pub mod mode;
 pub mod pixel_canvas;
-pub mod tool;
 
 pub const PNG_CHUNK_TYPE: ChunkType = ChunkType(*b"sile");
 pub const MAGIC_NUMBER: [u8; 6] = *b"PIXCIL";

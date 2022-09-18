@@ -105,6 +105,10 @@ impl MarkerHandler {
         self.mouse == MouseState::Pressing
     }
 
+    pub fn is_neutral(&self) -> bool {
+        self.mouse == MouseState::Neutral
+    }
+
     pub fn handle_event(&mut self, app: &mut App, event: &mut Event) -> Result<()> {
         self.updated = false;
 
@@ -134,6 +138,7 @@ impl MarkerHandler {
         }
         self.last_event = Some((pixel_position, action));
 
+        let old_mouse = self.mouse;
         match action {
             MouseAction::Move if self.mouse == MouseState::Pressing => {}
             MouseAction::Down => {
@@ -149,7 +154,7 @@ impl MarkerHandler {
 
         self.marker.mark(app, pixel_position, self.mouse);
         let marked = self.marker.marked_pixels().collect::<HashSet<_>>();
-        if self.is_completed() {
+        if old_mouse != self.mouse {
             self.request_redraw(app, marked.union(&self.last_marked).copied());
         } else {
             self.request_redraw(app, marked.symmetric_difference(&self.last_marked).copied());

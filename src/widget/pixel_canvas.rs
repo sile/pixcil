@@ -75,13 +75,18 @@ impl PixelCanvasWidget {
     }
 
     fn render_marked_pixels(&self, app: &App, canvas: &mut Canvas) {
+        let fill = !self.marker_handler.is_neutral();
         let color = app.models().config.color.get();
         for pixel_position in self.marker_handler.marked_pixels() {
             let region = pixel_position.to_screen_region(app);
             if canvas.drawing_region().intersection(region).is_empty() {
                 continue;
             }
-            canvas.fill_rectangle(region, color.into());
+            if fill {
+                canvas.fill_rectangle(region, color.into());
+            } else {
+                canvas.draw_rectangle(region, color.into());
+            }
         }
     }
 
