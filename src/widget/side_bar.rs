@@ -28,6 +28,10 @@ impl Widget for SideBarWidget {
         self.undo_redo.handle_event(app, event).or_fail()?;
         Ok(())
     }
+
+    fn children(&mut self) -> Vec<&mut dyn Widget> {
+        vec![&mut self.undo_redo]
+    }
 }
 
 impl VariableSizeWidget for SideBarWidget {

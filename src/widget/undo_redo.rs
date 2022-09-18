@@ -82,6 +82,10 @@ impl Widget for UndoRedoWidget {
         event.consume_if_contained(self.region);
         Ok(())
     }
+
+    fn children(&mut self) -> Vec<&mut dyn Widget> {
+        vec![&mut self.redo, &mut self.undo]
+    }
 }
 
 impl FixedSizeWidget for UndoRedoWidget {

@@ -17,6 +17,7 @@ pub struct ButtonWidget {
     icon: IconId,
     state: ButtonState,
     disabled: Option<fn(&App) -> bool>,
+    prev_state: ButtonState,
     prev_disabled: bool,
 }
 
@@ -28,6 +29,7 @@ impl ButtonWidget {
             icon,
             state: ButtonState::default(),
             disabled: None,
+            prev_state: ButtonState::default(),
             prev_disabled: false,
         }
     }
@@ -82,49 +84,59 @@ impl Widget for ButtonWidget {
         }
     }
 
-    fn handle_event(&mut self, app: &mut App, event: &mut Event) -> Result<()> {
+    fn handle_event_before(&mut self, app: &mut App) -> Result<()> {
+        self.prev_disabled = self.is_disabled(app);
+        self.prev_state = self.state;
+        Ok(())
+    }
+
+    fn handle_event_after(&mut self, app: &mut App) -> Result<()> {
         let disabled = self.is_disabled(app);
         if disabled {
-            if self.state != ButtonState::Neutral {
-                self.state = ButtonState::Neutral;
-                app.request_redraw(self.region);
-            }
-            return Ok(());
+            self.state = ButtonState::Neutral;
         }
+        if self.prev_disabled != disabled || self.prev_state != self.state {
+            self.prev_disabled = disabled;
+            self.prev_state = self.state;
+            app.request_redraw(self.region);
+        }
+        Ok(())
+    }
 
+    fn handle_event(&mut self, app: &mut App, event: &mut Event) -> Result<()> {
         match event {
             Event::Mouse {
                 consumed: false,
                 action,
                 position,
             } => {
-                let mut state = self.state;
-                if self.region.contains(position) {
+                let disabled = self.is_disabled(app);
+                if !disabled && self.region.contains(position) {
                     match action {
                         MouseAction::Move if self.state == ButtonState::Neutral => {
-                            state = ButtonState::Focused;
+                            self.state = ButtonState::Focused;
                         }
                         MouseAction::Down => {
-                            state = ButtonState::Pressed;
+                            self.state = ButtonState::Pressed;
                         }
                         MouseAction::Up if self.state == ButtonState::Pressed => {
-                            state = ButtonState::Clicked;
+                            self.state = ButtonState::Clicked;
                         }
                         _ => {}
                     }
                     event.consume();
                 } else {
-                    state = ButtonState::Neutral;
-                }
-                if state != self.state {
-                    self.state = state;
-                    app.request_redraw(self.region);
+                    self.state = ButtonState::Neutral;
                 }
             }
             Event::Timeout(_) => {}
             Event::Mouse { .. } => {}
         }
         Ok(())
+    }
+
+    fn children(&mut self) -> Vec<&mut dyn Widget> {
+        Vec::new()
     }
 }
 

@@ -11,7 +11,6 @@ use pagurus::{
     Result,
 };
 use pagurus_game_std::image::Canvas;
-use std::collections::BTreeSet;
 
 const BORDER: u32 = 1;
 
@@ -22,18 +21,6 @@ pub struct PreviewWidget {
 }
 
 impl PreviewWidget {
-    pub fn handle_dirty_pixels(&self, app: &mut App, dirty_pixels: &BTreeSet<PixelPosition>) {
-        let pixel_region = PixelRegion::from_positions(dirty_pixels.iter().copied());
-        let pixel_frame_start = app.models().config.frame.get().start;
-        let preview_frame_region = self.frame_region();
-        let mut drawing_region = preview_frame_region;
-        drawing_region.position.x += i32::from(pixel_region.start.x - pixel_frame_start.x);
-        drawing_region.position.y += i32::from(pixel_region.start.y - pixel_frame_start.y);
-        drawing_region.size.width = u32::from(pixel_region.size().width);
-        drawing_region.size.height = u32::from(pixel_region.size().height);
-        app.request_redraw(preview_frame_region.intersection(drawing_region));
-    }
-
     fn render_pixels(&self, app: &App, canvas: &mut Canvas) {
         let preview_frame_region = self.frame_region();
         let drawing_region = preview_frame_region.intersection(canvas.drawing_region());
@@ -108,6 +95,28 @@ impl Widget for PreviewWidget {
             self.set_focused(app, focused);
         }
         Ok(())
+    }
+
+    fn handle_event_after(&mut self, app: &mut App) -> Result<()> {
+        let dirty_pixels = app.models().pixel_canvas.dirty_positions();
+        if dirty_pixels.is_empty() {
+            return Ok(());
+        }
+
+        let pixel_region = PixelRegion::from_positions(dirty_pixels.iter().copied());
+        let pixel_frame_start = app.models().config.frame.get().start;
+        let preview_frame_region = self.frame_region();
+        let mut drawing_region = preview_frame_region;
+        drawing_region.position.x += i32::from(pixel_region.start.x - pixel_frame_start.x);
+        drawing_region.position.y += i32::from(pixel_region.start.y - pixel_frame_start.y);
+        drawing_region.size.width = u32::from(pixel_region.size().width);
+        drawing_region.size.height = u32::from(pixel_region.size().height);
+        app.request_redraw(preview_frame_region.intersection(drawing_region));
+        Ok(())
+    }
+
+    fn children(&mut self) -> Vec<&mut dyn Widget> {
+        Vec::new()
     }
 }
 

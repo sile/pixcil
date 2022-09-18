@@ -65,19 +65,21 @@ impl Window for MainWindow {
     }
 
     fn handle_event(&mut self, app: &mut App, event: &mut Event) -> Result<()> {
+        self.pixel_canvas.handle_event_before(app).or_fail()?;
+        self.preview.handle_event_before(app).or_fail()?;
+        self.side_bar.handle_event_before(app).or_fail()?;
+
         if !self.pixel_canvas.marker_handler().is_operating() {
             self.preview.handle_event(app, event).or_fail()?;
             self.side_bar.handle_event(app, event).or_fail()?;
         }
         self.pixel_canvas.handle_event(app, event).or_fail()?;
-
-        let dirty_pixels = app.models_mut().pixel_canvas.take_dirty_positions();
-        if !dirty_pixels.is_empty() {
-            self.preview.handle_dirty_pixels(app, &dirty_pixels);
-        }
-
         self.pixel_canvas
             .set_preview_focused(app, self.preview.is_focused());
+
+        self.side_bar.handle_event_after(app).or_fail()?;
+        self.preview.handle_event_after(app).or_fail()?;
+        self.pixel_canvas.handle_event_after(app).or_fail()?;
 
         Ok(())
     }

@@ -126,6 +126,15 @@ impl Widget for PixelCanvasWidget {
         }
         Ok(())
     }
+
+    fn handle_event_after(&mut self, app: &mut App) -> Result<()> {
+        app.models_mut().pixel_canvas.take_dirty_positions();
+        Ok(())
+    }
+
+    fn children(&mut self) -> Vec<&mut dyn Widget> {
+        Vec::new()
+    }
 }
 
 impl VariableSizeWidget for PixelCanvasWidget {

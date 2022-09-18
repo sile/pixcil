@@ -1,10 +1,10 @@
 use crate::{app::App, event::Event};
 use pagurus::{
+    failure::OrFail,
     spatial::{Position, Region, Size},
     Result,
 };
 use pagurus_game_std::image::Canvas;
-
 pub mod button;
 pub mod pixel_canvas;
 pub mod preview;
@@ -15,6 +15,21 @@ pub trait Widget {
     fn region(&self) -> Region;
     fn render(&self, app: &App, canvas: &mut Canvas);
     fn handle_event(&mut self, app: &mut App, event: &mut Event) -> Result<()>;
+    fn children(&mut self) -> Vec<&mut dyn Widget>;
+
+    fn handle_event_before(&mut self, app: &mut App) -> Result<()> {
+        for child in self.children() {
+            child.handle_event_before(app).or_fail()?;
+        }
+        Ok(())
+    }
+
+    fn handle_event_after(&mut self, app: &mut App) -> Result<()> {
+        for child in self.children() {
+            child.handle_event_after(app).or_fail()?;
+        }
+        Ok(())
+    }
 
     fn render_if_need(&self, app: &App, canvas: &mut Canvas) {
         if !self
