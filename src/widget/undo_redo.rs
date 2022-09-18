@@ -83,7 +83,6 @@ impl Widget for UndoRedoWidget {
             self.request_redraw_dirty_canvas_region(app);
         }
 
-        // TODO: long press
         event.consume_if_contained(self.region);
         Ok(())
     }

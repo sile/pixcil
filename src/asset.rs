@@ -23,6 +23,8 @@ impl Assets {
         match id {
             IconId::Undo => &self.icons.undo,
             IconId::Redo => &self.icons.redo,
+            IconId::ZoomIn => &self.icons.zoom_in,
+            IconId::ZoomOut => &self.icons.zoom_out,
         }
     }
 
@@ -37,6 +39,8 @@ impl Assets {
 pub enum IconId {
     Undo,
     Redo,
+    ZoomIn,
+    ZoomOut,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -56,6 +60,8 @@ impl ButtonKind {
 pub struct Icons {
     pub undo: Sprite,
     pub redo: Sprite,
+    pub zoom_in: Sprite,
+    pub zoom_out: Sprite,
 }
 
 impl Icons {
@@ -63,6 +69,8 @@ impl Icons {
         Ok(Self {
             undo: decode_sprite(include_bytes!("../assets/icon-undo.png")).or_fail()?,
             redo: decode_sprite(include_bytes!("../assets/icon-redo.png")).or_fail()?,
+            zoom_in: decode_sprite(include_bytes!("../assets/icon-zoom-in.png")).or_fail()?,
+            zoom_out: decode_sprite(include_bytes!("../assets/icon-zoom-out.png")).or_fail()?,
         })
     }
 }

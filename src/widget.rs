@@ -10,6 +10,7 @@ pub mod pixel_canvas;
 pub mod preview;
 pub mod side_bar;
 pub mod undo_redo;
+pub mod zoom;
 
 pub trait Widget {
     fn region(&self) -> Region;

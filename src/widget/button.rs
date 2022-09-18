@@ -267,39 +267,46 @@ impl ButtonState {
     }
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub struct LongPressState {
-    timeout: Option<(TimeoutId, Duration)>,
-    repeat_count: usize,
+    timeout: Option<TimeoutId>,
+    duration: Duration,
+    acc_duration: Duration,
+}
+
+impl Default for LongPressState {
+    fn default() -> Self {
+        Self {
+            timeout: None,
+            duration: Duration::from_millis(800),
+            acc_duration: Duration::ZERO,
+        }
+    }
 }
 
 impl LongPressState {
     fn start(&mut self, app: &mut App) {
         if self.timeout.is_none() {
-            let duration = Duration::from_millis(800);
-            let timeout_id = app.set_timeout(duration);
-            self.timeout = Some((timeout_id, duration));
+            self.timeout = Some(app.set_timeout(self.duration));
         }
     }
 
     fn stop(&mut self) {
-        self.timeout = None;
-        self.repeat_count = 0;
+        *self = Default::default();
     }
 
     fn handle_timeout(&mut self, app: &mut App, id: TimeoutId) -> bool {
-        if let Some((timeout_id, mut duration)) = self.timeout {
-            if timeout_id == id {
-                self.repeat_count += 1;
-                if self.repeat_count % 4 == 0 {
-                    duration /= 2;
-                    duration = std::cmp::max(Duration::from_millis(100), duration);
-                }
+        if self.timeout == Some(id) {
+            self.acc_duration += self.duration;
 
-                let timeout_id = app.set_timeout(duration);
-                self.timeout = Some((timeout_id, duration));
-                return true;
+            if self.acc_duration >= Duration::from_secs(2) {
+                self.duration /= 2;
+                self.duration = std::cmp::max(Duration::from_millis(50), self.duration);
+                self.acc_duration = Duration::ZERO;
             }
+
+            self.timeout = Some(app.set_timeout(self.duration));
+            return true;
         }
         false
     }
