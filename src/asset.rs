@@ -111,11 +111,22 @@ pub struct Buttons {
 impl Buttons {
     fn load() -> Result<Self> {
         Ok(Self {
-            basic: Button::new(
-                decode_sprite(include_bytes!("../assets/button-basic-neutral.png")).or_fail()?,
-                decode_sprite(include_bytes!("../assets/button-basic-focused.png")).or_fail()?,
-                decode_sprite(include_bytes!("../assets/button-basic-pressed.png")).or_fail()?,
-            ),
+            basic: Button {
+                neutral: decode_sprite(include_bytes!("../assets/button-basic-neutral.png"))
+                    .or_fail()?,
+                focused: decode_sprite(include_bytes!("../assets/button-basic-focused.png"))
+                    .or_fail()?,
+                pressed: decode_sprite(include_bytes!("../assets/button-basic-pressed.png"))
+                    .or_fail()?,
+                double_focused: decode_sprite(include_bytes!(
+                    "../assets/button-basic-double-focused.png"
+                ))
+                .or_fail()?,
+                double_pressed: decode_sprite(include_bytes!(
+                    "../assets/button-basic-double-pressed.png"
+                ))
+                .or_fail()?,
+            },
         })
     }
 }
@@ -125,17 +136,21 @@ pub struct Button {
     pub neutral: Sprite,
     pub focused: Sprite,
     pub pressed: Sprite,
+    pub double_focused: Sprite,
+    pub double_pressed: Sprite,
 }
 
-impl Button {
-    fn new(neutral: Sprite, focused: Sprite, pressed: Sprite) -> Self {
-        Self {
-            neutral,
-            focused,
-            pressed,
-        }
-    }
-}
+// impl Button {
+//     fn new(neutral: Sprite, focused: Sprite, pressed: Sprite) -> Self {
+//         Self {
+//             double_focused: focused.clone(),
+//             double_pressed: pressed.clone(),
+//             neutral,
+//             focused,
+//             pressed,
+//         }
+//     }
+// }
 
 fn load_digits_10x14() -> Result<[Sprite; 10]> {
     let digits = decode_sprite(include_bytes!("../assets/digits-10x14.png")).or_fail()?;
