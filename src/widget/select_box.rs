@@ -9,26 +9,46 @@ use pagurus_game_std::image::Canvas;
 
 const MARGIN: u32 = 0;
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum ItemState {
+    Selected,
+    Deselected,
+}
+
+impl ItemState {
+    pub fn is_selected(self) -> bool {
+        self == Self::Selected
+    }
+}
+
 #[derive(Debug)]
 pub struct SelectBoxWidget {
     region: Region,
     buttons: Vec<ButtonWidget>,
     selected: usize,
+    prev_selected: Option<usize>,
 }
 
 impl SelectBoxWidget {
-    pub fn new(mut buttons: Vec<ButtonWidget>, selected: usize) -> Result<Self> {
+    pub fn new(buttons: Vec<ButtonWidget>, selected: usize) -> Result<Self> {
         (selected < buttons.len()).or_fail()?;
-        buttons[selected].set_clicked();
         Ok(Self {
             region: Region::default(),
             buttons,
             selected,
+            prev_selected: None,
         })
     }
 
-    pub fn selected(&self) -> usize {
-        self.selected
+    pub fn on_selected<F>(&mut self, mut f: F) -> Result<()>
+    where
+        F: FnMut(ItemState, &mut ButtonWidget) -> Result<()>,
+    {
+        if let Some(prev) = self.prev_selected {
+            f(ItemState::Deselected, &mut self.buttons[prev]).or_fail()?;
+            f(ItemState::Selected, &mut self.buttons[self.selected]).or_fail()?;
+        }
+        Ok(())
     }
 }
 
@@ -44,22 +64,14 @@ impl Widget for SelectBoxWidget {
     }
 
     fn handle_event(&mut self, app: &mut App, event: &mut Event) -> Result<()> {
-        let mut new_selected = None;
-        for (i, button) in self.buttons.iter_mut().enumerate() {
-            if i == self.selected {
-                continue;
-            }
+        self.prev_selected = None;
 
+        for (i, button) in self.buttons.iter_mut().enumerate() {
             button.handle_event(app, event).or_fail()?;
-            if button.is_clicked() {
-                new_selected = Some(i);
+            if button.take_clicked(app) {
+                self.prev_selected = Some(self.selected);
+                self.selected = i;
             }
-        }
-        if let Some(i) = new_selected {
-            self.buttons[self.selected]
-                .handle_event(app, event)
-                .or_fail()?;
-            self.selected = i;
         }
 
         event.consume_if_contained(self.region);

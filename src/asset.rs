@@ -38,6 +38,7 @@ impl Assets {
     pub fn get_button(&self, kind: ButtonKind) -> &Button {
         match kind {
             ButtonKind::Basic => &self.buttons.basic,
+            ButtonKind::BasicDeep => &self.buttons.basic_deep,
         }
     }
 }
@@ -60,12 +61,14 @@ pub enum IconId {
 #[derive(Debug, Clone, Copy)]
 pub enum ButtonKind {
     Basic,
+    BasicDeep,
 }
 
 impl ButtonKind {
     pub fn size(self) -> Size {
         match self {
             ButtonKind::Basic => Size::square(64),
+            ButtonKind::BasicDeep => Size::square(64),
         }
     }
 }
@@ -106,28 +109,22 @@ impl Icons {
 #[derive(Debug)]
 pub struct Buttons {
     pub basic: Button,
+    pub basic_deep: Button,
 }
 
 impl Buttons {
     fn load() -> Result<Self> {
-        Ok(Self {
-            basic: Button {
-                neutral: decode_sprite(include_bytes!("../assets/button-basic-neutral.png"))
-                    .or_fail()?,
-                focused: decode_sprite(include_bytes!("../assets/button-basic-focused.png"))
-                    .or_fail()?,
-                pressed: decode_sprite(include_bytes!("../assets/button-basic-pressed.png"))
-                    .or_fail()?,
-                double_focused: decode_sprite(include_bytes!(
-                    "../assets/button-basic-double-focused.png"
-                ))
-                .or_fail()?,
-                double_pressed: decode_sprite(include_bytes!(
-                    "../assets/button-basic-double-pressed.png"
-                ))
-                .or_fail()?,
-            },
-        })
+        let basic = Button::new(
+            decode_sprite(include_bytes!("../assets/button-basic-neutral.png")).or_fail()?,
+            decode_sprite(include_bytes!("../assets/button-basic-focused.png")).or_fail()?,
+            decode_sprite(include_bytes!("../assets/button-basic-pressed.png")).or_fail()?,
+        );
+        let basic_deep = Button::new(
+            basic.pressed.clone(),
+            decode_sprite(include_bytes!("../assets/button-basic-deep-focused.png")).or_fail()?,
+            decode_sprite(include_bytes!("../assets/button-basic-deep-pressed.png")).or_fail()?,
+        );
+        Ok(Self { basic, basic_deep })
     }
 }
 
@@ -136,21 +133,17 @@ pub struct Button {
     pub neutral: Sprite,
     pub focused: Sprite,
     pub pressed: Sprite,
-    pub double_focused: Sprite,
-    pub double_pressed: Sprite,
 }
 
-// impl Button {
-//     fn new(neutral: Sprite, focused: Sprite, pressed: Sprite) -> Self {
-//         Self {
-//             double_focused: focused.clone(),
-//             double_pressed: pressed.clone(),
-//             neutral,
-//             focused,
-//             pressed,
-//         }
-//     }
-// }
+impl Button {
+    fn new(neutral: Sprite, focused: Sprite, pressed: Sprite) -> Self {
+        Self {
+            neutral,
+            focused,
+            pressed,
+        }
+    }
+}
 
 fn load_digits_10x14() -> Result<[Sprite; 10]> {
     let digits = decode_sprite(include_bytes!("../assets/digits-10x14.png")).or_fail()?;

@@ -47,14 +47,12 @@ impl ButtonWidget {
         }
     }
 
-    pub fn is_clicked(&mut self) -> bool {
-        self.state == ButtonState::Clicked
+    pub fn icon(&self) -> IconId {
+        self.icon
     }
 
-    pub fn set_clicked(&mut self) {
-        if !self.is_clicked() {
-            self.state = ButtonState::Clicked;
-        }
+    pub fn set_kind(&mut self, kind: ButtonKind) {
+        self.kind = kind;
     }
 
     pub fn take_clicked(&mut self, app: &mut App) -> bool {
@@ -277,6 +275,12 @@ impl ButtonState {
                 ButtonState::Focused => offset.move_y(4),
                 ButtonState::Pressed => offset.move_y(8),
                 ButtonState::Clicked => offset.move_y(8),
+            },
+            ButtonKind::BasicDeep => match self {
+                ButtonState::Neutral => offset.move_y(8),
+                ButtonState::Focused => offset.move_y(12),
+                ButtonState::Pressed => offset.move_y(16),
+                ButtonState::Clicked => offset.move_y(16),
             },
         }
     }

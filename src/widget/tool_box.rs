@@ -7,7 +7,7 @@ use crate::{
     event::Event,
 };
 use pagurus::{
-    failure::OrFail,
+    failure::{Failure, OrFail},
     spatial::{Position, Region, Size},
     Result,
 };
@@ -19,33 +19,30 @@ const MARGIN: u32 = 8;
 pub struct ToolBoxWidget {
     region: Region,
     tools: SelectBoxWidget,
+    current: Tool,
 }
 
 impl ToolBoxWidget {
     pub fn current_tool(&self) -> Tool {
-        match self.tools.selected() {
-            0 => Tool::Draw,
-            1 => Tool::Erase,
-            2 => Tool::Select,
-            3 => Tool::Pick,
-            4 => Tool::Move,
-            _ => unreachable!(),
-        }
+        self.current
     }
 }
 
 impl Default for ToolBoxWidget {
     fn default() -> Self {
-        let buttons = vec![
+        let mut buttons = vec![
             ButtonWidget::new(ButtonKind::Basic, IconId::Draw),
             ButtonWidget::new(ButtonKind::Basic, IconId::Erase),
             ButtonWidget::new(ButtonKind::Basic, IconId::Select),
             ButtonWidget::new(ButtonKind::Basic, IconId::Pick),
             ButtonWidget::new(ButtonKind::Basic, IconId::Move),
         ];
+        buttons[0].set_kind(ButtonKind::BasicDeep);
+
         Self {
             region: Default::default(),
             tools: SelectBoxWidget::new(buttons, 0).expect("unreachable"),
+            current: Tool::default(),
         }
     }
 }
@@ -63,6 +60,20 @@ impl Widget for ToolBoxWidget {
 
     fn handle_event(&mut self, app: &mut App, event: &mut Event) -> Result<()> {
         self.tools.handle_event(app, event).or_fail()?;
+
+        self.tools
+            .on_selected(|state, button| {
+                if state.is_selected() {
+                    self.current = Tool::from_icon(button.icon()).or_fail()?;
+                    button.set_kind(ButtonKind::BasicDeep);
+                } else {
+                    button.set_kind(ButtonKind::Basic);
+                }
+                app.request_redraw(button.region());
+                Ok(())
+            })
+            .or_fail()?;
+
         event.consume_if_contained(self.region);
         Ok(())
     }
@@ -91,4 +102,17 @@ pub enum Tool {
     Select,
     Pick,
     Move,
+}
+
+impl Tool {
+    fn from_icon(icon: IconId) -> Result<Self> {
+        Ok(match icon {
+            IconId::Draw => Self::Draw,
+            IconId::Erase => Self::Erase,
+            IconId::Select => Self::Select,
+            IconId::Pick => Self::Pick,
+            IconId::Move => Self::Move,
+            _ => return Err(Failure::new(format!("unexpected icon: {icon:?}"))),
+        })
+    }
 }
