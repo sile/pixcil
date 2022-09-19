@@ -2,6 +2,7 @@ use crate::{app::App, event::Event};
 use pagurus::{spatial::Region, Result};
 use pagurus_game_std::image::Canvas;
 
+pub mod config;
 pub mod main;
 
 pub trait Window: 'static + std::fmt::Debug {

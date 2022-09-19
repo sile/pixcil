@@ -76,9 +76,11 @@ impl App {
         self.io_requests.pop_front()
     }
 
-    pub fn spawn_window(&mut self, window: impl Window) {
+    pub fn spawn_window(&mut self, mut window: impl Window) -> Result<()> {
+        window.handle_screen_resized(self).or_fail()?;
         self.request_redraw(window.region());
         self.spawned_windows.push(Box::new(window));
+        Ok(())
     }
 
     pub fn take_spawned_windows(&mut self) -> Vec<Box<dyn Window>> {

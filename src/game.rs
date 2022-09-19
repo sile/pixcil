@@ -46,7 +46,10 @@ impl PixcilGame {
             let mut terminated = false;
             for window in self.windows.iter_mut().rev() {
                 window.handle_event(app, &mut event).or_fail()?;
-                terminated |= window.is_terminated();
+                if window.is_terminated() {
+                    terminated = true;
+                    app.request_redraw(window.region());
+                }
             }
 
             if terminated {

@@ -1,8 +1,9 @@
 use pagurus_game_std::color::{Color, Rgba};
 
-pub const CANVAS_BACKGROUND: Color = rgb(247, 246, 240); // W-0
+pub const CANVAS_BACKGROUND: Color = rgb(245, 245, 245);
 
 pub const WINDOW_BORDER: Color = rgb(83, 80, 76); // W-9
+pub const WINDOW_BACKGROUND: Color = BUTTONS_BACKGROUND;
 
 pub const GRID_LINE_1: Color = rgba(0, 0, 0, 20);
 pub const GRID_LINE_8: Color = rgba(0, 0, 0, 70);
