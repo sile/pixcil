@@ -8,6 +8,7 @@ use pagurus_game_std::image::Canvas;
 
 pub mod bottom_bar;
 pub mod button;
+pub mod color_config;
 pub mod pixel_canvas;
 pub mod preview;
 pub mod select_box;
