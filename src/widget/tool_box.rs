@@ -1,4 +1,4 @@
-use super::{FixedSizeWidget, VariableSizeWidget, Widget};
+use super::{FixedSizeWidget, Widget};
 use crate::{app::App, canvas_ext::CanvasExt, color, event::Event};
 use pagurus::{
     spatial::{Position, Region, Size},

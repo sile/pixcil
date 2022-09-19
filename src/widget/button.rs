@@ -47,6 +47,17 @@ impl ButtonWidget {
         }
     }
 
+    pub fn is_clicked(&mut self) -> bool {
+        self.state == ButtonState::Clicked
+    }
+
+    pub fn set_clicked(&mut self, app: &mut App) {
+        if !self.is_clicked() {
+            self.state = ButtonState::Clicked;
+            app.redraw_requests(self.region);
+        }
+    }
+
     pub fn take_clicked(&mut self, app: &mut App) -> bool {
         if self.long_press_timed_out {
             self.long_press_timed_out = false;
