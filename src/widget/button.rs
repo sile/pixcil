@@ -63,8 +63,11 @@ impl ButtonWidget {
         self.kind = kind;
     }
 
-    // TODO: replace with `is_clicked(&self) -> bool`
-    // (handle_event_after can be used to reset the state)
+    pub fn is_clicked(&self) -> bool {
+        self.state == ButtonState::Clicked
+    }
+
+    // TODO: remove
     pub fn take_clicked(&mut self, app: &mut App) -> bool {
         if self.long_press_timed_out {
             self.long_press_timed_out = false;

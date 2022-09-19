@@ -6,7 +6,7 @@ use crate::{
     color,
     event::Event,
     region_ext::RegionExt,
-    window::config::ConfigWindow,
+    window::{color_selector::ColorSelectorWindow, config::ConfigWindow},
 };
 use pagurus::{
     failure::OrFail,
@@ -67,7 +67,9 @@ impl Widget for ColorConfigWidget {
 
     fn handle_event(&mut self, app: &mut App, event: &mut Event) -> Result<()> {
         self.color.handle_event(app, event).or_fail()?;
-        if self.color.take_clicked(app) {}
+        if self.color.take_clicked(app) {
+            app.spawn_window(ColorSelectorWindow::default()).or_fail()?;
+        }
 
         self.config.handle_event(app, event).or_fail()?;
         if self.config.take_clicked(app) {

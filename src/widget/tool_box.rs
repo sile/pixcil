@@ -5,6 +5,10 @@ use crate::{
     canvas_ext::CanvasExt,
     color,
     event::Event,
+    window::{
+        draw_tool::DrawToolWindow, erase_tool::EraseToolWindow, move_tool::MoveToolWindow,
+        pick_tool::PickToolWindow, select_tool::SelectToolWindow,
+    },
 };
 use pagurus::{
     failure::{Failure, OrFail},
@@ -60,12 +64,18 @@ impl Widget for ToolBoxWidget {
 
     fn handle_event(&mut self, app: &mut App, event: &mut Event) -> Result<()> {
         self.tools.handle_event(app, event).or_fail()?;
-
         self.tools
             .on_selected(|state, button| {
                 if state.is_selected() {
-                    self.current = Tool::from_icon(button.icon()).or_fail()?;
                     button.set_kind(ButtonKind::BasicDeep);
+
+                    let next = Tool::from_icon(button.icon()).or_fail()?;
+                    if self.current == next {
+                        // Double clicked
+                        self.current.spawn_window(app).or_fail()?;
+                    } else {
+                        self.current = next;
+                    }
                 } else {
                     button.set_kind(ButtonKind::Basic);
                 }
@@ -114,5 +124,15 @@ impl Tool {
             IconId::Move => Self::Move,
             _ => return Err(Failure::new(format!("unexpected icon: {icon:?}"))),
         })
+    }
+
+    fn spawn_window(self, app: &mut App) -> Result<()> {
+        match self {
+            Tool::Draw => app.spawn_window(DrawToolWindow::default()).or_fail(),
+            Tool::Erase => app.spawn_window(EraseToolWindow::default()).or_fail(),
+            Tool::Select => app.spawn_window(SelectToolWindow::default()).or_fail(),
+            Tool::Pick => app.spawn_window(PickToolWindow::default()).or_fail(),
+            Tool::Move => app.spawn_window(MoveToolWindow::default()).or_fail(),
+        }
     }
 }

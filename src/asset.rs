@@ -46,7 +46,7 @@ impl Assets {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum IconId {
     Undo,
     Redo,
@@ -64,7 +64,7 @@ pub enum IconId {
     Import,
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ButtonKind {
     Basic,
     BasicDeep,

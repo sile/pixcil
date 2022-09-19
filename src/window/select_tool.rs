@@ -12,12 +12,12 @@ use pagurus::{
 use pagurus_game_std::image::Canvas;
 
 #[derive(Debug, Default)]
-pub struct ConfigWindow {
+pub struct SelectToolWindow {
     region: Region,
     terminated: bool,
 }
 
-impl Window for ConfigWindow {
+impl Window for SelectToolWindow {
     fn region(&self) -> Region {
         self.region
     }
