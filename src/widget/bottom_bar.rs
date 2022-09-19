@@ -1,5 +1,5 @@
 use super::{tool_box::ToolBoxWidget, FixedSizeWidget, VariableSizeWidget, Widget};
-use crate::{app::App, canvas_ext::CanvasExt, color, event::Event};
+use crate::{app::App, event::Event};
 use pagurus::{failure::OrFail, spatial::Region, Result};
 use pagurus_game_std::image::Canvas;
 

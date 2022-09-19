@@ -1,11 +1,13 @@
 use super::{button::ButtonWidget, FixedSizeWidget, Widget};
-use crate::{app::App, canvas_ext::CanvasExt, color, event::Event};
+use crate::{app::App, event::Event};
 use pagurus::{
     failure::OrFail,
     spatial::{Position, Region, Size},
     Result,
 };
 use pagurus_game_std::image::Canvas;
+
+const MARGIN: u32 = 0;
 
 #[derive(Debug)]
 pub struct SelectBoxWidget {
@@ -15,9 +17,9 @@ pub struct SelectBoxWidget {
 }
 
 impl SelectBoxWidget {
-    pub fn new(app: &mut App, mut buttons: Vec<ButtonWidget>, selected: usize) -> Result<Self> {
+    pub fn new(mut buttons: Vec<ButtonWidget>, selected: usize) -> Result<Self> {
         (selected < buttons.len()).or_fail()?;
-        buttons[selected].set_clicked(app);
+        buttons[selected].set_clicked();
         Ok(Self {
             region: Region::default(),
             buttons,
@@ -59,6 +61,8 @@ impl Widget for SelectBoxWidget {
                 .or_fail()?;
             self.selected = i;
         }
+
+        event.consume_if_contained(self.region);
         Ok(())
     }
 
@@ -75,13 +79,18 @@ impl FixedSizeWidget for SelectBoxWidget {
         Size::from_wh(
             self.buttons
                 .iter()
-                .map(|x| x.requiring_size(app).width)
-                .sum(),
+                .map(|x| x.requiring_size(app).width + MARGIN)
+                .sum::<u32>()
+                - MARGIN,
             self.buttons[0].requiring_size(app).height,
         )
     }
 
-    fn set_position(&mut self, app: &App, position: Position) {
+    fn set_position(&mut self, app: &App, mut position: Position) {
         self.region = Region::new(position, self.requiring_size(app));
+        for button in &mut self.buttons {
+            button.set_position(app, position);
+            position.x += (button.region().size.width + MARGIN) as i32;
+        }
     }
 }

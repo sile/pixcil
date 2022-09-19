@@ -30,8 +30,8 @@ impl Assets {
             IconId::Draw => &self.icons.draw,
             IconId::Erase => &self.icons.erase,
             IconId::Select => &self.icons.select,
-            IconId::ColorPick => &self.icons.color_pick,
-            IconId::Move => &self.icons.camera_move,
+            IconId::Pick => &self.icons.pick,
+            IconId::Move => &self.icons.r#move,
         }
     }
 
@@ -53,7 +53,7 @@ pub enum IconId {
     Draw,
     Erase,
     Select,
-    ColorPick,
+    Pick,
     Move,
 }
 
@@ -81,8 +81,8 @@ pub struct Icons {
     pub draw: Sprite,
     pub erase: Sprite,
     pub select: Sprite,
-    pub color_pick: Sprite,
-    pub camera_move: Sprite,
+    pub pick: Sprite,
+    pub r#move: Sprite,
 }
 
 impl Icons {
@@ -97,8 +97,8 @@ impl Icons {
             draw: decode_sprite(include_bytes!("../assets/icon-draw.png")).or_fail()?,
             erase: decode_sprite(include_bytes!("../assets/icon-erase.png")).or_fail()?,
             select: decode_sprite(include_bytes!("../assets/icon-select.png")).or_fail()?,
-            color_pick: decode_sprite(include_bytes!("../assets/icon-color-pick.png")).or_fail()?,
-            camera_move: decode_sprite(include_bytes!("../assets/icon-move.png")).or_fail()?,
+            pick: decode_sprite(include_bytes!("../assets/icon-color-pick.png")).or_fail()?,
+            r#move: decode_sprite(include_bytes!("../assets/icon-move.png")).or_fail()?,
         })
     }
 }

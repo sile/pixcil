@@ -51,10 +51,9 @@ impl ButtonWidget {
         self.state == ButtonState::Clicked
     }
 
-    pub fn set_clicked(&mut self, app: &mut App) {
+    pub fn set_clicked(&mut self) {
         if !self.is_clicked() {
             self.state = ButtonState::Clicked;
-            app.redraw_requests(self.region);
         }
     }
 
@@ -218,6 +217,11 @@ impl Widget for ButtonWidget {
                     self.state = ButtonState::Neutral;
                 }
             }
+            Event::Mouse { position, .. } => {
+                if !self.region.contains(position) {
+                    self.state = ButtonState::Neutral;
+                }
+            }
             Event::Timeout(id) => {
                 if let Some(long_press) = &mut self.long_press {
                     if long_press.handle_timeout(app, *id) {
@@ -225,8 +229,8 @@ impl Widget for ButtonWidget {
                     }
                 }
             }
-            Event::Mouse { .. } => {}
         }
+
         Ok(())
     }
 
