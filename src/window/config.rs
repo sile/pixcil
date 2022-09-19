@@ -1,7 +1,6 @@
 use super::Window;
 use crate::{
     app::App,
-    asset::Alphabet,
     canvas_ext::CanvasExt,
     color,
     event::{Event, MouseAction},
@@ -36,14 +35,8 @@ impl Window for ConfigWindow {
         canvas.fill_rectangle(self.region, color::WINDOW_BACKGROUND);
         canvas.draw_rectangle(self.region, color::WINDOW_BORDER);
 
-        canvas.offset(self.region.position + 10).draw_string(
-            &[
-                Alphabet::H,
-                Alphabet::E,
-                Alphabet::L,
-                Alphabet::L,
-                Alphabet::O,
-            ],
+        canvas.offset(self.region.position + 10).draw_text(
+            &"HELLO".parse().expect("unreachable"),
             2,
             &app.assets().alphabet_10x14,
         );

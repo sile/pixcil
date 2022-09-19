@@ -1,3 +1,4 @@
+use pagurus::failure::Failure;
 use pagurus::spatial::{Region, Size};
 use pagurus::{failure::OrFail, Result};
 use pagurus_game_std::image::Sprite;
@@ -78,6 +79,60 @@ impl ButtonKind {
             ButtonKind::Basic => Size::square(64),
             ButtonKind::BasicDeep => Size::square(64),
         }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Text(Vec<Alphabet>);
+
+impl Text {
+    pub const fn new(text: Vec<Alphabet>) -> Self {
+        Self(text)
+    }
+
+    pub fn get(&self) -> &[Alphabet] {
+        &self.0
+    }
+}
+
+impl std::str::FromStr for Text {
+    type Err = Failure;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        s.chars()
+            .map(|c| {
+                Ok(match c {
+                    'A' => Alphabet::A,
+                    'B' => Alphabet::B,
+                    'C' => Alphabet::C,
+                    'D' => Alphabet::D,
+                    'E' => Alphabet::E,
+                    'F' => Alphabet::F,
+                    'G' => Alphabet::G,
+                    'H' => Alphabet::H,
+                    'I' => Alphabet::I,
+                    'J' => Alphabet::J,
+                    'K' => Alphabet::K,
+                    'L' => Alphabet::L,
+                    'M' => Alphabet::M,
+                    'N' => Alphabet::N,
+                    'O' => Alphabet::O,
+                    'P' => Alphabet::P,
+                    'Q' => Alphabet::Q,
+                    'R' => Alphabet::R,
+                    'S' => Alphabet::S,
+                    'T' => Alphabet::T,
+                    'U' => Alphabet::U,
+                    'V' => Alphabet::V,
+                    'W' => Alphabet::W,
+                    'X' => Alphabet::X,
+                    'Y' => Alphabet::Y,
+                    'Z' => Alphabet::Z,
+                    _ => return Err(Failure::new(format!("unknown alphabet: {c:?}"))),
+                })
+            })
+            .collect::<Result<_>>()
+            .map(Self)
     }
 }
 

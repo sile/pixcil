@@ -6,6 +6,7 @@ use pagurus::{
 };
 use pagurus_game_std::image::Canvas;
 
+pub mod block;
 pub mod bottom_bar;
 pub mod button;
 pub mod color_config;
