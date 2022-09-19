@@ -1,6 +1,7 @@
 use super::Window;
 use crate::{
     app::App,
+    asset::Alphabet,
     canvas_ext::CanvasExt,
     color,
     event::{Event, MouseAction},
@@ -15,6 +16,15 @@ use pagurus_game_std::image::Canvas;
 pub struct ConfigWindow {
     region: Region,
     terminated: bool,
+    // - frame
+    //   - frame preview on/off (switch)
+    //   - frame size (width / height sliders)
+    // - unit size (slider)
+    // - max undo history (select box)
+    // - layer count (slider)
+    // - animation
+    //   - frame count (slider)
+    //   - fps (slider)
 }
 
 impl Window for ConfigWindow {
@@ -22,9 +32,21 @@ impl Window for ConfigWindow {
         self.region
     }
 
-    fn render(&self, _app: &App, canvas: &mut Canvas) {
+    fn render(&self, app: &App, canvas: &mut Canvas) {
         canvas.fill_rectangle(self.region, color::WINDOW_BACKGROUND);
         canvas.draw_rectangle(self.region, color::WINDOW_BORDER);
+
+        canvas.offset(self.region.position + 10).draw_string(
+            &[
+                Alphabet::H,
+                Alphabet::E,
+                Alphabet::L,
+                Alphabet::L,
+                Alphabet::O,
+            ],
+            2,
+            &app.assets().alphabet_10x14,
+        );
     }
 
     fn is_terminated(&self) -> bool {

@@ -35,17 +35,17 @@ impl ToolBoxWidget {
 impl Default for ToolBoxWidget {
     fn default() -> Self {
         let mut buttons = vec![
+            ButtonWidget::new(ButtonKind::Basic, IconId::Pick),
             ButtonWidget::new(ButtonKind::Basic, IconId::Draw),
             ButtonWidget::new(ButtonKind::Basic, IconId::Erase),
             ButtonWidget::new(ButtonKind::Basic, IconId::Select),
-            ButtonWidget::new(ButtonKind::Basic, IconId::Pick),
             ButtonWidget::new(ButtonKind::Basic, IconId::Move),
         ];
-        buttons[0].set_kind(ButtonKind::BasicDeep);
+        buttons[1].set_kind(ButtonKind::BasicDeep);
 
         Self {
             region: Default::default(),
-            tools: SelectBoxWidget::new(buttons, 0).expect("unreachable"),
+            tools: SelectBoxWidget::new(buttons, 1).expect("unreachable"),
             current: Tool::default(),
         }
     }

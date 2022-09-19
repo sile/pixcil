@@ -8,6 +8,7 @@ pub struct Assets {
     pub icons: Icons,
     pub buttons: Buttons,
     pub digits_10x14: [Sprite; 10],
+    pub alphabet_10x14: [Sprite; 26],
 }
 
 impl Assets {
@@ -16,6 +17,7 @@ impl Assets {
             icons: Icons::load().or_fail()?,
             buttons: Buttons::load().or_fail()?,
             digits_10x14: load_digits_10x14().or_fail()?,
+            alphabet_10x14: load_alphabet_10x14().or_fail()?,
         })
     }
 
@@ -77,6 +79,36 @@ impl ButtonKind {
             ButtonKind::BasicDeep => Size::square(64),
         }
     }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Alphabet {
+    A = 0,
+    B,
+    C,
+    D,
+    E,
+    F,
+    G,
+    H,
+    I,
+    J,
+    K,
+    L,
+    M,
+    N,
+    O,
+    P,
+    Q,
+    R,
+    S,
+    T,
+    U,
+    V,
+    W,
+    X,
+    Y,
+    Z,
 }
 
 #[derive(Debug)]
@@ -179,5 +211,47 @@ fn load_digits_10x14() -> Result<[Sprite; 10]> {
         clip(&digits, base, 1, 2).or_fail()?,
         clip(&digits, base, 1, 3).or_fail()?,
         clip(&digits, base, 1, 4).or_fail()?,
+    ])
+}
+
+fn load_alphabet_10x14() -> Result<[Sprite; 26]> {
+    let a_p = decode_sprite(include_bytes!("../assets/A-P-10x14.png")).or_fail()?;
+    let q_z = decode_sprite(include_bytes!("../assets/Q-Z-10x14.png")).or_fail()?;
+    let block = Size::square(16).to_region();
+
+    fn clip(alphabet: &Sprite, block: Region, y: i32, x: i32) -> Result<Sprite> {
+        let mut region = block.shift_y(y).shift_x(x);
+        region.size.width = 10;
+        region.size.height = 14;
+        alphabet.clip(region).or_fail()
+    }
+
+    Ok([
+        clip(&a_p, block, 0, 0).or_fail()?,
+        clip(&a_p, block, 0, 1).or_fail()?,
+        clip(&a_p, block, 0, 2).or_fail()?,
+        clip(&a_p, block, 0, 3).or_fail()?,
+        clip(&a_p, block, 1, 0).or_fail()?,
+        clip(&a_p, block, 1, 1).or_fail()?,
+        clip(&a_p, block, 1, 2).or_fail()?,
+        clip(&a_p, block, 1, 3).or_fail()?,
+        clip(&a_p, block, 2, 0).or_fail()?,
+        clip(&a_p, block, 2, 1).or_fail()?,
+        clip(&a_p, block, 2, 2).or_fail()?,
+        clip(&a_p, block, 2, 3).or_fail()?,
+        clip(&a_p, block, 3, 0).or_fail()?,
+        clip(&a_p, block, 3, 1).or_fail()?,
+        clip(&a_p, block, 3, 2).or_fail()?,
+        clip(&a_p, block, 3, 3).or_fail()?,
+        clip(&q_z, block, 0, 0).or_fail()?,
+        clip(&q_z, block, 0, 1).or_fail()?,
+        clip(&q_z, block, 0, 2).or_fail()?,
+        clip(&q_z, block, 0, 3).or_fail()?,
+        clip(&q_z, block, 1, 0).or_fail()?,
+        clip(&q_z, block, 1, 1).or_fail()?,
+        clip(&q_z, block, 1, 2).or_fail()?,
+        clip(&q_z, block, 1, 3).or_fail()?,
+        clip(&q_z, block, 2, 0).or_fail()?,
+        clip(&q_z, block, 2, 1).or_fail()?,
     ])
 }

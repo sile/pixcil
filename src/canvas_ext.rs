@@ -4,12 +4,15 @@ use pagurus_game_std::{
     image::{Canvas, Sprite},
 };
 
+use crate::asset::Alphabet;
+
 pub trait CanvasExt {
     fn draw_vertical_line(&mut self, start: Position, height: u32, color: Color);
     fn draw_horizontal_line(&mut self, start: Position, width: u32, color: Color);
     fn draw_rectangle(&mut self, rectangle: Region, color: Color);
     fn fill_rectangle(&mut self, rectangle: Region, color: Color);
     fn draw_sprite_with_alpha(&mut self, sprite: &Sprite, alpha: u8);
+    fn draw_string(&mut self, text: &[Alphabet], margin: u32, sprites: &[Sprite; 26]);
 }
 
 impl<'a> CanvasExt for Canvas<'a> {
@@ -60,6 +63,15 @@ impl<'a> CanvasExt for Canvas<'a> {
                 pixel.a = alpha;
             }
             self.draw_pixel(pos, Color::Rgba(pixel));
+        }
+    }
+
+    fn draw_string(&mut self, text: &[Alphabet], margin: u32, sprites: &[Sprite; 26]) {
+        let mut offset = Position::ORIGIN;
+        for &x in text {
+            let i = x as usize;
+            self.offset(offset).draw_sprite(&sprites[i]);
+            offset.x += (sprites[i].size().width + margin) as i32;
         }
     }
 }
