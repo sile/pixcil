@@ -51,6 +51,14 @@ impl ButtonWidget {
         self.icon
     }
 
+    pub fn kind(&self) -> ButtonKind {
+        self.kind
+    }
+
+    pub fn state(&self) -> ButtonState {
+        self.state
+    }
+
     pub fn set_kind(&mut self, kind: ButtonKind) {
         self.kind = kind;
     }
@@ -267,7 +275,7 @@ impl ButtonState {
         }
     }
 
-    fn offset(self, kind: ButtonKind) -> Position {
+    pub fn offset(self, kind: ButtonKind) -> Position {
         let offset = Position::ORIGIN;
         match kind {
             ButtonKind::Basic => match self {

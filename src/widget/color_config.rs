@@ -12,7 +12,7 @@ use pagurus::{
     spatial::{Position, Region, Size},
     Result,
 };
-use pagurus_game_std::image::Canvas;
+use pagurus_game_std::{color::Rgba, image::Canvas};
 
 const MARGIN: u32 = 8;
 
@@ -23,11 +23,27 @@ pub struct ColorConfigWidget {
     config: ButtonWidget,
 }
 
+impl ColorConfigWidget {
+    fn render_color_label(&self, app: &App, canvas: &mut Canvas) {
+        let color = app.models().config.color.get();
+        let offset = self.color.state().offset(self.color.kind()).y;
+        let mut label_region = self.color.region();
+        label_region.position.x += 4;
+        label_region.size.width -= 8;
+
+        label_region.position.y += 4 + offset;
+        label_region.size.height -= 4 + 12;
+
+        canvas.fill_rectangle(label_region, Rgba::new(255, 255, 255, 255).into());
+        canvas.fill_rectangle(label_region.without_margin(2), color.into());
+    }
+}
+
 impl Default for ColorConfigWidget {
     fn default() -> Self {
         Self {
             region: Default::default(),
-            color: ButtonWidget::new(ButtonKind::Basic, IconId::Null), // TODO: color
+            color: ButtonWidget::new(ButtonKind::Basic, IconId::Null),
             config: ButtonWidget::new(ButtonKind::Basic, IconId::Settings),
         }
     }
@@ -41,13 +57,20 @@ impl Widget for ColorConfigWidget {
     fn render(&self, app: &App, canvas: &mut Canvas) {
         canvas.fill_rectangle(self.region, color::BUTTONS_BACKGROUND);
         canvas.draw_rectangle(self.region, color::WINDOW_BORDER);
+
         self.color.render_if_need(app, canvas);
+        self.render_color_label(app, canvas);
+
         self.config.render_if_need(app, canvas);
     }
 
     fn handle_event(&mut self, app: &mut App, event: &mut Event) -> Result<()> {
         self.color.handle_event(app, event).or_fail()?;
+        if self.color.take_clicked(app) {}
+
         self.config.handle_event(app, event).or_fail()?;
+        if self.config.take_clicked(app) {}
+
         event.consume_if_contained(self.region);
         Ok(())
     }
