@@ -11,6 +11,7 @@ pub mod button;
 pub mod color_config;
 pub mod pixel_canvas;
 pub mod preview;
+pub mod save_load;
 pub mod select_box;
 pub mod side_bar;
 pub mod tool_box;

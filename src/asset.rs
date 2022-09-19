@@ -32,6 +32,9 @@ impl Assets {
             IconId::Select => &self.icons.select,
             IconId::Pick => &self.icons.pick,
             IconId::Move => &self.icons.r#move,
+            IconId::Save => &self.icons.save,
+            IconId::Load => &self.icons.load,
+            IconId::Import => &self.icons.import,
         }
     }
 
@@ -56,6 +59,9 @@ pub enum IconId {
     Select,
     Pick,
     Move,
+    Save,
+    Load,
+    Import,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -86,6 +92,9 @@ pub struct Icons {
     pub select: Sprite,
     pub pick: Sprite,
     pub r#move: Sprite,
+    pub save: Sprite,
+    pub load: Sprite,
+    pub import: Sprite,
 }
 
 impl Icons {
@@ -102,6 +111,9 @@ impl Icons {
             select: decode_sprite(include_bytes!("../assets/icon-select.png")).or_fail()?,
             pick: decode_sprite(include_bytes!("../assets/icon-color-pick.png")).or_fail()?,
             r#move: decode_sprite(include_bytes!("../assets/icon-move.png")).or_fail()?,
+            save: decode_sprite(include_bytes!("../assets/icon-save.png")).or_fail()?,
+            load: decode_sprite(include_bytes!("../assets/icon-load.png")).or_fail()?,
+            import: decode_sprite(include_bytes!("../assets/icon-import.png")).or_fail()?,
         })
     }
 }
