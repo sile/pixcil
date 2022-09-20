@@ -11,6 +11,7 @@ pub struct Assets {
     pub toggle: Toggle,
     pub digits_10x14: [Sprite; 10],
     pub alphabet_10x14: [Sprite; 26],
+    pub number_box: Sprite,
 }
 
 impl Assets {
@@ -21,6 +22,10 @@ impl Assets {
             toggle: Toggle::load().or_fail()?,
             digits_10x14: load_digits_10x14().or_fail()?,
             alphabet_10x14: load_alphabet_10x14().or_fail()?,
+            number_box: decode_sprite(include_bytes!("../assets/number-box.png"))
+                .or_fail()?
+                .clip(Size::from_wh(32, 64).to_region())
+                .or_fail()?,
         })
     }
 

@@ -10,7 +10,7 @@ use pagurus::{
 use pagurus_game_std::image::Canvas;
 
 // - frame
-//   - frame preview on/off (switch)
+//   - [o] frame preview on/off (switch)
 //   - frame size (width / height sliders)
 // - layer count (slider)
 // - animation
