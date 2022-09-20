@@ -2,8 +2,14 @@ use super::{FixedSizeWidget, VariableSizeWidget, Widget};
 use crate::{
     app::App, asset::Text, canvas_ext::CanvasExt, color, event::Event, region_ext::RegionExt,
 };
-use pagurus::{failure::OrFail, spatial::Region, Result};
+use pagurus::{
+    failure::OrFail,
+    spatial::{Region, Size},
+    Result,
+};
 use pagurus_game_std::image::Canvas;
+
+const MARGIN: u32 = 8;
 
 #[derive(Debug)]
 pub struct BlockWidget<W> {
@@ -28,6 +34,14 @@ impl<W: FixedSizeWidget> BlockWidget<W> {
     pub fn body_mut(&mut self) -> &mut W {
         &mut self.body
     }
+
+    pub fn requiring_size(&self, app: &App) -> Size {
+        let mut size = self.body.requiring_size(app);
+        size.width += MARGIN * 2;
+        size.width = std::cmp::max(size.width, self.label.size().width + 8);
+        size.height += self.label.size().height + MARGIN * 2;
+        size
+    }
 }
 
 impl<W: FixedSizeWidget> Widget for BlockWidget<W> {
@@ -39,12 +53,12 @@ impl<W: FixedSizeWidget> Widget for BlockWidget<W> {
         canvas.draw_rectangle(self.region.without_margin(2), color::WINDOW_BORDER);
 
         let mut label_region = self.region.without_margin(2);
-        label_region.size = self.label.size(2, app.assets().alphabet_10x14[0].size());
+        label_region.size = self.label.size();
         canvas.draw_rectangle(label_region, color::WINDOW_BACKGROUND);
 
         canvas
             .offset(self.region.position)
-            .draw_text(&self.label, 2, &app.assets().alphabet_10x14);
+            .draw_text(&self.label, &app.assets().alphabet_10x14);
 
         self.body.render_if_need(app, canvas);
     }
@@ -63,7 +77,10 @@ impl<W: FixedSizeWidget> Widget for BlockWidget<W> {
 impl<W: FixedSizeWidget> VariableSizeWidget for BlockWidget<W> {
     fn set_region(&mut self, app: &App, region: Region) {
         self.region = region;
-        self.body
-            .set_position(app, self.region.without_margin(32).position);
+
+        let mut body_position = self.region.position;
+        body_position.x += MARGIN as i32;
+        body_position.y += (self.label.size().height + MARGIN) as i32;
+        self.body.set_position(app, body_position);
     }
 }

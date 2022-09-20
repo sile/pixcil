@@ -159,3 +159,15 @@ impl<T: Deserialize> Deserialize for VecDeque<T> {
         (0..n).map(|_| T::deserialize(reader).or_fail()).collect()
     }
 }
+
+impl Serialize for bool {
+    fn serialize<W: Write>(&self, writer: &mut W) -> Result<()> {
+        writer.write_u8(*self as u8).or_fail()
+    }
+}
+
+impl Deserialize for bool {
+    fn deserialize<R: Read>(reader: &mut R) -> Result<Self> {
+        Ok(reader.read_u8().or_fail()? == 1)
+    }
+}

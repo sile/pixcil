@@ -85,20 +85,33 @@ impl ButtonKind {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Text(Vec<Alphabet>);
+pub struct Text {
+    text: Vec<Alphabet>,
+    margin: u32,
+    alphabet_size: Size,
+}
 
 impl Text {
     pub const fn new(text: Vec<Alphabet>) -> Self {
-        Self(text)
+        Self {
+            text,
+            margin: 2,
+            alphabet_size: Size::from_wh(10, 14),
+        }
     }
 
     pub fn get(&self) -> &[Alphabet] {
-        &self.0
+        &self.text
     }
 
-    pub fn size(&self, margin: u32, alphabet_size: Size) -> Size {
-        let mut size = alphabet_size;
-        size.width = (self.0.len() as u32 * (alphabet_size.width + margin)).saturating_sub(margin);
+    pub fn margin(&self) -> u32 {
+        self.margin
+    }
+
+    pub fn size(&self) -> Size {
+        let mut size = self.alphabet_size;
+        size.width = (self.text.len() as u32 * (self.alphabet_size.width + self.margin))
+            .saturating_sub(self.margin);
         size
     }
 }
@@ -140,7 +153,7 @@ impl std::str::FromStr for Text {
                 })
             })
             .collect::<Result<_>>()
-            .map(Self)
+            .map(Self::new)
     }
 }
 

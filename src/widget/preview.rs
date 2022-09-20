@@ -18,6 +18,7 @@ const BORDER: u32 = 1;
 pub struct PreviewWidget {
     region: Region,
     focused: bool,
+    preview_off: bool,
 }
 
 impl PreviewWidget {
@@ -74,6 +75,10 @@ impl Widget for PreviewWidget {
     }
 
     fn render(&self, app: &App, canvas: &mut Canvas) {
+        if self.preview_off {
+            return;
+        }
+
         canvas.fill_rectangle(self.region, color::PREVIEW_BACKGROUND);
         if self.focused {
             canvas.draw_rectangle(self.region, color::PREVIEW_FOCUSED_BORDER);
@@ -84,6 +89,10 @@ impl Widget for PreviewWidget {
     }
 
     fn handle_event(&mut self, app: &mut App, event: &mut Event) -> Result<()> {
+        if self.preview_off {
+            return Ok(());
+        }
+
         if let Some(position) = event.position() {
             let mut focused = false;
             if self.region.contains(&position) {
@@ -98,6 +107,12 @@ impl Widget for PreviewWidget {
     }
 
     fn handle_event_after(&mut self, app: &mut App) -> Result<()> {
+        if self.preview_off != !app.models().config.frame_preview.get() {
+            self.preview_off = !app.models().config.frame_preview.get();
+            app.request_redraw(self.region);
+            return Ok(());
+        }
+
         let dirty_pixels = app.models().pixel_canvas.dirty_positions();
         if dirty_pixels.is_empty() {
             return Ok(());

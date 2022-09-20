@@ -14,6 +14,7 @@ pub struct ConfigModel {
     pub color: DrawingColor,
     pub frame: FrameRegion,
     pub max_undo: MaxUndo,
+    pub frame_preview: FramePreview,
 }
 
 impl Serialize for ConfigModel {
@@ -28,6 +29,7 @@ impl Serialize for ConfigModel {
         self.color.serialize(writer).or_fail()?;
         self.frame.serialize(writer).or_fail()?;
         self.max_undo.serialize(writer).or_fail()?;
+        self.frame_preview.serialize(writer).or_fail()?;
         Ok(())
     }
 }
@@ -44,6 +46,7 @@ impl Deserialize for ConfigModel {
             color: Deserialize::deserialize_or_default(&mut reader).or_fail()?,
             frame: Deserialize::deserialize_or_default(&mut reader).or_fail()?,
             max_undo: Deserialize::deserialize_or_default(&mut reader).or_fail()?,
+            frame_preview: Deserialize::deserialize_or_default(&mut reader).or_fail()?,
         };
 
         // Ignore unknown fields.
@@ -280,5 +283,36 @@ impl Serialize for MaxUndo {
 impl Deserialize for MaxUndo {
     fn deserialize<R: Read>(reader: &mut R) -> Result<Self> {
         u32::deserialize(reader).map(Self).or_fail()
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct FramePreview(bool);
+
+impl FramePreview {
+    pub const fn get(self) -> bool {
+        self.0
+    }
+
+    pub fn set(&mut self, on: bool) {
+        self.0 = on;
+    }
+}
+
+impl Default for FramePreview {
+    fn default() -> Self {
+        Self(true)
+    }
+}
+
+impl Serialize for FramePreview {
+    fn serialize<W: Write>(&self, writer: &mut W) -> Result<()> {
+        self.0.serialize(writer).or_fail()
+    }
+}
+
+impl Deserialize for FramePreview {
+    fn deserialize<R: Read>(reader: &mut R) -> Result<Self> {
+        bool::deserialize(reader).map(Self).or_fail()
     }
 }
