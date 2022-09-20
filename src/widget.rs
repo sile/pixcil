@@ -15,6 +15,7 @@ pub mod preview;
 pub mod save_load;
 pub mod select_box;
 pub mod side_bar;
+pub mod tab_bar;
 pub mod tool_box;
 pub mod undo_redo;
 pub mod zoom;

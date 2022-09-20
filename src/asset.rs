@@ -93,6 +93,12 @@ impl Text {
     pub fn get(&self) -> &[Alphabet] {
         &self.0
     }
+
+    pub fn size(&self, margin: u32, alphabet_size: Size) -> Size {
+        let mut size = alphabet_size;
+        size.width = (self.0.len() as u32 * (alphabet_size.width + margin)).saturating_sub(margin);
+        size
+    }
 }
 
 impl std::str::FromStr for Text {
