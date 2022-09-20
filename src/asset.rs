@@ -1,5 +1,5 @@
 use pagurus::failure::Failure;
-use pagurus::spatial::{Region, Size};
+use pagurus::spatial::{Position, Region, Size};
 use pagurus::{failure::OrFail, Result};
 use pagurus_game_std::image::Sprite;
 use pagurus_game_std::png::decode_sprite;
@@ -8,6 +8,7 @@ use pagurus_game_std::png::decode_sprite;
 pub struct Assets {
     pub icons: Icons,
     pub buttons: Buttons,
+    pub toggle: Toggle,
     pub digits_10x14: [Sprite; 10],
     pub alphabet_10x14: [Sprite; 26],
 }
@@ -17,6 +18,7 @@ impl Assets {
         Ok(Self {
             icons: Icons::load().or_fail()?,
             buttons: Buttons::load().or_fail()?,
+            toggle: Toggle::load().or_fail()?,
             digits_10x14: load_digits_10x14().or_fail()?,
             alphabet_10x14: load_alphabet_10x14().or_fail()?,
         })
@@ -247,6 +249,28 @@ impl Button {
             focused,
             pressed,
         }
+    }
+}
+
+#[derive(Debug)]
+pub struct Toggle {
+    pub on_neutral: Sprite,
+    pub on_focused: Sprite,
+    pub off_neutral: Sprite,
+    pub off_focused: Sprite,
+}
+
+impl Toggle {
+    fn load() -> Result<Self> {
+        let on = decode_sprite(include_bytes!("../assets/toggle-on.png")).or_fail()?;
+        let off = decode_sprite(include_bytes!("../assets/toggle-off.png")).or_fail()?;
+        let block = Region::new(Position::ORIGIN, Size::from_wh(64, 32));
+        Ok(Self {
+            on_neutral: on.clip(block).or_fail()?,
+            on_focused: on.clip(block.shift_y(1)).or_fail()?,
+            off_neutral: off.clip(block).or_fail()?,
+            off_focused: off.clip(block.shift_y(1)).or_fail()?,
+        })
     }
 }
 
