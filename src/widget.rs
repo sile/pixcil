@@ -15,12 +15,11 @@ pub mod preview;
 pub mod save_load;
 pub mod select_box;
 pub mod side_bar;
-pub mod tab_bar;
 pub mod tool_box;
 pub mod undo_redo;
 pub mod zoom;
 
-pub trait Widget {
+pub trait Widget: std::fmt::Debug + 'static {
     fn region(&self) -> Region;
     fn render(&self, app: &App, canvas: &mut Canvas);
     fn handle_event(&mut self, app: &mut App, event: &mut Event) -> Result<()>;
