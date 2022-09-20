@@ -24,7 +24,7 @@ impl Assets {
             alphabet_10x14: load_alphabet_10x14().or_fail()?,
             number_box: decode_sprite(include_bytes!("../assets/number-box.png"))
                 .or_fail()?
-                .clip(Size::from_wh(32, 64).to_region())
+                .clip(Size::from_wh(64, 32).to_region())
                 .or_fail()?,
         })
     }

@@ -1,4 +1,10 @@
-use crate::{asset::Assets, event::TimeoutId, io::IoRequest, model::Models, window::Window};
+use crate::{
+    asset::Assets,
+    event::{InputId, TimeoutId},
+    io::IoRequest,
+    model::Models,
+    window::Window,
+};
 use pagurus::{
     failure::OrFail,
     spatial::{Region, Size},
@@ -20,6 +26,7 @@ pub struct App {
     next_timeout_id: TimeoutId,
     pending_timeouts: Vec<(TimeoutId, Duration)>,
     timeouts: HashMap<ActionId, TimeoutId>,
+    next_input_id: InputId,
 }
 
 impl App {
@@ -34,6 +41,7 @@ impl App {
             next_timeout_id: TimeoutId::default(),
             pending_timeouts: Vec::new(),
             timeouts: HashMap::new(),
+            next_input_id: InputId::default(),
         })
     }
 
@@ -66,6 +74,13 @@ impl App {
 
     pub fn take_redraw_requests(&mut self) -> Vec<Region> {
         std::mem::take(&mut self.redraw_requests)
+    }
+
+    pub fn enqueue_input_text_request(&mut self) -> InputId {
+        let id = self.next_input_id.next();
+        let request = IoRequest::InputText { id };
+        self.io_requests.push_back(request);
+        id
     }
 
     pub fn enqueue_io_request(&mut self, request: IoRequest) {

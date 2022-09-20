@@ -8,6 +8,10 @@ use crate::app::App;
 #[derive(Debug)]
 pub enum Event {
     Timeout(TimeoutId),
+    Input {
+        id: InputId,
+        text: String,
+    },
     Mouse {
         action: MouseAction,
         position: Position,
@@ -90,6 +94,19 @@ pub enum MouseAction {
 pub struct TimeoutId(ActionId);
 
 impl TimeoutId {
+    pub fn next(&mut self) -> Self {
+        let id = *self;
+        self.0.increment();
+        id
+    }
+}
+
+#[derive(
+    Debug, Default, Clone, Copy, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize,
+)]
+pub struct InputId(ActionId);
+
+impl InputId {
     pub fn next(&mut self) -> Self {
         let id = *self;
         self.0.increment();

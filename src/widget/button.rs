@@ -240,6 +240,7 @@ impl Widget for ButtonWidget {
                     }
                 }
             }
+            _ => {}
         }
 
         Ok(())

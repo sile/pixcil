@@ -12,6 +12,7 @@ pub trait CanvasExt {
     fn fill_rectangle(&mut self, rectangle: Region, color: Color);
     fn draw_sprite_with_alpha(&mut self, sprite: &Sprite, alpha: u8);
     fn draw_text(&mut self, text: &Text, sprites: &[Sprite; 26]);
+    fn draw_number(&mut self, position: Position, number: u32, digits: &[Sprite; 10]);
 }
 
 impl<'a> CanvasExt for Canvas<'a> {
@@ -71,6 +72,21 @@ impl<'a> CanvasExt for Canvas<'a> {
             let i = x as usize;
             self.offset(offset).draw_sprite(&sprites[i]);
             offset.x += (sprites[i].size().width + text.margin()) as i32;
+        }
+    }
+
+    fn draw_number(&mut self, position: Position, mut number: u32, digits: &[Sprite; 10]) {
+        let mut offset = position;
+        let margin = 2;
+        loop {
+            let digit = (number % 10) as usize;
+            let sprite = &digits[digit];
+            self.offset(offset).draw_sprite(sprite);
+            offset.x -= sprite.size().width as i32 + margin;
+            number /= 10;
+            if number == 0 {
+                break;
+            }
         }
     }
 }
