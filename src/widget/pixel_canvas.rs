@@ -7,7 +7,7 @@ use crate::{
     color,
     event::Event,
     marker::MarkerHandler,
-    model::tool::{Tool, ToolKind},
+    model::tool::{ToolKind, ToolModel},
     pixel::{Pixel, PixelRegion},
 };
 use pagurus::{failure::OrFail, spatial::Region, Result};
@@ -18,7 +18,7 @@ pub struct PixelCanvasWidget {
     region: Region,
     marker_handler: MarkerHandler,
     preview_focused: bool,
-    tool: Tool,
+    tool: ToolModel,
 }
 
 impl PixelCanvasWidget {
@@ -108,12 +108,12 @@ impl PixelCanvasWidget {
             let mut color = pixel.color;
             if erasing_pixels.contains(&pixel.position) {
                 if self.marker_handler.is_neutral() {
-                    color.a /= 2;
+                    color.a /= 4;
                 } else {
-                    continue;
+                    color.a /= 8;
                 }
             }
-            canvas.fill_rectangle(region, pixel.color.into());
+            canvas.fill_rectangle(region, color.into());
         }
     }
 }
@@ -167,7 +167,7 @@ impl Widget for PixelCanvasWidget {
     fn handle_event_after(&mut self, app: &mut App) -> Result<()> {
         app.models_mut().pixel_canvas.take_dirty_positions();
         if self.tool != app.models().tool {
-            self.tool = app.models().tool;
+            self.tool = app.models().tool.clone();
             self.marker_handler.set_marker_kind(self.tool.marker_kind());
         }
         Ok(())

@@ -1,4 +1,4 @@
-use self::{config::ConfigModel, pixel_canvas::PixelCanvasModel, tool::Tool};
+use self::{config::ConfigModel, pixel_canvas::PixelCanvasModel, tool::ToolModel};
 use crate::serialize::{Deserialize, Serialize};
 use pagurus::{failure::OrFail, Result};
 use png::chunk::ChunkType;
@@ -18,7 +18,7 @@ pub struct Models {
     pub pixel_canvas: PixelCanvasModel,
 
     // The following fields are not serialized / deserialized.
-    pub tool: Tool,
+    pub tool: ToolModel,
 }
 
 impl Serialize for Models {

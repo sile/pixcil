@@ -1,23 +1,35 @@
 use crate::marker::MarkerKind;
 
-#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
-pub enum Tool {
-    #[default]
-    DrawStroke,
-    EraseStroke,
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ToolModel {
+    pub current: ToolKind,
+    pub draw: DrawToolState,
+    pub erase: EraseToolState,
 }
 
-impl Tool {
-    pub fn tool_kind(self) -> ToolKind {
-        match self {
-            Tool::DrawStroke => ToolKind::Draw,
-            Tool::EraseStroke => ToolKind::Erase,
-        }
+impl ToolModel {
+    pub fn tool_kind(&self) -> ToolKind {
+        self.current
     }
 
-    pub fn marker_kind(self) -> MarkerKind {
-        match self {
-            Tool::DrawStroke | Tool::EraseStroke => MarkerKind::Stroke,
+    pub fn marker_kind(&self) -> MarkerKind {
+        match self.current {
+            ToolKind::Draw => self.draw.marker,
+            ToolKind::Erase => self.erase.marker,
+        }
+    }
+}
+
+impl Default for ToolModel {
+    fn default() -> Self {
+        Self {
+            current: ToolKind::Draw,
+            draw: DrawToolState {
+                marker: MarkerKind::Stroke,
+            },
+            erase: EraseToolState {
+                marker: MarkerKind::Stroke,
+            },
         }
     }
 }
@@ -26,4 +38,14 @@ impl Tool {
 pub enum ToolKind {
     Draw,
     Erase,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct DrawToolState {
+    pub marker: MarkerKind,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct EraseToolState {
+    pub marker: MarkerKind,
 }

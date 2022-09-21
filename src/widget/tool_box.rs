@@ -5,6 +5,7 @@ use crate::{
     canvas_ext::CanvasExt,
     color,
     event::Event,
+    model::tool::ToolKind,
     window::{
         draw_tool::DrawToolWindow, erase_tool::EraseToolWindow, move_tool::MoveToolWindow,
         pick_tool::PickToolWindow, select_tool::SelectToolWindow,
@@ -69,6 +70,13 @@ impl Widget for ToolBoxWidget {
                         self.current.spawn_window(app).or_fail()?;
                     } else {
                         self.current = next;
+                        match self.current {
+                            Tool::Draw => {
+                                app.models_mut().tool.current = ToolKind::Draw;
+                            }
+                            Tool::Erase => app.models_mut().tool.current = ToolKind::Erase,
+                            _ => return Err(Failure::todo()),
+                        }
                     }
                 } else {
                     button.set_kind(ButtonKind::Basic);
