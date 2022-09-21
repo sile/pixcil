@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use super::{VariableSizeWidget, Widget};
 use crate::{
     app::App,
@@ -5,6 +7,7 @@ use crate::{
     color,
     event::Event,
     marker::MarkerHandler,
+    model::tool::{Tool, ToolKind},
     pixel::{Pixel, PixelRegion},
 };
 use pagurus::{failure::OrFail, spatial::Region, Result};
@@ -15,6 +18,7 @@ pub struct PixelCanvasWidget {
     region: Region,
     marker_handler: MarkerHandler,
     preview_focused: bool,
+    tool: Tool,
 }
 
 impl PixelCanvasWidget {
@@ -74,26 +78,41 @@ impl PixelCanvasWidget {
         }
     }
 
-    fn render_marked_pixels(&self, app: &App, canvas: &mut Canvas) {
-        let fill = !self.marker_handler.is_neutral();
+    fn render_drawn_pixels(&self, app: &App, canvas: &mut Canvas) {
         let color = app.models().config.color.get();
-        for pixel_position in self.marker_handler.marked_pixels() {
-            let region = pixel_position.to_screen_region(app);
-            if canvas.drawing_region().intersection(region).is_empty() {
-                continue;
-            }
-            if fill {
+        if self.marker_handler.is_neutral() {
+            let pixel_region = PixelRegion::from_positions(self.marker_handler.marked_pixels());
+            let region = pixel_region.to_screen_region(app);
+            canvas.draw_rectangle(region, color.into());
+        } else {
+            for pixel_position in self.marker_handler.marked_pixels() {
+                let region = pixel_position.to_screen_region(app);
+                if canvas.drawing_region().intersection(region).is_empty() {
+                    continue;
+                }
                 canvas.fill_rectangle(region, color.into());
-            } else {
-                canvas.draw_rectangle(region, color.into());
             }
         }
     }
 
     fn render_pixels(&self, app: &App, canvas: &mut Canvas) {
+        let erasing_pixels = if self.tool.tool_kind() == ToolKind::Erase {
+            self.marker_handler.marked_pixels().collect()
+        } else {
+            HashSet::new()
+        };
+
         let pixel_region = PixelRegion::from_screen_region(app, canvas.drawing_region());
         for pixel in app.models().pixel_canvas.get_pixels(pixel_region) {
             let region = pixel.position.to_screen_region(app);
+            let mut color = pixel.color;
+            if erasing_pixels.contains(&pixel.position) {
+                if self.marker_handler.is_neutral() {
+                    color.a /= 2;
+                } else {
+                    continue;
+                }
+            }
             canvas.fill_rectangle(region, pixel.color.into());
         }
     }
@@ -108,7 +127,9 @@ impl Widget for PixelCanvasWidget {
         canvas.fill_rectangle(self.region, color::CANVAS_BACKGROUND);
         self.render_grid(app, canvas);
         self.render_pixels(app, canvas);
-        self.render_marked_pixels(app, canvas);
+        if self.tool.tool_kind() == ToolKind::Draw {
+            self.render_drawn_pixels(app, canvas);
+        }
         if self.preview_focused {
             let mut region = app.models().config.frame.get().to_screen_region(app);
             region.size = region.size + 1;
@@ -119,21 +140,36 @@ impl Widget for PixelCanvasWidget {
     fn handle_event(&mut self, app: &mut App, event: &mut Event) -> Result<()> {
         self.marker_handler.handle_event(app, event).or_fail()?;
         if self.marker_handler.is_completed() {
-            let color = app.models().config.color.get();
-            let pixels = self
-                .marker_handler
-                .marked_pixels()
-                .map(|pos| Pixel::new(pos, color));
-            app.models_mut()
-                .pixel_canvas
-                .draw_pixels(pixels)
-                .or_fail()?;
+            match self.tool.tool_kind() {
+                ToolKind::Draw => {
+                    let color = app.models().config.color.get();
+                    let pixels = self
+                        .marker_handler
+                        .marked_pixels()
+                        .map(|pos| Pixel::new(pos, color));
+                    app.models_mut()
+                        .pixel_canvas
+                        .draw_pixels(pixels)
+                        .or_fail()?;
+                }
+                ToolKind::Erase => {
+                    let pixels = self.marker_handler.marked_pixels();
+                    app.models_mut()
+                        .pixel_canvas
+                        .erase_pixels(pixels)
+                        .or_fail()?;
+                }
+            }
         }
         Ok(())
     }
 
     fn handle_event_after(&mut self, app: &mut App) -> Result<()> {
         app.models_mut().pixel_canvas.take_dirty_positions();
+        if self.tool != app.models().tool {
+            self.tool = app.models().tool;
+            self.marker_handler.set_marker_kind(self.tool.marker_kind());
+        }
         Ok(())
     }
 

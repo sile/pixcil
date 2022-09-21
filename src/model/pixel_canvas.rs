@@ -21,6 +21,7 @@ pub struct PixelCanvasModel {
 
 impl PixelCanvasModel {
     pub fn draw_pixels(&mut self, pixels: impl Iterator<Item = Pixel>) -> Result<()> {
+        // TODO: consider alpha blending
         let mut command = PixelCanvasCommand::default();
         command.draw = pixels.collect();
         command.draw.sort_by_key(|x| x.position);

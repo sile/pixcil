@@ -26,12 +26,6 @@ pub struct ToolBoxWidget {
     current: Tool,
 }
 
-impl ToolBoxWidget {
-    pub fn current_tool(&self) -> Tool {
-        self.current
-    }
-}
-
 impl Default for ToolBoxWidget {
     fn default() -> Self {
         let mut buttons = vec![

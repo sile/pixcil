@@ -8,7 +8,7 @@ use crate::{
 };
 use pagurus::{
     failure::OrFail,
-    spatial::{Contains, Region, Size},
+    spatial::{Contains, Region},
     Result,
 };
 use pagurus_game_std::image::Canvas;
