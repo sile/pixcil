@@ -46,8 +46,12 @@ impl Window for ConfigWindow {
     }
 
     fn handle_screen_resized(&mut self, app: &mut App) -> Result<()> {
-        let center = app.screen_size().to_region().center();
-        self.region = Region::new(center - 300, Size::square(600));
+        let size = self.config.requiring_size(app);
+        let mut position = app.screen_size().to_region().center();
+        position.x -= size.width as i32 / 2;
+        position.y -= size.height as i32 / 2;
+
+        self.region = Region::new(position, size);
         self.config.set_position(app, self.region.position);
         Ok(())
     }
