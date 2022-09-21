@@ -4,7 +4,7 @@ use crate::{
     canvas_ext::CanvasExt,
     color,
     event::Event,
-    pixel::{PixelPosition, PixelRegion},
+    pixel::{PixelPosition, PixelRegion, PixelSize},
 };
 use pagurus::{
     spatial::{Contains, Position, Region, Size},
@@ -19,6 +19,7 @@ pub struct PreviewWidget {
     region: Region,
     focused: bool,
     preview_off: bool,
+    frame_size: Option<PixelSize>,
 }
 
 impl PreviewWidget {
@@ -111,6 +112,23 @@ impl Widget for PreviewWidget {
             self.preview_off = !app.models().config.frame_preview.get();
             app.request_redraw(self.region);
             return Ok(());
+        }
+
+        if let Some(frame_size) = self.frame_size {
+            if frame_size != app.models().config.frame.get().size() {
+                let old = frame_size;
+                let new = app.models().config.frame.get().size();
+                self.frame_size = Some(new);
+
+                let old_region = self.region;
+                self.region.size.width = u32::from(new.width);
+                self.region.size.height = u32::from(new.height);
+                self.region.position.x -= new.width as i32 - old.width as i32;
+                self.region.position.y -= new.height as i32 - old.height as i32;
+                app.request_redraw(self.region.union(old_region));
+            }
+        } else {
+            self.frame_size = Some(app.models().config.frame.get().size());
         }
 
         let dirty_pixels = app.models().pixel_canvas.dirty_positions();

@@ -73,7 +73,7 @@ impl Widget for ColorConfigWidget {
 
         self.config.handle_event(app, event).or_fail()?;
         if self.config.take_clicked(app) {
-            app.spawn_window(ConfigWindow::default()).or_fail()?;
+            app.spawn_window(ConfigWindow::new(app)).or_fail()?;
         }
 
         event.consume_if_contained(self.region);

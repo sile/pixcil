@@ -13,11 +13,21 @@ use pagurus::{
 };
 use pagurus_game_std::image::Canvas;
 
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub struct ConfigWindow {
     region: Region,
     terminated: bool,
     config: ConfigWidget,
+}
+
+impl ConfigWindow {
+    pub fn new(app: &App) -> Self {
+        Self {
+            region: Region::default(),
+            terminated: false,
+            config: ConfigWidget::new(app),
+        }
+    }
 }
 
 impl Window for ConfigWindow {
