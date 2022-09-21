@@ -68,7 +68,7 @@ impl Widget for NumberBoxWidget {
             } if self.region.contains(position) => match action {
                 MouseAction::Down => {}
                 MouseAction::Up => {
-                    let input_id = app.enqueue_input_text_request();
+                    let input_id = app.enqueue_input_number_request();
                     self.input = Some(input_id);
                 }
                 MouseAction::Move => {

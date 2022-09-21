@@ -1,6 +1,6 @@
 use crate::{
     app::App,
-    event::Event,
+    event::{Event, InputId},
     window::{main::MainWindow, Window},
 };
 use pagurus::{
@@ -42,7 +42,19 @@ impl PixcilGame {
             _ => {}
         };
 
-        if let Some(mut event) = Event::from_pagurus_event(app, event) {
+        let event = Event::from_pagurus_event(app, event);
+        self.handle_pixcil_event(system, event).or_fail()?;
+
+        Ok(true)
+    }
+
+    fn handle_pixcil_event<S: System>(
+        &mut self,
+        system: &mut S,
+        event: Option<Event>,
+    ) -> Result<()> {
+        let app = self.app.as_mut().or_fail()?;
+        if let Some(mut event) = event {
             let mut terminated = false;
             for window in self.windows.iter_mut().rev() {
                 window.handle_event(app, &mut event).or_fail()?;
@@ -63,8 +75,7 @@ impl PixcilGame {
         app.set_pending_timeouts(system);
 
         self.render(system).or_fail()?;
-
-        Ok(true)
+        Ok(())
     }
 
     fn render<S: System>(&mut self, system: &mut S) -> Result<()> {
@@ -111,6 +122,28 @@ impl<S: System> Game<S> for PixcilGame {
             }
             _ => Err(pagurus::failure::Failure::new(format!(
                 "unknown query: {name:?}"
+            ))),
+        }
+    }
+
+    fn command(&mut self, system: &mut S, name: &str, data: &[u8]) -> Result<()> {
+        match name {
+            "notifyInputNumber" => {
+                #[derive(serde::Deserialize)]
+                struct Data {
+                    id: InputId,
+                    number: String,
+                }
+                let data: Data = serde_json::from_slice(data).or_fail()?;
+                let event = Event::Input {
+                    id: data.id,
+                    text: data.number,
+                };
+                self.handle_pixcil_event(system, Some(event)).or_fail()?;
+                Ok(())
+            }
+            _ => Err(pagurus::failure::Failure::new(format!(
+                "unknown command: {name:?}"
             ))),
         }
     }

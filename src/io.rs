@@ -6,5 +6,5 @@ pub enum IoRequest {
     SaveWorkspace,
     LoadWorkspace,
     ImportImage,
-    InputText { id: InputId },
+    InputNumber { id: InputId },
 }

@@ -76,9 +76,9 @@ impl App {
         std::mem::take(&mut self.redraw_requests)
     }
 
-    pub fn enqueue_input_text_request(&mut self) -> InputId {
+    pub fn enqueue_input_number_request(&mut self) -> InputId {
         let id = self.next_input_id.next();
-        let request = IoRequest::InputText { id };
+        let request = IoRequest::InputNumber { id };
         self.io_requests.push_back(request);
         id
     }

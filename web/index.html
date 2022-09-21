@@ -83,6 +83,15 @@
                   case "loadWorkspace":
                       loadWorkspace();
                       break;
+                  default:
+                      if ("inputNumber" in requestJson) {
+                          const inputId = requestJson.inputNumber.id;
+                          const number = prompt("Please input a number");
+                          if (number) {
+                              game.command(system, "notifyInputNumber",
+                                           new TextEncoder().encode(JSON.stringify({id: inputId, number})));
+                          }
+                      }
                   }
               }
           }
