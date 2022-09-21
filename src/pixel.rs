@@ -128,6 +128,13 @@ impl PixelRegion {
         Self { start, end }
     }
 
+    pub fn from_position_and_size(position: PixelPosition, size: PixelSize) -> Self {
+        let mut end = position;
+        end.x += size.width as i16;
+        end.y += size.height as i16;
+        Self::new(position, end)
+    }
+
     pub fn from_positions(positions: impl Iterator<Item = PixelPosition>) -> Self {
         let mut start = PixelPosition::from_xy(i16::MAX, i16::MAX);
         let mut end = PixelPosition::from_xy(i16::MIN, i16::MIN);

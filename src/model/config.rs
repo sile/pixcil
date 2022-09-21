@@ -236,6 +236,12 @@ impl FrameRegion {
     pub const fn get(self) -> PixelRegion {
         self.0
     }
+
+    pub fn set_width(&mut self, width: u16) {
+        let mut size = self.0.size();
+        size.width = width;
+        self.0 = PixelRegion::from_position_and_size(self.0.start, size);
+    }
 }
 
 impl Default for FrameRegion {

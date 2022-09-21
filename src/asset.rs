@@ -10,7 +10,7 @@ pub struct Assets {
     pub buttons: Buttons,
     pub toggle: Toggle,
     pub digits_10x14: [Sprite; 10],
-    pub alphabet_10x14: [Sprite; 26],
+    pub alphabet_10x14: [Sprite; 27],
     pub number_box: Sprite,
 }
 
@@ -154,6 +154,7 @@ impl std::str::FromStr for Text {
                     'X' => Alphabet::X,
                     'Y' => Alphabet::Y,
                     'Z' => Alphabet::Z,
+                    ' ' => Alphabet::Space,
                     _ => return Err(Failure::new(format!("unknown alphabet: {c:?}"))),
                 })
             })
@@ -162,6 +163,7 @@ impl std::str::FromStr for Text {
     }
 }
 
+// TODO: rename
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Alphabet {
     A = 0,
@@ -190,6 +192,7 @@ pub enum Alphabet {
     X,
     Y,
     Z,
+    Space,
 }
 
 #[derive(Debug)]
@@ -317,7 +320,7 @@ fn load_digits_10x14() -> Result<[Sprite; 10]> {
     ])
 }
 
-fn load_alphabet_10x14() -> Result<[Sprite; 26]> {
+fn load_alphabet_10x14() -> Result<[Sprite; 27]> {
     let a_p = decode_sprite(include_bytes!("../assets/A-P-10x14.png")).or_fail()?;
     let q_z = decode_sprite(include_bytes!("../assets/Q-Z-10x14.png")).or_fail()?;
     let block = Size::square(16).to_region();
@@ -356,5 +359,6 @@ fn load_alphabet_10x14() -> Result<[Sprite; 26]> {
         clip(&q_z, block, 1, 3).or_fail()?,
         clip(&q_z, block, 2, 0).or_fail()?,
         clip(&q_z, block, 2, 1).or_fail()?,
+        clip(&q_z, block, 2, 2).or_fail()?,
     ])
 }

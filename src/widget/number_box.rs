@@ -83,7 +83,7 @@ impl Widget for NumberBoxWidget {
                     self.value = std::cmp::min(std::cmp::max(self.min, value), self.max);
                     app.request_redraw(self.region);
                 } else {
-                    log::info!("not a number: {text:?}");
+                    log::debug!("not a number: {text:?}");
                 }
             }
             _ => {}
