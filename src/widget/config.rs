@@ -12,9 +12,6 @@ use pagurus_game_std::image::Canvas;
 
 const MARGIN: u32 = 8;
 
-// - frame
-//   - [o] frame preview on/off (switch)
-//   - frame size (width / height sliders)
 // - layer count (slider)
 // - animation
 //   - frame count (slider)
@@ -26,7 +23,10 @@ const MARGIN: u32 = 8;
 #[derive(Debug)]
 pub struct ConfigWidget {
     region: Region,
+
+    // frame
     frame_width: BlockWidget<NumberBoxWidget>,
+    frame_height: BlockWidget<NumberBoxWidget>,
     frame_preview: BlockWidget<ToggleWidget>,
 }
 
@@ -38,6 +38,10 @@ impl ConfigWidget {
             frame_width: BlockWidget::new(
                 "FRAME WIDTH".parse().expect("unreachable"),
                 NumberBoxWidget::new(1, frame_size.width as u32, 9999),
+            ),
+            frame_height: BlockWidget::new(
+                "FRAME HEIGHT".parse().expect("unreachable"),
+                NumberBoxWidget::new(1, frame_size.height as u32, 9999),
             ),
             frame_preview: BlockWidget::new(
                 "FRAME PREVIEW".parse().expect("unreachable"),
@@ -54,6 +58,7 @@ impl Widget for ConfigWidget {
 
     fn render(&self, app: &App, canvas: &mut Canvas) {
         self.frame_width.render_if_need(app, canvas);
+        self.frame_height.render_if_need(app, canvas);
         self.frame_preview.render_if_need(app, canvas);
     }
 
@@ -63,6 +68,12 @@ impl Widget for ConfigWidget {
             .config
             .frame
             .set_width(self.frame_width.body().value() as u16);
+
+        self.frame_height.handle_event(app, event).or_fail()?;
+        app.models_mut()
+            .config
+            .frame
+            .set_height(self.frame_height.body().value() as u16);
 
         self.frame_preview.handle_event(app, event).or_fail()?;
         app.models_mut()
@@ -74,7 +85,11 @@ impl Widget for ConfigWidget {
     }
 
     fn children(&mut self) -> Vec<&mut dyn Widget> {
-        vec![&mut self.frame_preview, &mut self.frame_width]
+        vec![
+            &mut self.frame_width,
+            &mut self.frame_height,
+            &mut self.frame_preview,
+        ]
     }
 }
 
@@ -82,6 +97,8 @@ impl FixedSizeWidget for ConfigWidget {
     fn requiring_size(&self, app: &App) -> Size {
         let mut size = self.frame_preview.requiring_size(app);
         size.width += MARGIN + self.frame_width.requiring_size(app).width;
+        size.width += MARGIN + self.frame_height.requiring_size(app).width;
+
         size + MARGIN * 2
     }
 
@@ -90,12 +107,17 @@ impl FixedSizeWidget for ConfigWidget {
 
         let region = self.region.without_margin(MARGIN);
 
-        let mut frame_size_region = region;
-        frame_size_region.size.width = self.frame_width.requiring_size(app).width;
-        self.frame_width.set_region(app, frame_size_region);
+        let mut frame_width_region = region;
+        frame_width_region.size.width = self.frame_width.requiring_size(app).width;
+        self.frame_width.set_region(app, frame_width_region);
+
+        let mut frame_height_region = region;
+        frame_height_region.position.x = frame_width_region.end().x + 8;
+        frame_height_region.size.width = self.frame_height.requiring_size(app).width;
+        self.frame_height.set_region(app, frame_height_region);
 
         let mut frame_preview_region = region;
-        frame_preview_region.position.x = frame_size_region.end().x + 8;
+        frame_preview_region.position.x = frame_height_region.end().x + 8;
         frame_preview_region.size.width = self.frame_preview.requiring_size(app).width;
         self.frame_preview.set_region(app, frame_preview_region);
     }

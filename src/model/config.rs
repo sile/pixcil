@@ -242,6 +242,12 @@ impl FrameRegion {
         size.width = width;
         self.0 = PixelRegion::from_position_and_size(self.0.start, size);
     }
+
+    pub fn set_height(&mut self, height: u16) {
+        let mut size = self.0.size();
+        size.height = height;
+        self.0 = PixelRegion::from_position_and_size(self.0.start, size);
+    }
 }
 
 impl Default for FrameRegion {

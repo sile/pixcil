@@ -124,7 +124,6 @@ impl Widget for PreviewWidget {
                 self.region.size.width = u32::from(new.width);
                 self.region.size.height = u32::from(new.height);
                 self.region.position.x -= new.width as i32 - old.width as i32;
-                self.region.position.y -= new.height as i32 - old.height as i32;
                 app.request_redraw(self.region.union(old_region));
             }
         } else {
