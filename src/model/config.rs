@@ -11,9 +11,9 @@ pub struct ConfigModel {
     pub zoom: Zoom,
     pub camera: Camera,
     pub minimum_pixel_size: MinimumPixelSize,
+    pub max_undos: MaxUndos,
     pub color: DrawingColor,
     pub frame: FrameRegion,
-    pub max_undo: MaxUndo,
     pub frame_preview: FramePreview,
 }
 
@@ -26,9 +26,9 @@ impl Serialize for ConfigModel {
         self.zoom.serialize(writer).or_fail()?;
         self.camera.serialize(writer).or_fail()?;
         self.minimum_pixel_size.serialize(writer).or_fail()?;
+        self.max_undos.serialize(writer).or_fail()?;
         self.color.serialize(writer).or_fail()?;
         self.frame.serialize(writer).or_fail()?;
-        self.max_undo.serialize(writer).or_fail()?;
         self.frame_preview.serialize(writer).or_fail()?;
         Ok(())
     }
@@ -43,9 +43,9 @@ impl Deserialize for ConfigModel {
             zoom: Deserialize::deserialize_or_default(&mut reader).or_fail()?,
             camera: Deserialize::deserialize_or_default(&mut reader).or_fail()?,
             minimum_pixel_size: Deserialize::deserialize_or_default(&mut reader).or_fail()?,
+            max_undos: Deserialize::deserialize_or_default(&mut reader).or_fail()?,
             color: Deserialize::deserialize_or_default(&mut reader).or_fail()?,
             frame: Deserialize::deserialize_or_default(&mut reader).or_fail()?,
-            max_undo: Deserialize::deserialize_or_default(&mut reader).or_fail()?,
             frame_preview: Deserialize::deserialize_or_default(&mut reader).or_fail()?,
         };
 
@@ -283,33 +283,6 @@ impl Deserialize for FrameRegion {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct MaxUndo(u32);
-
-impl MaxUndo {
-    pub const fn get(self) -> u32 {
-        self.0
-    }
-}
-
-impl Default for MaxUndo {
-    fn default() -> Self {
-        Self(100)
-    }
-}
-
-impl Serialize for MaxUndo {
-    fn serialize<W: Write>(&self, writer: &mut W) -> Result<()> {
-        self.0.serialize(writer).or_fail()
-    }
-}
-
-impl Deserialize for MaxUndo {
-    fn deserialize<R: Read>(reader: &mut R) -> Result<Self> {
-        u32::deserialize(reader).map(Self).or_fail()
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct FramePreview(bool);
 
 impl FramePreview {
@@ -337,5 +310,36 @@ impl Serialize for FramePreview {
 impl Deserialize for FramePreview {
     fn deserialize<R: Read>(reader: &mut R) -> Result<Self> {
         bool::deserialize(reader).map(Self).or_fail()
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct MaxUndos(u32);
+
+impl MaxUndos {
+    pub const fn get(self) -> u32 {
+        self.0
+    }
+
+    pub fn set(&mut self, n: u32) {
+        self.0 = n;
+    }
+}
+
+impl Default for MaxUndos {
+    fn default() -> Self {
+        Self(100)
+    }
+}
+
+impl Serialize for MaxUndos {
+    fn serialize<W: Write>(&self, writer: &mut W) -> Result<()> {
+        self.0.serialize(writer).or_fail()
+    }
+}
+
+impl Deserialize for MaxUndos {
+    fn deserialize<R: Read>(reader: &mut R) -> Result<Self> {
+        u32::deserialize(reader).map(Self).or_fail()
     }
 }

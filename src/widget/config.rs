@@ -11,15 +11,13 @@ use pagurus::{
 use pagurus_game_std::image::Canvas;
 
 const MARGIN: u32 = 8;
-const GROUP_MARGIN: u32 = 16;
+const GROUP_MARGIN: u32 = 24;
 
+// TODO
 // - layer count (slider)
 // - animation
 //   - frame count (slider)
 //   - fps (slider)
-// - General
-//   - unit size (slider)
-//   - max undo history (select box)
 
 #[derive(Debug)]
 pub struct ConfigWidget {
@@ -27,6 +25,7 @@ pub struct ConfigWidget {
 
     // General settings
     minimum_pixel_size: BlockWidget<NumberBoxWidget>,
+    max_undos: BlockWidget<NumberBoxWidget>,
 
     // Frame settings
     frame_width: BlockWidget<NumberBoxWidget>,
@@ -37,15 +36,22 @@ pub struct ConfigWidget {
 impl ConfigWidget {
     pub fn new(app: &App) -> Self {
         let minimum_pixel_size = app.models().config.minimum_pixel_size.get();
+        let max_undos = app.models().config.max_undos.get();
         let frame_size = app.models().config.frame.get().size();
         Self {
             region: Region::default(),
 
+            // General
             minimum_pixel_size: BlockWidget::new(
                 "MINIMUM PIXEL SIZE".parse().expect("unreachable"),
                 NumberBoxWidget::new(1, minimum_pixel_size.width as u32, 9999),
             ),
+            max_undos: BlockWidget::new(
+                "MAX UNDOS".parse().expect("unreachable"),
+                NumberBoxWidget::new(0, max_undos, u32::MAX),
+            ),
 
+            // Frame
             frame_width: BlockWidget::new(
                 "FRAME WIDTH".parse().expect("unreachable"),
                 NumberBoxWidget::new(1, frame_size.width as u32, 9999),
@@ -70,6 +76,7 @@ impl Widget for ConfigWidget {
     fn render(&self, app: &App, canvas: &mut Canvas) {
         // General
         self.minimum_pixel_size.render_if_need(app, canvas);
+        self.max_undos.render_if_need(app, canvas);
 
         // Frame
         self.frame_width.render_if_need(app, canvas);
@@ -86,6 +93,12 @@ impl Widget for ConfigWidget {
             .set(PixelSize::square(
                 self.minimum_pixel_size.body().value() as u16
             ));
+
+        self.max_undos.handle_event(app, event).or_fail()?;
+        app.models_mut()
+            .config
+            .max_undos
+            .set(self.max_undos.body().value());
 
         // Frame
         self.frame_width.handle_event(app, event).or_fail()?;
@@ -113,6 +126,7 @@ impl Widget for ConfigWidget {
         vec![
             // General
             &mut self.minimum_pixel_size,
+            &mut self.max_undos,
             // Frame
             &mut self.frame_width,
             &mut self.frame_height,
@@ -124,7 +138,8 @@ impl Widget for ConfigWidget {
 impl FixedSizeWidget for ConfigWidget {
     fn requiring_size(&self, app: &App) -> Size {
         // General
-        let general_settings_size = self.minimum_pixel_size.requiring_size(app);
+        let mut general_settings_size = self.minimum_pixel_size.requiring_size(app);
+        general_settings_size.height += MARGIN + self.max_undos.requiring_size(app).height;
 
         // Frame
         let mut frame_settings_size = self.frame_preview.requiring_size(app);
@@ -147,9 +162,12 @@ impl FixedSizeWidget for ConfigWidget {
         minimum_pixel_size_region.size.height = self.minimum_pixel_size.requiring_size(app).height;
         self.minimum_pixel_size
             .set_region(app, minimum_pixel_size_region);
-        region.consume_y(minimum_pixel_size_region.size.height);
+        region.consume_y(minimum_pixel_size_region.size.height + MARGIN);
 
-        region.consume_y(GROUP_MARGIN);
+        let mut max_undos_region = region;
+        max_undos_region.size.height = self.max_undos.requiring_size(app).height;
+        self.max_undos.set_region(app, max_undos_region);
+        region.consume_y(max_undos_region.size.height + GROUP_MARGIN);
 
         // Frame
         let mut frame_width_region = region;

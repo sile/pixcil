@@ -88,7 +88,7 @@ impl Widget for UndoRedoWidget {
     }
 
     fn handle_event_after(&mut self, app: &mut App) -> Result<()> {
-        let max_undo = app.models().config.max_undo.get() as usize;
+        let max_undo = app.models().config.max_undos.get() as usize;
         while app.models().pixel_canvas.command_log_tail() > max_undo {
             app.models_mut().pixel_canvas.forget_oldest_command();
         }
