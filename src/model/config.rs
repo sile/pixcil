@@ -10,7 +10,7 @@ use std::io::{Read, Write};
 pub struct ConfigModel {
     pub zoom: Zoom,
     pub camera: Camera,
-    pub unit: Unit,
+    pub minimum_pixel_size: MinimumPixelSize,
     pub color: DrawingColor,
     pub frame: FrameRegion,
     pub max_undo: MaxUndo,
@@ -25,7 +25,7 @@ impl Serialize for ConfigModel {
 
         self.zoom.serialize(writer).or_fail()?;
         self.camera.serialize(writer).or_fail()?;
-        self.unit.serialize(writer).or_fail()?;
+        self.minimum_pixel_size.serialize(writer).or_fail()?;
         self.color.serialize(writer).or_fail()?;
         self.frame.serialize(writer).or_fail()?;
         self.max_undo.serialize(writer).or_fail()?;
@@ -42,7 +42,7 @@ impl Deserialize for ConfigModel {
         let this = Self {
             zoom: Deserialize::deserialize_or_default(&mut reader).or_fail()?,
             camera: Deserialize::deserialize_or_default(&mut reader).or_fail()?,
-            unit: Deserialize::deserialize_or_default(&mut reader).or_fail()?,
+            minimum_pixel_size: Deserialize::deserialize_or_default(&mut reader).or_fail()?,
             color: Deserialize::deserialize_or_default(&mut reader).or_fail()?,
             frame: Deserialize::deserialize_or_default(&mut reader).or_fail()?,
             max_undo: Deserialize::deserialize_or_default(&mut reader).or_fail()?,
@@ -103,7 +103,7 @@ impl Deserialize for Zoom {
     }
 }
 
-#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Camera(PixelPosition);
 
 impl Camera {
@@ -112,6 +112,12 @@ impl Camera {
 
     pub const fn get(self) -> PixelPosition {
         self.0
+    }
+}
+
+impl Default for Camera {
+    fn default() -> Self {
+        Self(PixelPosition::from_xy(32, 32))
     }
 }
 
@@ -131,14 +137,19 @@ impl Deserialize for Camera {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct Unit(PixelSize);
+pub struct MinimumPixelSize(PixelSize);
 
-impl Unit {
+impl MinimumPixelSize {
     pub const MIN: Self = Self(PixelSize::square(1));
-    pub const MAX: Self = Self(PixelSize::square(64));
+    pub const MAX: Self = Self(PixelSize::square(1000));
 
     pub const fn get(self) -> PixelSize {
         self.0
+    }
+
+    pub fn set(&mut self, size: PixelSize) {
+        self.0.width = clip(Self::MIN.0.width, size.width, Self::MAX.0.width);
+        self.0.height = clip(Self::MIN.0.height, size.height, Self::MAX.0.height);
     }
 
     pub fn normalize(self, mut position: PixelPosition) -> PixelPosition {
@@ -177,19 +188,19 @@ impl Unit {
     }
 }
 
-impl Default for Unit {
+impl Default for MinimumPixelSize {
     fn default() -> Self {
         Self(PixelSize::square(1))
     }
 }
 
-impl Serialize for Unit {
+impl Serialize for MinimumPixelSize {
     fn serialize<W: Write>(&self, writer: &mut W) -> Result<()> {
         self.0.serialize(writer).or_fail()
     }
 }
 
-impl Deserialize for Unit {
+impl Deserialize for MinimumPixelSize {
     fn deserialize<R: Read>(reader: &mut R) -> Result<Self> {
         let mut size = PixelSize::deserialize(reader).or_fail()?;
         size.width = clip(Self::MIN.0.width, size.width, Self::MAX.0.width);
@@ -253,8 +264,8 @@ impl FrameRegion {
 impl Default for FrameRegion {
     fn default() -> Self {
         Self(PixelRegion::new(
-            PixelPosition::from_xy(-32, -32),
-            PixelPosition::from_xy(32, 32),
+            PixelPosition::from_xy(0, 0),
+            PixelPosition::from_xy(64, 64),
         ))
     }
 }

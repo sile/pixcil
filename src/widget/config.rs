@@ -2,7 +2,7 @@ use super::{
     block::BlockWidget, number_box::NumberBoxWidget, toggle::ToggleWidget, FixedSizeWidget,
     VariableSizeWidget, Widget,
 };
-use crate::{app::App, event::Event, region_ext::RegionExt};
+use crate::{app::App, event::Event, pixel::PixelSize, region_ext::RegionExt};
 use pagurus::{
     failure::OrFail,
     spatial::{Position, Region, Size},
@@ -11,6 +11,7 @@ use pagurus::{
 use pagurus_game_std::image::Canvas;
 
 const MARGIN: u32 = 8;
+const GROUP_MARGIN: u32 = 16;
 
 // - layer count (slider)
 // - animation
@@ -24,7 +25,10 @@ const MARGIN: u32 = 8;
 pub struct ConfigWidget {
     region: Region,
 
-    // frame
+    // General settings
+    minimum_pixel_size: BlockWidget<NumberBoxWidget>,
+
+    // Frame settings
     frame_width: BlockWidget<NumberBoxWidget>,
     frame_height: BlockWidget<NumberBoxWidget>,
     frame_preview: BlockWidget<ToggleWidget>,
@@ -32,9 +36,16 @@ pub struct ConfigWidget {
 
 impl ConfigWidget {
     pub fn new(app: &App) -> Self {
+        let minimum_pixel_size = app.models().config.minimum_pixel_size.get();
         let frame_size = app.models().config.frame.get().size();
         Self {
             region: Region::default(),
+
+            minimum_pixel_size: BlockWidget::new(
+                "MINIMUM PIXEL SIZE".parse().expect("unreachable"),
+                NumberBoxWidget::new(1, minimum_pixel_size.width as u32, 9999),
+            ),
+
             frame_width: BlockWidget::new(
                 "FRAME WIDTH".parse().expect("unreachable"),
                 NumberBoxWidget::new(1, frame_size.width as u32, 9999),
@@ -57,12 +68,26 @@ impl Widget for ConfigWidget {
     }
 
     fn render(&self, app: &App, canvas: &mut Canvas) {
+        // General
+        self.minimum_pixel_size.render_if_need(app, canvas);
+
+        // Frame
         self.frame_width.render_if_need(app, canvas);
         self.frame_height.render_if_need(app, canvas);
         self.frame_preview.render_if_need(app, canvas);
     }
 
     fn handle_event(&mut self, app: &mut App, event: &mut Event) -> Result<()> {
+        // General
+        self.minimum_pixel_size.handle_event(app, event).or_fail()?;
+        app.models_mut()
+            .config
+            .minimum_pixel_size
+            .set(PixelSize::square(
+                self.minimum_pixel_size.body().value() as u16
+            ));
+
+        // Frame
         self.frame_width.handle_event(app, event).or_fail()?;
         app.models_mut()
             .config
@@ -86,6 +111,9 @@ impl Widget for ConfigWidget {
 
     fn children(&mut self) -> Vec<&mut dyn Widget> {
         vec![
+            // General
+            &mut self.minimum_pixel_size,
+            // Frame
             &mut self.frame_width,
             &mut self.frame_height,
             &mut self.frame_preview,
@@ -95,29 +123,46 @@ impl Widget for ConfigWidget {
 
 impl FixedSizeWidget for ConfigWidget {
     fn requiring_size(&self, app: &App) -> Size {
-        let mut size = self.frame_preview.requiring_size(app);
-        size.width += MARGIN + self.frame_width.requiring_size(app).width;
-        size.width += MARGIN + self.frame_height.requiring_size(app).width;
+        // General
+        let general_settings_size = self.minimum_pixel_size.requiring_size(app);
 
-        size + MARGIN * 2
+        // Frame
+        let mut frame_settings_size = self.frame_preview.requiring_size(app);
+        frame_settings_size.width += MARGIN + self.frame_width.requiring_size(app).width;
+        frame_settings_size.width += MARGIN + self.frame_height.requiring_size(app).width;
+
+        Size::from_wh(
+            general_settings_size.width.max(frame_settings_size.width),
+            general_settings_size.height + GROUP_MARGIN + frame_settings_size.height,
+        ) + MARGIN * 2
     }
 
     fn set_position(&mut self, app: &App, position: Position) {
         self.region = Region::new(position, self.requiring_size(app));
 
-        let region = self.region.without_margin(MARGIN);
+        let mut region = self.region.without_margin(MARGIN);
 
+        // General
+        let mut minimum_pixel_size_region = region;
+        minimum_pixel_size_region.size.height = self.minimum_pixel_size.requiring_size(app).height;
+        self.minimum_pixel_size
+            .set_region(app, minimum_pixel_size_region);
+        region.consume_y(minimum_pixel_size_region.size.height);
+
+        region.consume_y(GROUP_MARGIN);
+
+        // Frame
         let mut frame_width_region = region;
         frame_width_region.size.width = self.frame_width.requiring_size(app).width;
         self.frame_width.set_region(app, frame_width_region);
 
         let mut frame_height_region = region;
-        frame_height_region.position.x = frame_width_region.end().x + 8;
+        frame_height_region.position.x = frame_width_region.end().x + MARGIN as i32;
         frame_height_region.size.width = self.frame_height.requiring_size(app).width;
         self.frame_height.set_region(app, frame_height_region);
 
         let mut frame_preview_region = region;
-        frame_preview_region.position.x = frame_height_region.end().x + 8;
+        frame_preview_region.position.x = frame_height_region.end().x + MARGIN as i32;
         frame_preview_region.size.width = self.frame_preview.requiring_size(app).width;
         self.frame_preview.set_region(app, frame_preview_region);
     }
