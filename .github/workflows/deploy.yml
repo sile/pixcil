@@ -17,7 +17,8 @@ jobs:
       - name: Install wasm32-unknown-unknown target 
         uses: actions-rs/toolchain@v1
         with:
-            target: wasm32-unknown-unknown
+          toolchain: stable
+          target: wasm32-unknown-unknown
       - name: Run cargo build
         uses: actions-rs/cargo@v1
         with:
