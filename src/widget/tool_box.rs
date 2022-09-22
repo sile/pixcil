@@ -71,10 +71,9 @@ impl Widget for ToolBoxWidget {
                     } else {
                         self.current = next;
                         match self.current {
-                            Tool::Draw => {
-                                app.models_mut().tool.current = ToolKind::Draw;
-                            }
+                            Tool::Draw => app.models_mut().tool.current = ToolKind::Draw,
                             Tool::Erase => app.models_mut().tool.current = ToolKind::Erase,
+                            Tool::Select => app.models_mut().tool.current = ToolKind::Select,
                             _ => return Err(Failure::todo()),
                         }
                     }

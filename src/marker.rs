@@ -22,7 +22,7 @@ pub enum MouseState {
 
 pub trait Mark: Default {
     fn mark(&mut self, app: &App, position: PixelPosition, mouse: MouseState);
-    fn marked_pixels(&self) -> Box<dyn '_ + Iterator<Item = PixelPosition>>;
+    fn marked_pixels(&self, app: &App) -> Box<dyn '_ + Iterator<Item = PixelPosition>>;
 }
 
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash)]
@@ -65,11 +65,11 @@ impl Mark for Marker {
         }
     }
 
-    fn marked_pixels(&self) -> Box<dyn '_ + Iterator<Item = PixelPosition>> {
+    fn marked_pixels(&self, app: &App) -> Box<dyn '_ + Iterator<Item = PixelPosition>> {
         match self {
-            Marker::Stroke(x) => x.marked_pixels(),
-            Marker::Line(x) => x.marked_pixels(),
-            Marker::Lasso(x) => x.marked_pixels(),
+            Marker::Stroke(x) => x.marked_pixels(app),
+            Marker::Line(x) => x.marked_pixels(app),
+            Marker::Lasso(x) => x.marked_pixels(app),
         }
     }
 }
@@ -96,9 +96,9 @@ impl MarkerHandler {
         self.marker = Marker::from_kind(kind);
     }
 
-    pub fn marked_pixels(&self) -> Box<dyn '_ + Iterator<Item = PixelPosition>> {
+    pub fn marked_pixels(&self, app: &App) -> Box<dyn '_ + Iterator<Item = PixelPosition>> {
         if self.updated {
-            self.marker.marked_pixels()
+            self.marker.marked_pixels(app)
         } else {
             Box::new(std::iter::empty())
         }
@@ -160,7 +160,7 @@ impl MarkerHandler {
         }
 
         self.marker.mark(app, pixel_position, self.mouse);
-        let marked = self.marker.marked_pixels().collect::<HashSet<_>>();
+        let marked = self.marker.marked_pixels(app).collect::<HashSet<_>>();
         if old_mouse != self.mouse {
             self.request_redraw(app, marked.union(&self.last_marked).copied());
         } else {

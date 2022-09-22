@@ -1,7 +1,6 @@
 use super::{Mark, MouseState};
 use crate::{
     app::App,
-    model::config::MinimumPixelSize,
     pixel::{PixelLine, PixelPosition},
 };
 use std::collections::HashSet;
@@ -9,14 +8,13 @@ use std::collections::HashSet;
 #[derive(Debug, Default)]
 pub struct LineMarker {
     start: Option<PixelPosition>,
-    unit: MinimumPixelSize,
     marked: HashSet<PixelPosition>,
 }
 
 impl Mark for LineMarker {
     fn mark(&mut self, app: &App, position: PixelPosition, mouse: MouseState) {
-        self.unit = app.models().config.minimum_pixel_size;
-        let position = self.unit.normalize(position);
+        let unit = app.models().config.minimum_pixel_size;
+        let position = unit.normalize(position);
         match mouse {
             MouseState::Neutral => {
                 self.start = None;
@@ -41,12 +39,13 @@ impl Mark for LineMarker {
         }
     }
 
-    fn marked_pixels(&self) -> Box<dyn '_ + Iterator<Item = PixelPosition>> {
+    fn marked_pixels(&self, app: &App) -> Box<dyn '_ + Iterator<Item = PixelPosition>> {
+        let unit = app.models().config.minimum_pixel_size;
         Box::new(
             self.marked
                 .iter()
                 .copied()
-                .flat_map(|p| self.unit.denormalize_to_region(p).pixels()),
+                .flat_map(move |p| unit.denormalize_to_region(p).pixels()),
         )
     }
 }

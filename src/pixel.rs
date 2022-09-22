@@ -68,6 +68,16 @@ impl PixelPosition {
         let size = Size::square(u32::from(zoom));
         Region::new(position, size)
     }
+
+    pub fn move_x(mut self, delta: i16) -> Self {
+        self.x += delta;
+        self
+    }
+
+    pub fn move_y(mut self, delta: i16) -> Self {
+        self.y += delta;
+        self
+    }
 }
 
 impl Serialize for PixelPosition {
@@ -176,6 +186,15 @@ impl PixelRegion {
     pub fn pixels(self) -> impl Iterator<Item = PixelPosition> {
         (self.start.y..self.end.y).flat_map(move |y| {
             (self.start.x..self.end.x).map(move |x| PixelPosition::from_xy(x, y))
+        })
+    }
+
+    pub fn edges(self) -> impl Iterator<Item = PixelPosition> {
+        self.pixels().filter(move |p| {
+            p.x == self.start.x
+                || p.x == self.end.x - 1
+                || p.y == self.start.y
+                || p.y == self.end.y - 1
         })
     }
 }

@@ -11,7 +11,10 @@ use crate::{
     pixel::{Pixel, PixelRegion},
 };
 use pagurus::{failure::OrFail, spatial::Region, Result};
-use pagurus_game_std::{color::Color, image::Canvas};
+use pagurus_game_std::{
+    color::{Color, Rgba},
+    image::Canvas,
+};
 
 #[derive(Debug, Default)]
 pub struct PixelCanvasWidget {
@@ -81,11 +84,28 @@ impl PixelCanvasWidget {
     fn render_drawn_pixels(&self, app: &App, canvas: &mut Canvas) {
         let color = app.models().config.color.get();
         if self.marker_handler.is_neutral() {
-            let pixel_region = PixelRegion::from_positions(self.marker_handler.marked_pixels());
+            let pixel_region = PixelRegion::from_positions(self.marker_handler.marked_pixels(app));
             let region = pixel_region.to_screen_region(app);
             canvas.draw_rectangle(region, color.into());
         } else {
-            for pixel_position in self.marker_handler.marked_pixels() {
+            for pixel_position in self.marker_handler.marked_pixels(app) {
+                let region = pixel_position.to_screen_region(app);
+                if canvas.drawing_region().intersection(region).is_empty() {
+                    continue;
+                }
+                canvas.fill_rectangle(region, color.into());
+            }
+        }
+    }
+
+    fn render_selected_pixels(&self, app: &App, canvas: &mut Canvas) {
+        let color = Rgba::new(200, 200, 200, 200); // TODO
+        if self.marker_handler.is_neutral() {
+            let pixel_region = PixelRegion::from_positions(self.marker_handler.marked_pixels(app));
+            let region = pixel_region.to_screen_region(app);
+            canvas.draw_rectangle(region, color.into());
+        } else {
+            for pixel_position in self.marker_handler.marked_pixels(app) {
                 let region = pixel_position.to_screen_region(app);
                 if canvas.drawing_region().intersection(region).is_empty() {
                     continue;
@@ -97,7 +117,7 @@ impl PixelCanvasWidget {
 
     fn render_pixels(&self, app: &App, canvas: &mut Canvas) {
         let erasing_pixels = if self.tool.tool_kind() == ToolKind::Erase {
-            self.marker_handler.marked_pixels().collect()
+            self.marker_handler.marked_pixels(app).collect()
         } else {
             HashSet::new()
         };
@@ -129,6 +149,8 @@ impl Widget for PixelCanvasWidget {
         self.render_pixels(app, canvas);
         if self.tool.tool_kind() == ToolKind::Draw {
             self.render_drawn_pixels(app, canvas);
+        } else if self.tool.tool_kind() == ToolKind::Select {
+            self.render_selected_pixels(app, canvas);
         }
         if self.preview_focused {
             let mut region = app.models().config.frame.get().to_screen_region(app);
@@ -145,7 +167,7 @@ impl Widget for PixelCanvasWidget {
                     let color = app.models().config.color.get();
                     let pixels = self
                         .marker_handler
-                        .marked_pixels()
+                        .marked_pixels(app)
                         .map(|pos| Pixel::new(pos, color));
                     app.models_mut()
                         .pixel_canvas
@@ -153,11 +175,15 @@ impl Widget for PixelCanvasWidget {
                         .or_fail()?;
                 }
                 ToolKind::Erase => {
-                    let pixels = self.marker_handler.marked_pixels();
+                    let pixels = self.marker_handler.marked_pixels(app);
                     app.models_mut()
                         .pixel_canvas
                         .erase_pixels(pixels)
                         .or_fail()?;
+                }
+                ToolKind::Select => {
+                    //return Err(Failure::todo());
+                    log::info!("TOOD");
                 }
             }
         }
