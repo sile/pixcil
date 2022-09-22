@@ -6,8 +6,9 @@ use crate::{
 use pagurus::Result;
 use std::collections::HashSet;
 
-use self::{line::LineMarker, stroke::StrokeMarker};
+use self::{lasso::LassoMarker, line::LineMarker, stroke::StrokeMarker};
 
+pub mod lasso;
 pub mod line;
 pub mod stroke;
 
@@ -29,12 +30,14 @@ pub enum MarkerKind {
     #[default]
     Stroke,
     Line,
+    Lasso,
 }
 
 #[derive(Debug)]
 pub enum Marker {
     Stroke(StrokeMarker),
     Line(LineMarker),
+    Lasso(LassoMarker),
 }
 
 impl Marker {
@@ -42,6 +45,7 @@ impl Marker {
         match kind {
             MarkerKind::Stroke => Self::Stroke(Default::default()),
             MarkerKind::Line => Self::Line(Default::default()),
+            MarkerKind::Lasso => Self::Lasso(Default::default()),
         }
     }
 }
@@ -57,6 +61,7 @@ impl Mark for Marker {
         match self {
             Marker::Stroke(x) => x.mark(app, position, mouse),
             Marker::Line(x) => x.mark(app, position, mouse),
+            Marker::Lasso(x) => x.mark(app, position, mouse),
         }
     }
 
@@ -64,6 +69,7 @@ impl Mark for Marker {
         match self {
             Marker::Stroke(x) => x.marked_pixels(),
             Marker::Line(x) => x.marked_pixels(),
+            Marker::Lasso(x) => x.marked_pixels(),
         }
     }
 }
@@ -82,6 +88,7 @@ impl MarkerHandler {
         match self.marker {
             Marker::Stroke(_) => MarkerKind::Stroke,
             Marker::Line(_) => MarkerKind::Line,
+            Marker::Lasso(_) => MarkerKind::Lasso,
         }
     }
 
