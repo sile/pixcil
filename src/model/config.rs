@@ -19,10 +19,6 @@ pub struct ConfigModel {
 
 impl Serialize for ConfigModel {
     fn serialize<W: Write>(&self, writer: &mut W) -> Result<()> {
-        let size = self.serialized_size().or_fail()?;
-        let size = u16::try_from(size).or_fail()?;
-        size.serialize(writer).or_fail()?;
-
         self.zoom.serialize(writer).or_fail()?;
         self.camera.serialize(writer).or_fail()?;
         self.minimum_pixel_size.serialize(writer).or_fail()?;
@@ -36,23 +32,15 @@ impl Serialize for ConfigModel {
 
 impl Deserialize for ConfigModel {
     fn deserialize<R: Read>(reader: &mut R) -> Result<Self> {
-        let size = u16::deserialize(reader).or_fail()?;
-        let mut reader = reader.take(u64::from(size));
-
-        let this = Self {
-            zoom: Deserialize::deserialize_or_default(&mut reader).or_fail()?,
-            camera: Deserialize::deserialize_or_default(&mut reader).or_fail()?,
-            minimum_pixel_size: Deserialize::deserialize_or_default(&mut reader).or_fail()?,
-            max_undos: Deserialize::deserialize_or_default(&mut reader).or_fail()?,
-            color: Deserialize::deserialize_or_default(&mut reader).or_fail()?,
-            frame: Deserialize::deserialize_or_default(&mut reader).or_fail()?,
-            frame_preview: Deserialize::deserialize_or_default(&mut reader).or_fail()?,
-        };
-
-        // Ignore unknown fields.
-        for _ in reader.bytes() {}
-
-        Ok(this)
+        Ok(Self {
+            zoom: Deserialize::deserialize_or_default(reader).or_fail()?,
+            camera: Deserialize::deserialize_or_default(reader).or_fail()?,
+            minimum_pixel_size: Deserialize::deserialize_or_default(reader).or_fail()?,
+            max_undos: Deserialize::deserialize_or_default(reader).or_fail()?,
+            color: Deserialize::deserialize_or_default(reader).or_fail()?,
+            frame: Deserialize::deserialize_or_default(reader).or_fail()?,
+            frame_preview: Deserialize::deserialize_or_default(reader).or_fail()?,
+        })
     }
 }
 

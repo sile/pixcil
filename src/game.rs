@@ -1,6 +1,7 @@
 use crate::{
     app::App,
     event::{Event, InputId},
+    model::Models,
     window::{main::MainWindow, Window},
 };
 use pagurus::{
@@ -120,6 +121,11 @@ impl<S: System> Game<S> for PixcilGame {
                     Ok(Vec::new())
                 }
             }
+            "workspacePng" => {
+                let app = self.app.as_ref().or_fail()?;
+                let data = app.models().to_png().or_fail()?;
+                Ok(data)
+            }
             _ => Err(pagurus::failure::Failure::new(format!(
                 "unknown query: {name:?}"
             ))),
@@ -140,6 +146,14 @@ impl<S: System> Game<S> for PixcilGame {
                     text: data.number,
                 };
                 self.handle_pixcil_event(system, Some(event)).or_fail()?;
+                Ok(())
+            }
+            "loadWorkspace" => {
+                let app = self.app.as_mut().or_fail()?;
+                *app.models_mut() = Models::from_png(data).or_fail()?;
+                app.request_redraw(app.screen_size().to_region());
+                self.handle_pixcil_event(system, None).or_fail()?;
+
                 Ok(())
             }
             _ => Err(pagurus::failure::Failure::new(format!(

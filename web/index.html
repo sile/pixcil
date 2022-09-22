@@ -17,12 +17,12 @@
           initialCanvas.width = document.body.clientWidth * 0.98;
       }
 
-      function saveWorkspace(name, kind) {
-          const element = document.createElement("a");
-          const data = game.query(system, kind);
-          element.download = name + ".png";
+      function saveWorkspace(name) {
+          const data = game.query(system, "workspacePng");
+          const blob = new Blob([data], {type: 'image/png'});
 
-          let blob = new Blob([data], {type: 'image/png'});
+          const element = document.createElement("a");
+          element.download = name + ".png";
           element.href = URL.createObjectURL(blob);
 
           element.click();
@@ -41,9 +41,28 @@
               const file = files[0];
 
               const data = new Uint8Array(await file.arrayBuffer());
-              game.command(system, "workspace.load", data);
+              try {
+                  game.command(system, "loadWorkspace", data);
+              } catch (e) {
+                  console.log(e);
+                  alert("Failed to load workspace file");
+              }
           };
           input.click();
+      }
+
+      function now() {
+          return new Intl.DateTimeFormat(
+              [],
+              {
+                  year:   'numeric',
+                  month:  '2-digit',
+                  day:    '2-digit',
+                  hour:   '2-digit',
+                  minute: '2-digit',
+                  second: '2-digit',
+              }
+          ).format(new Date()).replaceAll(/[:/]/g, '').replace(' ', '_');
       }
 
       Pagurus.Game.load("pixcil.wasm").then(async gameObject => {
@@ -72,24 +91,26 @@
                   const requestJson = JSON.parse(new TextDecoder("utf-8").decode(requestBytes));
                   switch (requestJson){
                   case "saveWorkspace":
-                      // TODO: Use "yyyymmdd-hhMMss" format
                       const workspaceName =
-                          prompt("Please input your workspace name",
-                                 "pixcil-" + new Date().toISOString());
-                      if (workspaceWorkspace) {
-                          savePngFile(workspaceName, "png.workspace");
+                          prompt("Please input your workspace name", "pixcil-" + now());
+                      if (workspaceName) {
+                          saveWorkspace(workspaceName);
                       }
                       break;
                   case "loadWorkspace":
                       loadWorkspace();
+                      break;
+                  case "loadImage":
+                      alert("TODO");
                       break;
                   default:
                       if ("inputNumber" in requestJson) {
                           const inputId = requestJson.inputNumber.id;
                           const number = prompt("Please input a number");
                           if (number) {
-                              game.command(system, "notifyInputNumber",
-                                           new TextEncoder().encode(JSON.stringify({id: inputId, number})));
+                              const inputJsonBytes =
+                                    new TextEncoder().encode(JSON.stringify({id: inputId, number}));
+                              game.command(system, "notifyInputNumber", inputJsonBytes);
                           }
                       }
                   }

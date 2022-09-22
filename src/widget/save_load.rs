@@ -5,6 +5,7 @@ use crate::{
     canvas_ext::CanvasExt,
     color,
     event::Event,
+    io::IoRequest,
     region_ext::RegionExt,
 };
 use pagurus::{
@@ -50,13 +51,19 @@ impl Widget for SaveLoadWidget {
 
     fn handle_event(&mut self, app: &mut App, event: &mut Event) -> Result<()> {
         self.save.handle_event(app, event).or_fail()?;
-        if self.save.take_clicked(app) {}
+        if self.save.take_clicked(app) {
+            app.enqueue_io_request(IoRequest::SaveWorkspace);
+        }
 
         self.load.handle_event(app, event).or_fail()?;
-        if self.load.take_clicked(app) {}
+        if self.load.take_clicked(app) {
+            app.enqueue_io_request(IoRequest::LoadWorkspace);
+        }
 
         self.import.handle_event(app, event).or_fail()?;
-        if self.import.take_clicked(app) {}
+        if self.import.take_clicked(app) {
+            app.enqueue_io_request(IoRequest::ImportImage);
+        }
 
         event.consume_if_contained(self.region);
         Ok(())
