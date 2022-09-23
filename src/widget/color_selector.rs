@@ -1,5 +1,6 @@
 use super::{
-    block::BlockWidget, rgb_selector::RgbSelector, FixedSizeWidget, VariableSizeWidget, Widget,
+    block::BlockWidget, rgb_selector::RgbSelectorWidget, FixedSizeWidget, VariableSizeWidget,
+    Widget,
 };
 use crate::{app::App, canvas_ext::CanvasExt, event::Event};
 use pagurus::{
@@ -15,14 +16,17 @@ const MARGIN: u32 = 16;
 #[derive(Debug)]
 pub struct ColorSelectorWidget {
     region: Region,
-    rgb: BlockWidget<RgbSelector>,
+    rgb: BlockWidget<RgbSelectorWidget>,
 }
 
 impl ColorSelectorWidget {
     pub fn new(app: &App) -> Self {
         Self {
             region: Region::default(),
-            rgb: BlockWidget::new("RGB".parse().expect("unreachable"), RgbSelector::default()),
+            rgb: BlockWidget::new(
+                "RGB".parse().expect("unreachable"),
+                RgbSelectorWidget::new(app),
+            ),
         }
     }
 

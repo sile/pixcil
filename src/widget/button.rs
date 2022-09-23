@@ -22,6 +22,7 @@ pub struct ButtonWidget {
     disabled: Option<fn(&App) -> bool>,
     number: Option<fn(&App) -> u32>,
     number_margin: u32,
+    // TODO(?): remove this feature
     long_press: Option<LongPressState>,
     long_press_timed_out: bool,
     prev_state: ButtonState,
@@ -303,12 +304,6 @@ impl ButtonState {
                 ButtonState::Clicked => offset.move_y(4),
             },
             ButtonKind::SliderRight => match self {
-                ButtonState::Neutral => offset,
-                ButtonState::Focused => offset.move_y(2),
-                ButtonState::Pressed => offset.move_y(4),
-                ButtonState::Clicked => offset.move_y(4),
-            },
-            ButtonKind::SliderKnob => match self {
                 ButtonState::Neutral => offset,
                 ButtonState::Focused => offset.move_y(2),
                 ButtonState::Pressed => offset.move_y(4),

@@ -65,6 +65,10 @@ impl<W: FixedSizeWidget> Window for WidgetWindow<W> {
     }
 
     fn handle_event(&mut self, app: &mut App, event: &mut Event) -> Result<()> {
+        for child in self.widget.children() {
+            child.handle_event_before(app).or_fail()?;
+        }
+
         self.widget.handle_event(app, event).or_fail()?;
 
         if let Event::Mouse {
@@ -76,6 +80,11 @@ impl<W: FixedSizeWidget> Window for WidgetWindow<W> {
             }
             event.consume();
         }
+
+        for child in self.widget.children().into_iter().rev() {
+            child.handle_event_after(app).or_fail()?;
+        }
+
         Ok(())
     }
 }

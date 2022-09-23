@@ -37,6 +37,14 @@ impl NumberBoxWidget {
     pub fn value(&self) -> u32 {
         self.value
     }
+
+    pub fn set_value(&mut self, app: &mut App, v: u32) {
+        let v = self.min.max(v).min(self.max);
+        if self.value != v {
+            self.value = v;
+            app.request_redraw(self.region);
+        }
+    }
 }
 
 impl Widget for NumberBoxWidget {

@@ -12,6 +12,7 @@ pub struct Assets {
     pub digits_10x14: [Sprite; 10],
     pub alphabet_10x14: [Sprite; 27],
     pub number_box: Sprite,
+    pub slider_cursor: Sprite,
 }
 
 impl Assets {
@@ -25,6 +26,8 @@ impl Assets {
             number_box: decode_sprite(include_bytes!("../assets/number-box.png"))
                 .or_fail()?
                 .clip(Size::from_wh(64, 32).to_region())
+                .or_fail()?,
+            slider_cursor: decode_sprite(include_bytes!("../assets/slider-cursor.png"))
                 .or_fail()?,
         })
     }
@@ -54,7 +57,6 @@ impl Assets {
             ButtonKind::BasicDeep => &self.buttons.basic_deep,
             ButtonKind::SliderLeft => &self.buttons.slider_left,
             ButtonKind::SliderRight => &self.buttons.slider_right,
-            ButtonKind::SliderKnob => &self.buttons.slider_knob,
         }
     }
 }
@@ -83,7 +85,6 @@ pub enum ButtonKind {
     BasicDeep,
     SliderLeft,
     SliderRight,
-    SliderKnob,
 }
 
 impl ButtonKind {
@@ -93,7 +94,6 @@ impl ButtonKind {
             ButtonKind::BasicDeep => Size::square(64),
             ButtonKind::SliderLeft => Size::square(32),
             ButtonKind::SliderRight => Size::square(32),
-            ButtonKind::SliderKnob => Size::from_wh(32, 16),
         }
     }
 }
@@ -249,7 +249,6 @@ pub struct Buttons {
     pub basic_deep: Button,
     pub slider_left: Button,
     pub slider_right: Button,
-    pub slider_knob: Button,
 }
 
 impl Buttons {
@@ -288,19 +287,11 @@ impl Buttons {
                 .or_fail()?,
         );
 
-        let knobs = decode_sprite(include_bytes!("../assets/slider-knob.png")).or_fail()?;
-        let knob_block = Size::from_wh(16, 32).to_region();
-        let slider_knob = Button::new(
-            knobs.clip(knob_block).or_fail()?,
-            knobs.clip(knob_block.shift_x(1)).or_fail()?,
-            knobs.clip(knob_block.shift_x(2)).or_fail()?,
-        );
         Ok(Self {
             basic,
             basic_deep,
             slider_left,
             slider_right,
-            slider_knob,
         })
     }
 }

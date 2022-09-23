@@ -21,6 +21,7 @@ pub mod rgb_selector;
 pub mod save_load;
 pub mod select_box;
 pub mod side_bar;
+pub mod slider;
 pub mod toggle;
 pub mod tool_box;
 pub mod undo_redo;
