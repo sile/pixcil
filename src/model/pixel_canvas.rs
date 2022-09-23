@@ -50,6 +50,33 @@ impl PixelCanvasModel {
         Ok(())
     }
 
+    pub fn move_pixels(
+        &mut self,
+        pixels: impl Iterator<Item = PixelPosition>,
+        delta: PixelPosition,
+    ) -> Result<()> {
+        let mut command = PixelCanvasCommand::default();
+        for src in pixels {
+            let dst = src + delta;
+            if let Some(color) = self.pixels.get_pixel(src) {
+                command.erase.push(Pixel::new(src, color));
+                command.draw.push(Pixel::new(dst, color));
+                if let Some(color) = self.pixels.get_pixel(dst) {
+                    command.erase.push(Pixel::new(dst, color));
+                }
+            }
+        }
+        command.draw.sort_by_key(|x| x.position);
+        command.erase.sort_by_key(|x| x.position);
+        command.erase.dedup();
+
+        self.command_log.truncate(self.command_log_tail);
+        self.command_log.push_back(command);
+        self.redo_command().or_fail()?;
+
+        Ok(())
+    }
+
     pub fn get_pixels(&self, region: PixelRegion) -> impl '_ + Iterator<Item = Pixel> {
         self.pixels.get_pixels(region)
     }

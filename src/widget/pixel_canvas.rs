@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use super::{VariableSizeWidget, Widget};
+use super::{manipulate::ManipulateWidget, VariableSizeWidget, Widget};
 use crate::{
     app::App,
     canvas_ext::CanvasExt,
@@ -22,6 +22,7 @@ pub struct PixelCanvasWidget {
     marker_handler: MarkerHandler,
     preview_focused: bool,
     tool: ToolModel,
+    manipulate: Option<ManipulateWidget>,
 }
 
 impl PixelCanvasWidget {
@@ -124,6 +125,12 @@ impl PixelCanvasWidget {
 
         let pixel_region = PixelRegion::from_screen_region(app, canvas.drawing_region());
         for pixel in app.models().pixel_canvas.get_pixels(pixel_region) {
+            if let Some(w) = &self.manipulate {
+                if w.selected_pixels().contains(&pixel.position) {
+                    continue;
+                }
+            }
+
             let region = pixel.position.to_screen_region(app);
             let mut color = pixel.color;
             if erasing_pixels.contains(&pixel.position) {
@@ -157,9 +164,20 @@ impl Widget for PixelCanvasWidget {
             region.size = region.size + 1;
             canvas.draw_rectangle(region, color::PREVIEW_FOCUSED_BORDER);
         }
+        if let Some(w) = &self.manipulate {
+            w.render(app, canvas);
+        }
     }
 
     fn handle_event(&mut self, app: &mut App, event: &mut Event) -> Result<()> {
+        if let Some(w) = &mut self.manipulate {
+            w.handle_event(app, event).or_fail()?;
+            if w.is_terminated() {
+                app.request_redraw(w.region());
+                self.manipulate = None;
+            }
+        }
+
         self.marker_handler.handle_event(app, event).or_fail()?;
         if self.marker_handler.is_completed() {
             match self.tool.tool_kind() {
@@ -182,8 +200,10 @@ impl Widget for PixelCanvasWidget {
                         .or_fail()?;
                 }
                 ToolKind::Select => {
-                    //return Err(Failure::todo());
-                    log::info!("TOOD");
+                    self.manipulate = Some(ManipulateWidget::new(
+                        app,
+                        self.marker_handler.marked_pixels(app).collect(),
+                    ));
                 }
             }
         }

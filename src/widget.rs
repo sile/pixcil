@@ -11,6 +11,7 @@ pub mod bottom_bar;
 pub mod button;
 pub mod color_config;
 pub mod config;
+pub mod manipulate;
 pub mod number_box;
 pub mod pixel_canvas;
 pub mod preview;
