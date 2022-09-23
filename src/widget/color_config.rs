@@ -68,7 +68,7 @@ impl Widget for ColorConfigWidget {
     fn handle_event(&mut self, app: &mut App, event: &mut Event) -> Result<()> {
         self.color.handle_event(app, event).or_fail()?;
         if self.color.take_clicked(app) {
-            app.spawn_window(ColorSelectorWindow::default()).or_fail()?;
+            app.spawn_window(ColorSelectorWindow::new(app)).or_fail()?;
         }
 
         self.config.handle_event(app, event).or_fail()?;
