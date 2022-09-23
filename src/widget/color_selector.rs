@@ -2,7 +2,7 @@ use super::{
     block::BlockWidget, rgb_selector::RgbSelectorWidget, FixedSizeWidget, VariableSizeWidget,
     Widget,
 };
-use crate::{app::App, canvas_ext::CanvasExt, event::Event};
+use crate::{app::App, canvas_ext::CanvasExt, color, event::Event};
 use pagurus::{
     failure::OrFail,
     spatial::{Position, Region, Size},
@@ -34,6 +34,7 @@ impl ColorSelectorWidget {
         let mut region = self.region;
         region.size.height = COLOR_PREVIEW_HEIGHT;
         canvas.fill_rectangle(region, app.models().config.color.get().into());
+        canvas.draw_rectangle(region, color::WINDOW_BORDER);
     }
 }
 
@@ -48,7 +49,14 @@ impl Widget for ColorSelectorWidget {
     }
 
     fn handle_event(&mut self, app: &mut App, event: &mut Event) -> Result<()> {
+        let old = app.models().config.color.get();
+
         self.rgb.handle_event(app, event).or_fail()?;
+
+        let new = app.models().config.color.get();
+        if old != new {
+            app.request_redraw(self.region);
+        }
         Ok(())
     }
 

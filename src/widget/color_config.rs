@@ -22,11 +22,11 @@ pub struct ColorConfigWidget {
     region: Region,
     color: ButtonWidget,
     config: ButtonWidget,
+    label: Rgba,
 }
 
 impl ColorConfigWidget {
-    fn render_color_label(&self, app: &App, canvas: &mut Canvas) {
-        let color = app.models().config.color.get();
+    fn render_color_label(&self, _app: &App, canvas: &mut Canvas) {
         let offset = self.color.state().offset(self.color.kind()).y;
         let mut label_region = self.color.region();
         label_region.position.x += 4;
@@ -36,7 +36,7 @@ impl ColorConfigWidget {
         label_region.size.height -= 4 + 12;
 
         canvas.fill_rectangle(label_region, Rgba::new(255, 255, 255, 255).into());
-        canvas.fill_rectangle(label_region.without_margin(2), color.into());
+        canvas.fill_rectangle(label_region.without_margin(2), self.label.into());
     }
 }
 
@@ -46,6 +46,7 @@ impl Default for ColorConfigWidget {
             region: Default::default(),
             color: ButtonWidget::new(ButtonKind::Basic, IconId::Null),
             config: ButtonWidget::new(ButtonKind::Basic, IconId::Settings),
+            label: Rgba::new(0, 0, 0, 0),
         }
     }
 }
@@ -77,6 +78,13 @@ impl Widget for ColorConfigWidget {
         }
 
         event.consume_if_contained(self.region);
+
+        let color = app.models().config.color.get();
+        if self.label != color {
+            self.label = color;
+            app.request_redraw(self.color.region());
+        }
+
         Ok(())
     }
 
@@ -95,6 +103,8 @@ impl FixedSizeWidget for ColorConfigWidget {
     }
 
     fn set_position(&mut self, app: &App, position: Position) {
+        self.label = app.models().config.color.get();
+
         self.region = Region::new(position, self.requiring_size(app));
 
         let mut block = self.region;

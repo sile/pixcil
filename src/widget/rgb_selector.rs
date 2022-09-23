@@ -1,11 +1,11 @@
 use super::{slider::SliderWidget, FixedSizeWidget, Widget};
-use crate::{app::App, canvas_ext::CanvasExt, color, event::Event};
+use crate::{app::App, canvas_ext::CanvasExt, event::Event};
 use pagurus::{
     failure::OrFail,
     spatial::{Position, Region, Size},
     Result,
 };
-use pagurus_game_std::image::Canvas;
+use pagurus_game_std::{color::Rgba, image::Canvas};
 
 const MARGIN: u32 = 8;
 
@@ -28,7 +28,7 @@ impl RgbSelectorWidget {
                 u32::from(color.r),
                 255,
                 |slider, app, canvas| {
-                    canvas.fill_rectangle(slider.bar_region(), color::PREVIEW_BACKGROUND)
+                    render_color_bar(app, canvas, slider.bar_region(), |color, i| color.r = i);
                 },
             ),
             g: SliderWidget::new(
@@ -37,7 +37,7 @@ impl RgbSelectorWidget {
                 u32::from(color.g),
                 255,
                 |slider, app, canvas| {
-                    canvas.fill_rectangle(slider.bar_region(), color::BUTTONS_BACKGROUND)
+                    render_color_bar(app, canvas, slider.bar_region(), |color, i| color.g = i);
                 },
             ),
             b: SliderWidget::new(
@@ -46,10 +46,18 @@ impl RgbSelectorWidget {
                 u32::from(color.b),
                 255,
                 |slider, app, canvas| {
-                    canvas.fill_rectangle(slider.bar_region(), color::BUTTONS_BACKGROUND)
+                    render_color_bar(app, canvas, slider.bar_region(), |color, i| color.b = i);
                 },
             ),
         }
+    }
+
+    fn rgb(&self) -> (u8, u8, u8) {
+        (
+            self.r.value() as u8,
+            self.g.value() as u8,
+            self.b.value() as u8,
+        )
     }
 }
 
@@ -65,9 +73,21 @@ impl Widget for RgbSelectorWidget {
     }
 
     fn handle_event(&mut self, app: &mut App, event: &mut Event) -> Result<()> {
+        let old = self.rgb();
+
         self.r.handle_event(app, event).or_fail()?;
         self.g.handle_event(app, event).or_fail()?;
         self.b.handle_event(app, event).or_fail()?;
+
+        let new = self.rgb();
+        if old != new {
+            let mut c = app.models().config.color.get();
+            c.r = new.0;
+            c.g = new.1;
+            c.b = new.2;
+            app.models_mut().config.color.set(c);
+            app.request_redraw(self.region);
+        }
         Ok(())
     }
 
@@ -95,5 +115,23 @@ impl FixedSizeWidget for RgbSelectorWidget {
 
         self.b.set_position(app, offset);
         offset.y += (MARGIN + self.b.requiring_size(app).height) as i32;
+    }
+}
+
+fn render_color_bar<F>(app: &App, canvas: &mut Canvas, mut region: Region, f: F)
+where
+    F: Fn(&mut Rgba, u8),
+{
+    let mut color = app.models().config.color.get();
+    let w = region.size.width as f64 / 255.0;
+    let mut start_x = region.position.x as f64;
+    let mut end_x = start_x + w;
+    for i in 0..=255 {
+        region.position.x = start_x.round() as i32;
+        region.size.width = (end_x.round() - start_x.round()) as u32;
+        f(&mut color, i);
+        canvas.fill_rectangle(region, color.into());
+        start_x = end_x;
+        end_x += w;
     }
 }

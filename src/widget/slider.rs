@@ -3,11 +3,11 @@ use crate::{
     app::App,
     asset::{ButtonKind, IconId, Text},
     canvas_ext::CanvasExt,
-    event::Event,
+    event::{Event, MouseAction},
 };
 use pagurus::{
     failure::OrFail,
-    spatial::{Position, Region, Size},
+    spatial::{Contains, Position, Region, Size},
     Result,
 };
 use pagurus_game_std::image::Canvas;
@@ -32,13 +32,17 @@ impl SliderWidget {
         max: u32,
         render_bar: fn(&Self, &App, &mut Canvas),
     ) -> Self {
+        let mut left = ButtonWidget::new(ButtonKind::SliderLeft, IconId::Null);
+        let mut right = ButtonWidget::new(ButtonKind::SliderRight, IconId::Null);
+        left.enable_long_press();
+        right.enable_long_press();
         Self {
             region: Default::default(),
             label,
             render_bar,
             input: NumberBoxWidget::new(min, value, max),
-            left: ButtonWidget::new(ButtonKind::SliderLeft, IconId::Null),
-            right: ButtonWidget::new(ButtonKind::SliderRight, IconId::Null),
+            left,
+            right,
         }
     }
 
@@ -48,14 +52,26 @@ impl SliderWidget {
         region.position.x = self.left.region().end().x + MARGIN as i32;
         region.size.width = BAR_WIDTH;
 
-        region.position.y += 6;
-        region.size.height -= 14;
+        region.position.y += 8;
+        region.size.height -= 10;
 
         region
     }
 
     pub fn value(&self) -> u32 {
         self.input.value()
+    }
+
+    fn render_cursor(&self, app: &App, canvas: &mut Canvas) {
+        let cursor = &app.assets().slider_cursor;
+        let mut position = self.bar_region().position;
+        position.y -= 8;
+        position.x -= 3;
+        position.x += (self.bar_region().size.width as f64
+            * (self.input.value() - self.input.min()) as f64
+            / (self.input.max() - self.input.min()) as f64)
+            .round() as i32;
+        canvas.offset(position).draw_sprite(cursor);
     }
 }
 
@@ -80,10 +96,12 @@ impl Widget for SliderWidget {
         self.input.render_if_need(app, canvas);
         self.left.render_if_need(app, canvas);
         (self.render_bar)(self, app, canvas);
+        self.render_cursor(app, canvas);
         self.right.render_if_need(app, canvas);
     }
 
     fn handle_event(&mut self, app: &mut App, event: &mut Event) -> Result<()> {
+        let value = self.input.value();
         self.input.handle_event(app, event).or_fail()?;
 
         self.left.handle_event(app, event).or_fail()?;
@@ -95,6 +113,30 @@ impl Widget for SliderWidget {
         self.right.handle_event(app, event).or_fail()?;
         if self.right.take_clicked(app) {
             self.input.set_value(app, self.input.value() + 1);
+        }
+
+        match event {
+            Event::Mouse {
+                consumed: false,
+                action: MouseAction::Up,
+                position,
+            } => {
+                let bar_region = self.bar_region();
+                if bar_region.contains(position) {
+                    let value =
+                        (position.x - bar_region.position.x) as f64 / bar_region.size.width as f64;
+                    let value = ((self.input.max() - self.input.min()) as f64 * value).round()
+                        as u32
+                        + self.input.min();
+                    self.input.set_value(app, value);
+                }
+            }
+            _ => {}
+        }
+        event.consume_if_contained(self.region);
+
+        if value != self.input.value() {
+            app.request_redraw(self.region);
         }
 
         Ok(())
@@ -129,7 +171,6 @@ impl FixedSizeWidget for SliderWidget {
         offset.x = self.input.region().end().x + MARGIN as i32;
         self.left.set_position(app, offset);
 
-        // TODO: knob
         offset.x = self.bar_region().end().x + MARGIN as i32;
         self.right.set_position(app, offset);
     }

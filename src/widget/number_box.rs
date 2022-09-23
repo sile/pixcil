@@ -34,6 +34,14 @@ impl NumberBoxWidget {
         }
     }
 
+    pub fn min(&self) -> u32 {
+        self.min
+    }
+
+    pub fn max(&self) -> u32 {
+        self.max
+    }
+
     pub fn value(&self) -> u32 {
         self.value
     }

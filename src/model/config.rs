@@ -223,6 +223,10 @@ impl DrawingColor {
     pub const fn get(self) -> Rgba {
         self.0
     }
+
+    pub fn set(&mut self, color: Rgba) {
+        self.0 = color;
+    }
 }
 
 impl Default for DrawingColor {
