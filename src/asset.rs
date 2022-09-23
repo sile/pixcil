@@ -238,6 +238,7 @@ impl Icons {
 pub struct Buttons {
     pub basic: Button,
     pub basic_deep: Button,
+    pub knob: Button,
 }
 
 impl Buttons {
@@ -252,7 +253,12 @@ impl Buttons {
             decode_sprite(include_bytes!("../assets/button-basic-deep-focused.png")).or_fail()?,
             decode_sprite(include_bytes!("../assets/button-basic-deep-pressed.png")).or_fail()?,
         );
-        Ok(Self { basic, basic_deep })
+        let knob = Button::new();
+        Ok(Self {
+            basic,
+            basic_deep,
+            knob,
+        })
     }
 }
 

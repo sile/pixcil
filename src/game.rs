@@ -75,6 +75,7 @@ impl PixcilGame {
         self.windows.extend(app.take_spawned_windows());
         app.set_pending_timeouts(system);
 
+        // TODO: Handle FPS (avoid too many renderings during a short term)
         self.render(system).or_fail()?;
         Ok(())
     }

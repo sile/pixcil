@@ -174,6 +174,10 @@ impl MinimumPixelSize {
         position
     }
 
+    pub fn align(self, position: PixelPosition) -> PixelPosition {
+        self.denormalize(self.normalize(position))
+    }
+
     pub fn denormalize_to_region(self, position: PixelPosition) -> PixelRegion {
         let start = self.denormalize(position);
         let mut end = start;

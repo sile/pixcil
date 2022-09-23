@@ -15,6 +15,7 @@ use pagurus_game_std::image::Canvas;
 pub struct ColorSelectorWindow {
     region: Region,
     terminated: bool,
+    // color, rgb, hsv,  alpha, replace-toggle
 }
 
 impl Window for ColorSelectorWindow {

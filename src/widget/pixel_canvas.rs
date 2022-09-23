@@ -232,11 +232,22 @@ impl Widget for PixelCanvasWidget {
                 }
             }
         }
+
+        for child in self.children() {
+            child.handle_event_after(app).or_fail()?;
+        }
+
         Ok(())
     }
 
     fn children(&mut self) -> Vec<&mut dyn Widget> {
-        Vec::new()
+        let mut children = Vec::new();
+        if let Some(w) = &mut self.manipulate {
+            children.push(w as &mut dyn Widget);
+        } else if let Some(w) = &mut self.move_camera {
+            children.push(w as &mut dyn Widget);
+        }
+        children
     }
 }
 

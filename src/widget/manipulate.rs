@@ -3,6 +3,7 @@ use crate::{
     app::App,
     canvas_ext::CanvasExt,
     event::{Event, MouseAction},
+    model::tool::ToolKind,
     pixel::PixelPosition,
 };
 use pagurus::{failure::OrFail, spatial::Region, Result};
@@ -83,8 +84,10 @@ impl Widget for ManipulateWidget {
                     position,
                 },
             ) => {
-                let pixel_position =
-                    PixelPosition::from_screen_position(app, *position) - self.delta;
+                let unit = app.models().config.minimum_pixel_size;
+                let abs_pixel_position =
+                    unit.align(PixelPosition::from_screen_position(app, *position));
+                let pixel_position = abs_pixel_position - self.delta;
                 if self.manipulating_pixels.contains_key(&pixel_position) {
                     self.state = State::Focused;
                 } else {
@@ -99,7 +102,9 @@ impl Widget for ManipulateWidget {
                     position,
                 },
             ) => {
-                let abs_pixel_position = PixelPosition::from_screen_position(app, *position);
+                let unit = app.models().config.minimum_pixel_size;
+                let abs_pixel_position =
+                    unit.align(PixelPosition::from_screen_position(app, *position));
                 let pixel_position = abs_pixel_position - self.delta;
                 // TODO: Consider non drawn pixels in the target region
                 if self.manipulating_pixels.contains_key(&pixel_position) {
@@ -118,7 +123,9 @@ impl Widget for ManipulateWidget {
                     position,
                 },
             ) => {
-                let abs_pixel_position = PixelPosition::from_screen_position(app, *position);
+                let unit = app.models().config.minimum_pixel_size;
+                let abs_pixel_position =
+                    unit.align(PixelPosition::from_screen_position(app, *position));
                 let moved = abs_pixel_position - start;
                 self.delta.x += moved.x;
                 self.delta.y += moved.y;
@@ -134,7 +141,9 @@ impl Widget for ManipulateWidget {
                     position,
                 },
             ) => {
-                let abs_pixel_position = PixelPosition::from_screen_position(app, *position);
+                let unit = app.models().config.minimum_pixel_size;
+                let abs_pixel_position =
+                    unit.align(PixelPosition::from_screen_position(app, *position));
                 let moved = abs_pixel_position - start;
                 self.delta.x += moved.x;
                 self.delta.y += moved.y;
@@ -151,7 +160,21 @@ impl Widget for ManipulateWidget {
             // TODO: optimize
             app.request_redraw(self.region);
         }
+
         if self.terminated {
+            app.models_mut()
+                .pixel_canvas
+                .move_pixels(self.manipulating_pixels.keys().copied(), self.delta)
+                .or_fail()?;
+        }
+
+        Ok(())
+    }
+
+    fn handle_event_after(&mut self, app: &mut App) -> Result<()> {
+        if app.models().tool.current != ToolKind::Select {
+            self.terminated = true;
+            app.request_redraw(self.region);
             app.models_mut()
                 .pixel_canvas
                 .move_pixels(self.manipulating_pixels.keys().copied(), self.delta)
