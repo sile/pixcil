@@ -1,6 +1,8 @@
 use std::collections::HashSet;
 
-use super::{manipulate::ManipulateWidget, VariableSizeWidget, Widget};
+use super::{
+    manipulate::ManipulateWidget, move_camera::MoveCameraWidget, VariableSizeWidget, Widget,
+};
 use crate::{
     app::App,
     canvas_ext::CanvasExt,
@@ -23,6 +25,7 @@ pub struct PixelCanvasWidget {
     preview_focused: bool,
     tool: ToolModel,
     manipulate: Option<ManipulateWidget>,
+    move_camera: Option<MoveCameraWidget>,
 }
 
 impl PixelCanvasWidget {
@@ -166,6 +169,8 @@ impl Widget for PixelCanvasWidget {
         }
         if let Some(w) = &self.manipulate {
             w.render(app, canvas);
+        } else if let Some(w) = &self.move_camera {
+            w.render(app, canvas);
         }
     }
 
@@ -176,6 +181,8 @@ impl Widget for PixelCanvasWidget {
                 app.request_redraw(w.region());
                 self.manipulate = None;
             }
+        } else if let Some(w) = &mut self.move_camera {
+            w.handle_event(app, event).or_fail()?;
         }
 
         self.marker_handler.handle_event(app, event).or_fail()?;
@@ -216,6 +223,14 @@ impl Widget for PixelCanvasWidget {
         if self.tool != app.models().tool {
             self.tool = app.models().tool.clone();
             self.marker_handler.set_marker_kind(self.tool.marker_kind());
+
+            if self.tool.tool_kind() == ToolKind::Move {
+                self.move_camera = Some(MoveCameraWidget::new(app));
+            } else {
+                if self.move_camera.take().is_some() {
+                    app.request_redraw(self.region);
+                }
+            }
         }
         Ok(())
     }
@@ -226,7 +241,12 @@ impl Widget for PixelCanvasWidget {
 }
 
 impl VariableSizeWidget for PixelCanvasWidget {
-    fn set_region(&mut self, _app: &App, region: Region) {
+    fn set_region(&mut self, app: &App, region: Region) {
         self.region = region;
+        if let Some(w) = &mut self.manipulate {
+            w.set_region(app, region);
+        } else if let Some(w) = &mut self.move_camera {
+            w.set_region(app, region);
+        }
     }
 }

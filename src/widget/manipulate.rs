@@ -1,4 +1,4 @@
-use super::Widget;
+use super::{VariableSizeWidget, Widget};
 use crate::{
     app::App,
     canvas_ext::CanvasExt,
@@ -162,6 +162,12 @@ impl Widget for ManipulateWidget {
 
     fn children(&mut self) -> Vec<&mut dyn Widget> {
         vec![]
+    }
+}
+
+impl VariableSizeWidget for ManipulateWidget {
+    fn set_region(&mut self, _app: &App, region: Region) {
+        self.region = region;
     }
 }
 
