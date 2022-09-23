@@ -52,6 +52,9 @@ impl Assets {
         match kind {
             ButtonKind::Basic => &self.buttons.basic,
             ButtonKind::BasicDeep => &self.buttons.basic_deep,
+            ButtonKind::SliderLeft => &self.buttons.slider_left,
+            ButtonKind::SliderRight => &self.buttons.slider_right,
+            ButtonKind::SliderKnob => &self.buttons.slider_knob,
         }
     }
 }
@@ -78,6 +81,9 @@ pub enum IconId {
 pub enum ButtonKind {
     Basic,
     BasicDeep,
+    SliderLeft,
+    SliderRight,
+    SliderKnob,
 }
 
 impl ButtonKind {
@@ -85,6 +91,9 @@ impl ButtonKind {
         match self {
             ButtonKind::Basic => Size::square(64),
             ButtonKind::BasicDeep => Size::square(64),
+            ButtonKind::SliderLeft => Size::square(32),
+            ButtonKind::SliderRight => Size::square(32),
+            ButtonKind::SliderKnob => Size::from_wh(32, 16),
         }
     }
 }
@@ -238,7 +247,9 @@ impl Icons {
 pub struct Buttons {
     pub basic: Button,
     pub basic_deep: Button,
-    pub knob: Button,
+    pub slider_left: Button,
+    pub slider_right: Button,
+    pub slider_knob: Button,
 }
 
 impl Buttons {
@@ -253,11 +264,43 @@ impl Buttons {
             decode_sprite(include_bytes!("../assets/button-basic-deep-focused.png")).or_fail()?,
             decode_sprite(include_bytes!("../assets/button-basic-deep-pressed.png")).or_fail()?,
         );
-        let knob = Button::new();
+
+        let slider_buttons =
+            decode_sprite(include_bytes!("../assets/slider-button.png")).or_fail()?;
+        let slider_button_block = Size::square(32).to_region();
+        let slider_left = Button::new(
+            slider_buttons.clip(slider_button_block).or_fail()?,
+            slider_buttons
+                .clip(slider_button_block.shift_x(1))
+                .or_fail()?,
+            slider_buttons
+                .clip(slider_button_block.shift_x(2))
+                .or_fail()?,
+        );
+        let slider_button_block = slider_button_block.shift_y(1);
+        let slider_right = Button::new(
+            slider_buttons.clip(slider_button_block).or_fail()?,
+            slider_buttons
+                .clip(slider_button_block.shift_x(1))
+                .or_fail()?,
+            slider_buttons
+                .clip(slider_button_block.shift_x(2))
+                .or_fail()?,
+        );
+
+        let knobs = decode_sprite(include_bytes!("../assets/slider-knob.png")).or_fail()?;
+        let knob_block = Size::from_wh(16, 32).to_region();
+        let slider_knob = Button::new(
+            knobs.clip(knob_block).or_fail()?,
+            knobs.clip(knob_block.shift_x(1)).or_fail()?,
+            knobs.clip(knob_block.shift_x(2)).or_fail()?,
+        );
         Ok(Self {
             basic,
             basic_deep,
-            knob,
+            slider_left,
+            slider_right,
+            slider_knob,
         })
     }
 }

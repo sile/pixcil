@@ -296,6 +296,24 @@ impl ButtonState {
                 ButtonState::Pressed => offset.move_y(16),
                 ButtonState::Clicked => offset.move_y(16),
             },
+            ButtonKind::SliderLeft => match self {
+                ButtonState::Neutral => offset,
+                ButtonState::Focused => offset.move_y(2),
+                ButtonState::Pressed => offset.move_y(4),
+                ButtonState::Clicked => offset.move_y(4),
+            },
+            ButtonKind::SliderRight => match self {
+                ButtonState::Neutral => offset,
+                ButtonState::Focused => offset.move_y(2),
+                ButtonState::Pressed => offset.move_y(4),
+                ButtonState::Clicked => offset.move_y(4),
+            },
+            ButtonKind::SliderKnob => match self {
+                ButtonState::Neutral => offset,
+                ButtonState::Focused => offset.move_y(2),
+                ButtonState::Pressed => offset.move_y(4),
+                ButtonState::Clicked => offset.move_y(4),
+            },
         }
     }
 }
