@@ -10,11 +10,7 @@ use crate::{
     model::tool::{ToolKind, ToolModel},
     pixel::{Pixel, PixelRegion},
 };
-use pagurus::{
-    failure::{Failure, OrFail},
-    spatial::Region,
-    Result,
-};
+use pagurus::{failure::OrFail, spatial::Region, Result};
 use pagurus_game_std::{
     color::{Color, Rgba},
     image::Canvas,
@@ -209,9 +205,7 @@ impl Widget for PixelCanvasWidget {
                         self.marker_handler.marked_pixels(app).collect(),
                     ));
                 }
-                ToolKind::Move => {
-                    return Err(Failure::todo());
-                }
+                ToolKind::Move => {}
             }
         }
         Ok(())

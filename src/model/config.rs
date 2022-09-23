@@ -2,7 +2,7 @@ use crate::{
     pixel::{PixelPosition, PixelRegion, PixelSize},
     serialize::{Deserialize, Serialize},
 };
-use pagurus::{failure::OrFail, Result};
+use pagurus::{failure::OrFail, spatial::Position, Result};
 use pagurus_game_std::color::Rgba;
 use std::io::{Read, Write};
 
@@ -92,20 +92,31 @@ impl Deserialize for Zoom {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct Camera(PixelPosition);
+pub struct Camera(Position);
 
 impl Camera {
-    pub const MIN: Self = Self(PixelPosition::from_xy(-20000, -20000));
-    pub const MAX: Self = Self(PixelPosition::from_xy(20000, 20000));
+    pub const MIN: Self = Self(Position::from_xy(i32::MIN / 2, i32::MIN / 2));
+    pub const MAX: Self = Self(Position::from_xy(i32::MAX / 2, i32::MAX / 2));
 
-    pub const fn get(self) -> PixelPosition {
+    pub const fn get(self) -> Position {
         self.0
+    }
+
+    pub fn r#move(&mut self, delta: Position) {
+        self.0.x = clip(Self::MIN.0.x, self.0.x + delta.x, Self::MAX.0.x);
+        self.0.y = clip(Self::MIN.0.y, self.0.y + delta.y, Self::MAX.0.y);
     }
 }
 
 impl Default for Camera {
     fn default() -> Self {
-        Self(PixelPosition::from_xy(32, 32))
+        let zoom = i32::from(Zoom::default().get());
+        let frame = FrameRegion::default().get().size();
+
+        Self(Position::from_xy(
+            i32::from(frame.width) * zoom / 2,
+            i32::from(frame.height) * zoom / 2,
+        ))
     }
 }
 
@@ -117,10 +128,10 @@ impl Serialize for Camera {
 
 impl Deserialize for Camera {
     fn deserialize<R: Read>(reader: &mut R) -> Result<Self> {
-        let p = PixelPosition::deserialize(reader).or_fail()?;
+        let p = Position::deserialize(reader).or_fail()?;
         let x = clip(Self::MIN.0.x, p.x, Self::MAX.0.x);
         let y = clip(Self::MIN.0.y, p.y, Self::MAX.0.y);
-        Ok(Self(PixelPosition::from_xy(x, y)))
+        Ok(Self(Position::from_xy(x, y)))
     }
 }
 

@@ -1,5 +1,5 @@
 use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
-use pagurus::{failure::OrFail, Result};
+use pagurus::{failure::OrFail, spatial::Position, Result};
 use pagurus_game_std::color::Rgba;
 use std::{
     collections::VecDeque,
@@ -59,6 +59,12 @@ impl Serialize for u32 {
     }
 }
 
+impl Serialize for i32 {
+    fn serialize<W: Write>(&self, writer: &mut W) -> Result<()> {
+        writer.write_i32::<BigEndian>(*self).or_fail()
+    }
+}
+
 impl Serialize for usize {
     fn serialize<W: Write>(&self, writer: &mut W) -> Result<()> {
         let n = u32::try_from(*self).or_fail()?;
@@ -112,6 +118,12 @@ impl Deserialize for i16 {
 impl Deserialize for u32 {
     fn deserialize<R: Read>(reader: &mut R) -> Result<Self> {
         reader.read_u32::<BigEndian>().or_fail()
+    }
+}
+
+impl Deserialize for i32 {
+    fn deserialize<R: Read>(reader: &mut R) -> Result<Self> {
+        reader.read_i32::<BigEndian>().or_fail()
     }
 }
 
@@ -169,5 +181,22 @@ impl Serialize for bool {
 impl Deserialize for bool {
     fn deserialize<R: Read>(reader: &mut R) -> Result<Self> {
         Ok(reader.read_u8().or_fail()? == 1)
+    }
+}
+
+impl Serialize for Position {
+    fn serialize<W: Write>(&self, writer: &mut W) -> Result<()> {
+        self.x.serialize(writer).or_fail()?;
+        self.y.serialize(writer).or_fail()?;
+        Ok(())
+    }
+}
+
+impl Deserialize for Position {
+    fn deserialize<R: Read>(reader: &mut R) -> Result<Self> {
+        Ok(Self::from_xy(
+            Deserialize::deserialize(reader).or_fail()?,
+            Deserialize::deserialize(reader).or_fail()?,
+        ))
     }
 }

@@ -39,7 +39,7 @@ impl PixelPosition {
     pub fn from_screen_position(app: &App, screen: Position) -> Self {
         let zoom = i32::from(app.models().config.zoom.get());
         let camera = app.models().config.camera.get();
-        let center = app.screen_size().to_region().center() - zoom / 2;
+        let center = (app.screen_size().to_region().center() - zoom / 2) - camera;
 
         fn offset(pos: i32, center: i32, zoom: i32) -> i16 {
             if center <= pos {
@@ -52,14 +52,14 @@ impl PixelPosition {
         Self::from_xy(
             offset(screen.x, center.x, zoom),
             offset(screen.y, center.y, zoom),
-        ) + camera
+        )
     }
 
     pub fn to_screen_position(self, app: &App) -> Position {
         let zoom = app.models().config.zoom.get();
-        let center = app.screen_size().to_region().center() - i32::from(zoom) / 2;
-        let Self { x, y } = self - app.models().config.camera.get();
-        Position::from_xy(i32::from(x), i32::from(y)) * u32::from(zoom) + center
+        let camera = app.models().config.camera.get();
+        let center = (app.screen_size().to_region().center() - i32::from(zoom) / 2) - camera;
+        Position::from_xy(i32::from(self.x), i32::from(self.y)) * u32::from(zoom) + center
     }
 
     pub fn to_screen_region(self, app: &App) -> Region {
@@ -82,8 +82,8 @@ impl PixelPosition {
 
 impl Serialize for PixelPosition {
     fn serialize<W: Write>(&self, writer: &mut W) -> Result<()> {
-        self.y.serialize(writer).or_fail()?;
         self.x.serialize(writer).or_fail()?;
+        self.y.serialize(writer).or_fail()?;
         Ok(())
     }
 }
@@ -91,8 +91,8 @@ impl Serialize for PixelPosition {
 impl Deserialize for PixelPosition {
     fn deserialize<R: Read>(reader: &mut R) -> Result<Self> {
         Ok(Self {
-            y: Deserialize::deserialize(reader).or_fail()?,
             x: Deserialize::deserialize(reader).or_fail()?,
+            y: Deserialize::deserialize(reader).or_fail()?,
         })
     }
 }

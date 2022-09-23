@@ -38,7 +38,7 @@ impl Default for ToolModel {
                 marker: MarkerKind::Lasso,
             },
             r#move: MoveToolState {
-                marker: MarkerKind::Point,
+                marker: MarkerKind::Noop,
             },
         }
     }

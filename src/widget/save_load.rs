@@ -45,7 +45,7 @@ impl Widget for SaveLoadWidget {
         canvas.fill_rectangle(self.region, color::BUTTONS_BACKGROUND);
         canvas.draw_rectangle(self.region, color::WINDOW_BORDER);
         self.save.render_if_need(app, canvas);
-        self.load.render_if_need(app, canvas);
+        self.load.render_if_need(app, canvas); // TODO: Disable if there are dirty pixels
         self.import.render_if_need(app, canvas);
     }
 

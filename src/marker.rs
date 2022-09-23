@@ -6,11 +6,11 @@ use crate::{
 use pagurus::Result;
 use std::collections::HashSet;
 
-use self::{lasso::LassoMarker, line::LineMarker, point::PointMarker, stroke::StrokeMarker};
+use self::{lasso::LassoMarker, line::LineMarker, noop::NoopMarker, stroke::StrokeMarker};
 
 pub mod lasso;
 pub mod line;
-pub mod point;
+pub mod noop;
 pub mod stroke;
 
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash)]
@@ -31,7 +31,7 @@ pub enum MarkerKind {
     #[default]
     Stroke,
     Line,
-    Point,
+    Noop,
     Lasso,
 }
 
@@ -39,7 +39,7 @@ pub enum MarkerKind {
 pub enum Marker {
     Stroke(StrokeMarker),
     Line(LineMarker),
-    Point(PointMarker),
+    Noop(NoopMarker),
     Lasso(LassoMarker),
 }
 
@@ -48,7 +48,7 @@ impl Marker {
         match kind {
             MarkerKind::Stroke => Self::Stroke(Default::default()),
             MarkerKind::Line => Self::Line(Default::default()),
-            MarkerKind::Point => Self::Point(Default::default()),
+            MarkerKind::Noop => Self::Noop(Default::default()),
             MarkerKind::Lasso => Self::Lasso(Default::default()),
         }
     }
@@ -65,7 +65,7 @@ impl Mark for Marker {
         match self {
             Marker::Stroke(x) => x.mark(app, position, mouse),
             Marker::Line(x) => x.mark(app, position, mouse),
-            Marker::Point(x) => x.mark(app, position, mouse),
+            Marker::Noop(x) => x.mark(app, position, mouse),
             Marker::Lasso(x) => x.mark(app, position, mouse),
         }
     }
@@ -74,7 +74,7 @@ impl Mark for Marker {
         match self {
             Marker::Stroke(x) => x.marked_pixels(app),
             Marker::Line(x) => x.marked_pixels(app),
-            Marker::Point(x) => x.marked_pixels(app),
+            Marker::Noop(x) => x.marked_pixels(app),
             Marker::Lasso(x) => x.marked_pixels(app),
         }
     }
@@ -94,7 +94,7 @@ impl MarkerHandler {
         match self.marker {
             Marker::Stroke(_) => MarkerKind::Stroke,
             Marker::Line(_) => MarkerKind::Line,
-            Marker::Point(_) => MarkerKind::Point,
+            Marker::Noop(_) => MarkerKind::Noop,
             Marker::Lasso(_) => MarkerKind::Lasso,
         }
     }
