@@ -6,6 +6,7 @@ pub struct ToolModel {
     pub draw: DrawToolState,
     pub erase: EraseToolState,
     pub select: SelectToolState,
+    pub r#move: MoveToolState,
 }
 
 impl ToolModel {
@@ -18,6 +19,7 @@ impl ToolModel {
             ToolKind::Draw => self.draw.marker,
             ToolKind::Erase => self.erase.marker,
             ToolKind::Select => self.select.marker,
+            ToolKind::Move => self.r#move.marker,
         }
     }
 }
@@ -35,6 +37,9 @@ impl Default for ToolModel {
             select: SelectToolState {
                 marker: MarkerKind::Lasso,
             },
+            r#move: MoveToolState {
+                marker: MarkerKind::Point,
+            },
         }
     }
 }
@@ -44,6 +49,7 @@ pub enum ToolKind {
     Draw,
     Erase,
     Select,
+    Move,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -58,5 +64,10 @@ pub struct EraseToolState {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SelectToolState {
+    pub marker: MarkerKind,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct MoveToolState {
     pub marker: MarkerKind,
 }

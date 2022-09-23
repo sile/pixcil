@@ -74,6 +74,7 @@ impl Widget for ToolBoxWidget {
                             Tool::Draw => app.models_mut().tool.current = ToolKind::Draw,
                             Tool::Erase => app.models_mut().tool.current = ToolKind::Erase,
                             Tool::Select => app.models_mut().tool.current = ToolKind::Select,
+                            Tool::Move => app.models_mut().tool.current = ToolKind::Move,
                             _ => return Err(Failure::todo()),
                         }
                     }
