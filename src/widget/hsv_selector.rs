@@ -37,7 +37,7 @@ impl HsvSelectorWidget {
             s: SliderWidget::new(
                 "S".parse().expect("unreachable"),
                 0,
-                (hsv.h * 100.0).round() as u32,
+                (hsv.s * 100.0).round() as u32,
                 100,
                 |slider, app, canvas| {
                     render_color_bar(app, canvas, slider.bar_region(), 100, |color, i| {
@@ -48,7 +48,7 @@ impl HsvSelectorWidget {
             v: SliderWidget::new(
                 "V".parse().expect("unreachable"),
                 0,
-                (hsv.h * 100.0).round() as u32,
+                (hsv.v * 100.0).round() as u32,
                 100,
                 |slider, app, canvas| {
                     render_color_bar(app, canvas, slider.bar_region(), 100, |color, i| {
