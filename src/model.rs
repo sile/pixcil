@@ -1,13 +1,11 @@
 use self::{config::ConfigModel, pixel_canvas::PixelCanvasModel, tool::ToolModel};
 use crate::{
     app::App,
+    pixel::{Pixel, PixelPosition},
     serialize::{Deserialize, Serialize},
 };
-use pagurus::{
-    failure::{Failure, OrFail},
-    Result,
-};
-use pagurus_game_std::color::Rgba;
+use pagurus::{failure::OrFail, Result};
+use pagurus_game_std::{color::Rgba, png::decode_sprite};
 use png::chunk::ChunkType;
 use std::io::{Read, Write};
 
@@ -79,9 +77,24 @@ impl Models {
                 return Ok(models);
             }
         }
-        Err(Failure::new(format!(
-            "No {PNG_CHUNK_TYPE:?} chunk in PNG file"
-        )))
+
+        // Load the image with the default settings.
+        let mut models = Self::default();
+        let image = decode_sprite(png_data).or_fail()?;
+        models
+            .pixel_canvas
+            .draw_pixels(
+                &models.config,
+                image.pixels().map(|(pos, rgba)| {
+                    Pixel::new(PixelPosition::from_xy(pos.x as i16, pos.y as i16), rgba)
+                }),
+            )
+            .or_fail()?;
+        models.pixel_canvas.forget_oldest_command();
+        models.config.frame.set_width(image.size().width as u16);
+        models.config.frame.set_height(image.size().height as u16);
+
+        Ok(models)
     }
 }
 
