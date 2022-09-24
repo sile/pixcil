@@ -1,4 +1,5 @@
 use crate::{
+    app::App,
     pixel::{PixelPosition, PixelRegion, PixelSize},
     serialize::{Deserialize, Serialize},
 };
@@ -111,6 +112,20 @@ impl Camera {
     pub fn r#move(&mut self, delta: Position) {
         self.0.x = clip(Self::MIN.0.x, self.0.x + delta.x, Self::MAX.0.x);
         self.0.y = clip(Self::MIN.0.y, self.0.y + delta.y, Self::MAX.0.y);
+    }
+
+    pub fn current_frame(self, app: &App) -> usize {
+        let config = &app.models().config;
+        let frame_count = config.animation.enabled_frame_count();
+        if frame_count == 1 {
+            0
+        } else {
+            let frame_width = config.frame.get_base_region().size().width;
+            let base_frame_position = config.frame.get_base_region().start;
+            let position = PixelPosition::from_screen_position(app, self.0);
+            let index = (position.x - base_frame_position.x) / frame_width as i16;
+            clip(0, index, frame_count as i16 - 1) as usize
+        }
     }
 }
 
@@ -265,10 +280,12 @@ impl FrameRegion {
         self.region
     }
 
-    pub fn get_preview_region(self, config: &ConfigModel) -> PixelRegion {
+    pub fn get_preview_region(self, config: &ConfigModel, frame: usize) -> PixelRegion {
         let layers = config.layer.enabled_count() - 1;
         let region = self.get_base_region();
-        region.move_y(region.size().height as i16 * layers as i16)
+        region
+            .move_y(region.size().height as i16 * layers as i16)
+            .move_x(region.size().width as i16 * frame as i16)
     }
 
     pub fn set_width(&mut self, width: u16) {
@@ -578,6 +595,14 @@ impl Animation {
 
     pub const fn frame_count(self) -> u16 {
         self.frame_count
+    }
+
+    pub fn enabled_frame_count(self) -> u16 {
+        if self.enabled {
+            self.frame_count
+        } else {
+            1
+        }
     }
 
     pub fn set_frame_count(&mut self, n: u16) {

@@ -24,13 +24,15 @@ pub struct PreviewWidget {
 
 impl PreviewWidget {
     fn render_pixels(&self, app: &App, canvas: &mut Canvas) {
+        let current_frame = app.models().config.camera.current_frame(app);
+
         let preview_frame_region = self.frame_region();
         let drawing_region = preview_frame_region.intersection(canvas.drawing_region());
         let pixel_frame_start = app
             .models()
             .config
             .frame
-            .get_preview_region(&app.models().config)
+            .get_preview_region(&app.models().config, current_frame)
             .start;
         let mut offset = preview_frame_region.start();
         offset.x -= i32::from(pixel_frame_start.x);
@@ -123,11 +125,12 @@ impl Widget for PreviewWidget {
             return Ok(());
         }
 
+        let current_frame = app.models().config.camera.current_frame(app);
         let preview_pixel_region = app
             .models()
             .config
             .frame
-            .get_preview_region(&app.models().config);
+            .get_preview_region(&app.models().config, current_frame);
         if let Some(frame_size) = self.frame_size {
             if frame_size != preview_pixel_region.size() {
                 let old = frame_size;

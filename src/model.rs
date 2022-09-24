@@ -31,7 +31,7 @@ impl Models {
         let image_data = self
             .config
             .frame
-            .get_preview_region(&self.config)
+            .get_preview_region(&self.config, 0) // TODO: handle animation
             .pixels()
             .flat_map(|position| {
                 let color = self

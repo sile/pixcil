@@ -33,11 +33,12 @@ impl PixelCanvasWidget {
         if self.preview_focused != focused {
             self.preview_focused = focused;
 
+            let current_frame = app.models().config.camera.current_frame(app);
             let mut region = app
                 .models()
                 .config
                 .frame
-                .get_preview_region(&app.models().config)
+                .get_preview_region(&app.models().config, current_frame)
                 .to_screen_region(app);
             region.size = region.size + 1;
             app.request_redraw(self.region.intersection(region));
@@ -190,11 +191,12 @@ impl Widget for PixelCanvasWidget {
             self.render_selected_pixels(app, canvas);
         }
         if self.preview_focused {
+            let current_frame = app.models().config.camera.current_frame(app);
             let mut region = app
                 .models()
                 .config
                 .frame
-                .get_preview_region(&app.models().config)
+                .get_preview_region(&app.models().config, current_frame)
                 .to_screen_region(app);
             region.size = region.size + 1;
             canvas.draw_rectangle(region, color::PREVIEW_FOCUSED_BORDER);
