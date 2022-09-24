@@ -162,9 +162,14 @@ impl Widget for ManipulateWidget {
         }
 
         if self.terminated {
+            let config = app.models().config.clone();
             app.models_mut()
                 .pixel_canvas
-                .move_pixels(self.manipulating_pixels.keys().copied(), self.delta)
+                .move_pixels(
+                    &config,
+                    self.manipulating_pixels.keys().copied(),
+                    self.delta,
+                )
                 .or_fail()?;
         }
 
@@ -175,9 +180,14 @@ impl Widget for ManipulateWidget {
         if app.models().tool.current != ToolKind::Select {
             self.terminated = true;
             app.request_redraw(self.region);
+            let config = app.models().config.clone();
             app.models_mut()
                 .pixel_canvas
-                .move_pixels(self.manipulating_pixels.keys().copied(), self.delta)
+                .move_pixels(
+                    &config,
+                    self.manipulating_pixels.keys().copied(),
+                    self.delta,
+                )
                 .or_fail()?;
         }
         Ok(())

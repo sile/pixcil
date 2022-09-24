@@ -73,13 +73,21 @@ impl Widget for UndoRedoWidget {
     fn handle_event(&mut self, app: &mut App, event: &mut Event) -> Result<()> {
         self.redo.handle_event(app, event).or_fail()?;
         if self.redo.take_clicked(app) {
-            app.models_mut().pixel_canvas.redo_command().or_fail()?;
+            let config = app.models().config.clone();
+            app.models_mut()
+                .pixel_canvas
+                .redo_command(&config)
+                .or_fail()?;
             self.request_redraw_dirty_canvas_region(app);
         }
 
         self.undo.handle_event(app, event).or_fail()?;
         if self.undo.take_clicked(app) {
-            app.models_mut().pixel_canvas.undo_command().or_fail()?;
+            let config = app.models().config.clone();
+            app.models_mut()
+                .pixel_canvas
+                .undo_command(&config)
+                .or_fail()?;
             self.request_redraw_dirty_canvas_region(app);
         }
 

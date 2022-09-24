@@ -1,5 +1,5 @@
 use crate::{
-    pixel::{Pixel, PixelPosition, PixelRegion, PixelSize},
+    pixel::{Pixel, PixelPosition, PixelRegion},
     serialize::{Deserialize, Serialize},
 };
 use pagurus::{failure::OrFail, Result};
@@ -22,7 +22,11 @@ pub struct PixelCanvasModel {
 }
 
 impl PixelCanvasModel {
-    pub fn draw_pixels(&mut self, pixels: impl Iterator<Item = Pixel>) -> Result<()> {
+    pub fn draw_pixels(
+        &mut self,
+        config: &ConfigModel,
+        pixels: impl Iterator<Item = Pixel>,
+    ) -> Result<()> {
         let mut command = PixelCanvasCommand::default();
         command.draw = pixels.collect();
         command.draw.sort_by_key(|x| x.position);
@@ -32,11 +36,15 @@ impl PixelCanvasModel {
                 command.erase.push(Pixel::new(pixel.position, color));
             }
         }
-        self.apply_command(command).or_fail()?;
+        self.apply_command(config, command).or_fail()?;
         Ok(())
     }
 
-    pub fn erase_pixels(&mut self, pixels: impl Iterator<Item = PixelPosition>) -> Result<()> {
+    pub fn erase_pixels(
+        &mut self,
+        config: &ConfigModel,
+        pixels: impl Iterator<Item = PixelPosition>,
+    ) -> Result<()> {
         let mut command = PixelCanvasCommand::default();
         for position in pixels {
             if let Some(color) = self.pixels.get_pixel(position) {
@@ -44,12 +52,13 @@ impl PixelCanvasModel {
             }
         }
         command.erase.sort_by_key(|x| x.position);
-        self.apply_command(command).or_fail()?;
+        self.apply_command(config, command).or_fail()?;
         Ok(())
     }
 
     pub fn move_pixels(
         &mut self,
+        config: &ConfigModel,
         pixels: impl Iterator<Item = PixelPosition>,
         delta: PixelPosition,
     ) -> Result<()> {
@@ -71,11 +80,11 @@ impl PixelCanvasModel {
         command.erase.sort_by_key(|x| x.position);
         command.erase.dedup();
 
-        self.apply_command(command).or_fail()?;
+        self.apply_command(config, command).or_fail()?;
         Ok(())
     }
 
-    pub fn replace_color(&mut self, old: Rgba, new: Rgba) -> Result<()> {
+    pub fn replace_color(&mut self, config: &ConfigModel, old: Rgba, new: Rgba) -> Result<()> {
         // TODO: optimize (e.g., to use cache to get target pixels)
 
         let mut command = PixelCanvasCommand::default();
@@ -91,18 +100,18 @@ impl PixelCanvasModel {
         command.erase.sort_by_key(|x| x.position);
         command.erase.dedup();
 
-        self.apply_command(command).or_fail()?;
+        self.apply_command(config, command).or_fail()?;
         Ok(())
     }
 
-    fn apply_command(&mut self, command: PixelCanvasCommand) -> Result<()> {
+    fn apply_command(&mut self, config: &ConfigModel, command: PixelCanvasCommand) -> Result<()> {
         if command.erase.is_empty() && command.draw.is_empty() {
             return Ok(());
         }
 
         self.command_log.truncate(self.command_log_tail);
         self.command_log.push_back(command);
-        self.redo_command().or_fail()?;
+        self.redo_command(config).or_fail()?;
 
         Ok(())
     }
@@ -136,67 +145,52 @@ impl PixelCanvasModel {
         layer: Layer,
         position: PixelPosition,
     ) -> Option<Rgba> {
-        let layers = layer.enabled_count();
-        if layers == 1 {
-            return self.pixels.get_pixel(position);
-        }
-
-        let frame = frame.get();
-        if frame.contains(position) {
-            return self.pixels.get_pixel(position);
-        }
-
-        let layer_region = PixelRegion::from_position_and_size(
-            frame.start,
-            PixelSize::from_wh(frame.size().width, frame.size().height * layers),
-        );
-        if !layer_region.contains(position) {
-            return self.pixels.get_pixel(position);
-        }
-
-        let mut current = PixelPosition::from_xy(
-            position.x,
-            (position.y - frame.start.y) % frame.size().height as i16 + frame.start.y,
-        );
         let mut color = None;
-        for _ in 0..layers {
-            if let Some(c) = self.pixels.get_pixel(current) {
+        layer.for_each_lower_layer_pixel(frame, position, |position| {
+            if let Some(c) = self.pixels.get_pixel(position) {
                 color = Some(color.map_or(c, |d| c.alpha_blend(d)));
             }
-
-            current.y += frame.size().height as i16;
-            if current == position {
-                break;
-            }
-        }
+        });
         color
     }
 
-    pub fn undo_command(&mut self) -> Result<()> {
+    pub fn undo_command(&mut self, config: &ConfigModel) -> Result<()> {
         if let Some(i) = self.command_log_tail.checked_sub(1) {
+            let layer = config.layer;
+            let frame = config.frame;
             let command = &self.command_log[i];
             for &pixel in &command.draw {
                 self.pixels.erase_pixel(pixel).or_fail()?;
-                self.dirty_positions.insert(pixel.position);
+                layer.for_each_upper_layer_pixel(frame, pixel.position, |position| {
+                    self.dirty_positions.insert(position);
+                });
             }
             for &pixel in &command.erase {
                 self.pixels.draw_pixel(pixel).or_fail()?;
-                self.dirty_positions.insert(pixel.position);
+                layer.for_each_upper_layer_pixel(frame, pixel.position, |position| {
+                    self.dirty_positions.insert(position);
+                });
             }
             self.command_log_tail = i;
         }
         Ok(())
     }
 
-    pub fn redo_command(&mut self) -> Result<()> {
+    pub fn redo_command(&mut self, config: &ConfigModel) -> Result<()> {
         if let Some(command) = self.command_log.get(self.command_log_tail) {
+            let layer = config.layer;
+            let frame = config.frame;
             for &pixel in &command.erase {
                 self.pixels.erase_pixel(pixel).or_fail()?;
-                self.dirty_positions.insert(pixel.position);
+                layer.for_each_upper_layer_pixel(frame, pixel.position, |position| {
+                    self.dirty_positions.insert(position);
+                });
             }
             for &pixel in &command.draw {
                 self.pixels.draw_pixel(pixel).or_fail()?;
-                self.dirty_positions.insert(pixel.position);
+                layer.for_each_upper_layer_pixel(frame, pixel.position, |position| {
+                    self.dirty_positions.insert(position);
+                });
             }
             self.command_log_tail += 1;
         }

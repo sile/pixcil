@@ -6,7 +6,7 @@ use pagurus::{failure::OrFail, spatial::Position, Result};
 use pagurus_game_std::color::Rgba;
 use std::io::{Read, Write};
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct ConfigModel {
     pub zoom: Zoom,
     pub camera: Camera,
@@ -370,8 +370,8 @@ pub struct Layer {
 }
 
 impl Layer {
-    const MIN: u16 = 1;
-    const MAX: u16 = 100;
+    pub const MIN: u16 = 1;
+    pub const MAX: u16 = 10;
 
     pub const fn is_enabled(self) -> bool {
         self.enabled
@@ -395,6 +395,79 @@ impl Layer {
 
     pub fn set_count(&mut self, n: u16) {
         self.count = clip(Self::MIN, n, Self::MAX);
+    }
+
+    pub fn for_each_lower_layer_pixel<F>(
+        self,
+        frame: FrameRegion,
+        position: PixelPosition,
+        mut f: F,
+    ) where
+        F: FnMut(PixelPosition),
+    {
+        let layers = self.enabled_count();
+        if layers == 1 {
+            f(position);
+            return;
+        }
+
+        let frame = frame.get();
+        if frame.contains(position) {
+            f(position);
+            return;
+        }
+
+        let layer_region = PixelRegion::from_position_and_size(
+            frame.start,
+            PixelSize::from_wh(frame.size().width, frame.size().height * layers),
+        );
+        if !layer_region.contains(position) {
+            f(position);
+            return;
+        }
+
+        let mut current = PixelPosition::from_xy(
+            position.x,
+            (position.y - frame.start.y) % frame.size().height as i16 + frame.start.y,
+        );
+        for _ in 0..=layers {
+            f(current);
+            if current == position {
+                break;
+            }
+            current.y += frame.size().height as i16;
+        }
+    }
+
+    pub fn for_each_upper_layer_pixel<F>(
+        self,
+        frame: FrameRegion,
+        position: PixelPosition,
+        mut f: F,
+    ) where
+        F: FnMut(PixelPosition),
+    {
+        let layers = self.enabled_count();
+        if layers == 1 {
+            f(position);
+            return;
+        }
+
+        let frame = frame.get();
+        let layer_region = PixelRegion::from_position_and_size(
+            frame.start,
+            PixelSize::from_wh(frame.size().width, frame.size().height * layers),
+        );
+        if !layer_region.contains(position) {
+            f(position);
+            return;
+        }
+
+        let mut current = position;
+        while layer_region.contains(current) {
+            f(current);
+            current.y += frame.size().height as i16;
+        }
     }
 }
 

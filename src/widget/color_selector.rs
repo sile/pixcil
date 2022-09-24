@@ -94,7 +94,11 @@ impl ColorSelectorWidget {
 
     fn cancel_color_replace_if_need(&mut self, app: &mut App) -> Result<()> {
         if self.replaced {
-            app.models_mut().pixel_canvas.undo_command().or_fail()?;
+            let config = app.models().config.clone();
+            app.models_mut()
+                .pixel_canvas
+                .undo_command(&config)
+                .or_fail()?;
             app.request_redraw(app.screen_size().to_region());
             self.replaced = false;
         }
@@ -109,10 +113,11 @@ impl ColorSelectorWidget {
             return Ok(());
         }
 
+        let config = app.models().config.clone();
         let command_log_tail = app.models().pixel_canvas.command_log_tail();
         app.models_mut()
             .pixel_canvas
-            .replace_color(self.old_color, new_color)
+            .replace_color(&config, self.old_color, new_color)
             .or_fail()?;
         if command_log_tail != app.models().pixel_canvas.command_log_tail() {
             self.replaced = true;

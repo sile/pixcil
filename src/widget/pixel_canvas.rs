@@ -191,6 +191,7 @@ impl Widget for PixelCanvasWidget {
 
         self.marker_handler.handle_event(app, event).or_fail()?;
         if self.marker_handler.is_completed() {
+            let config = app.models().config.clone();
             match self.tool.tool_kind() {
                 ToolKind::Draw => {
                     let color = app.models().config.color.get();
@@ -200,14 +201,14 @@ impl Widget for PixelCanvasWidget {
                         .map(|pos| Pixel::new(pos, color));
                     app.models_mut()
                         .pixel_canvas
-                        .draw_pixels(pixels)
+                        .draw_pixels(&config, pixels)
                         .or_fail()?;
                 }
                 ToolKind::Erase => {
                     let pixels = self.marker_handler.marked_pixels(app);
                     app.models_mut()
                         .pixel_canvas
-                        .erase_pixels(pixels)
+                        .erase_pixels(&config, pixels)
                         .or_fail()?;
                 }
                 ToolKind::Select => {
@@ -219,10 +220,7 @@ impl Widget for PixelCanvasWidget {
                 ToolKind::Move => {}
                 ToolKind::Pick => {
                     if let Some(position) = self.marker_handler().marked_pixels(app).next() {
-                        if let Some(color) = app
-                            .models()
-                            .pixel_canvas
-                            .get_pixel(&app.models().config, position)
+                        if let Some(color) = app.models().pixel_canvas.get_pixel(&config, position)
                         {
                             app.models_mut().config.color.set(color);
                         }
@@ -247,7 +245,13 @@ impl Widget for PixelCanvasWidget {
     }
 
     fn handle_event_after(&mut self, app: &mut App) -> Result<()> {
-        app.models_mut().pixel_canvas.take_dirty_positions();
+        let dirty_pixels = app.models_mut().pixel_canvas.take_dirty_positions();
+        if !dirty_pixels.is_empty() {
+            let dirty_region =
+                PixelRegion::from_positions(dirty_pixels.into_iter()).to_screen_region(app);
+            app.request_redraw(dirty_region);
+        }
+
         if self.tool != app.models().tool {
             self.tool = app.models().tool.clone();
             self.marker_handler.set_marker_kind(self.tool.marker_kind());
