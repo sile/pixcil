@@ -2,7 +2,9 @@ use super::{
     block::BlockWidget, number_box::NumberBoxWidget, toggle::ToggleWidget, FixedSizeWidget,
     VariableSizeWidget, Widget,
 };
-use crate::{app::App, event::Event, pixel::PixelSize, region_ext::RegionExt};
+use crate::{
+    app::App, event::Event, model::config::Layer, pixel::PixelSize, region_ext::RegionExt,
+};
 use pagurus::{
     failure::OrFail,
     spatial::{Position, Region, Size},
@@ -14,7 +16,6 @@ const MARGIN: u32 = 8;
 const GROUP_MARGIN: u32 = 24;
 
 // TODO
-// - layer count (slider)
 // - animation
 //   - frame count (slider)
 //   - fps (slider)
@@ -34,6 +35,7 @@ pub struct ConfigWidget {
 
     // Layer settings
     layer_enable: BlockWidget<ToggleWidget>,
+    layer_count: BlockWidget<NumberBoxWidget>,
 }
 
 impl ConfigWidget {
@@ -47,7 +49,7 @@ impl ConfigWidget {
 
             // General
             minimum_pixel_size: BlockWidget::new(
-                "MINIMUM PIXEL SIZE".parse().expect("unreachable"),
+                "PIXEL SIZE".parse().expect("unreachable"),
                 NumberBoxWidget::new(1, minimum_pixel_size.width as u32, 9999),
             ),
             max_undos: BlockWidget::new(
@@ -74,6 +76,10 @@ impl ConfigWidget {
                 "LAYER ENABLE".parse().expect("unreachable"),
                 ToggleWidget::new(layer.is_enabled()),
             ),
+            layer_count: BlockWidget::new(
+                "LAYER COUNT".parse().expect("unreachable"),
+                NumberBoxWidget::new(Layer::MIN as u32, layer.count() as u32, Layer::MAX as u32),
+            ),
         }
     }
 }
@@ -95,6 +101,7 @@ impl Widget for ConfigWidget {
 
         // Layer
         self.layer_enable.render_if_need(app, canvas);
+        self.layer_count.render_if_need(app, canvas);
     }
 
     fn handle_event(&mut self, app: &mut App, event: &mut Event) -> Result<()> {
@@ -139,6 +146,12 @@ impl Widget for ConfigWidget {
             .config
             .layer
             .set_enabled(self.layer_enable.body().is_on());
+
+        self.layer_count.handle_event(app, event).or_fail()?;
+        app.models_mut()
+            .config
+            .layer
+            .set_count(self.layer_count.body().value() as u16);
         if layer != app.models_mut().config.layer {
             app.request_redraw(app.screen_size().to_region());
         }
@@ -157,6 +170,7 @@ impl Widget for ConfigWidget {
             &mut self.frame_preview,
             // Layer
             &mut self.layer_enable,
+            &mut self.layer_count,
         ]
     }
 }
@@ -173,7 +187,8 @@ impl FixedSizeWidget for ConfigWidget {
         frame_settings_size.width += MARGIN + self.frame_height.requiring_size(app).width;
 
         // Layer
-        let layer_settings_size = self.layer_enable.requiring_size(app);
+        let mut layer_settings_size = self.layer_enable.requiring_size(app);
+        layer_settings_size.width += MARGIN + self.layer_count.requiring_size(app).width;
 
         Size::from_wh(
             general_settings_size
@@ -225,5 +240,10 @@ impl FixedSizeWidget for ConfigWidget {
         let mut layer_enable_region = region;
         layer_enable_region.size = self.layer_enable.requiring_size(app);
         self.layer_enable.set_region(app, layer_enable_region);
+
+        let mut layer_count_region = region;
+        layer_count_region.position.x = layer_enable_region.end().x + MARGIN as i32;
+        layer_count_region.size = self.layer_count.requiring_size(app);
+        self.layer_count.set_region(app, layer_count_region);
     }
 }

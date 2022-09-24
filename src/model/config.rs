@@ -520,8 +520,8 @@ impl Layer {
 impl Default for Layer {
     fn default() -> Self {
         Self {
-            enabled: true,
-            count: 2,
+            enabled: false,
+            count: 1,
         }
     }
 }
