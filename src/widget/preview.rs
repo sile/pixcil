@@ -3,10 +3,11 @@ use crate::{
     app::App,
     canvas_ext::CanvasExt,
     color,
-    event::Event,
+    event::{Event, TimeoutId},
     pixel::{PixelPosition, PixelRegion, PixelSize},
 };
 use pagurus::{
+    failure::OrFail,
     spatial::{Contains, Position, Region, Size},
     Result,
 };
@@ -20,11 +21,16 @@ pub struct PreviewWidget {
     focused: bool,
     preview_off: bool,
     frame_size: Option<PixelSize>,
+    playing: Option<Playing>,
 }
 
 impl PreviewWidget {
     fn render_pixels(&self, app: &App, canvas: &mut Canvas) {
-        let current_frame = app.models().config.camera.current_frame(app);
+        let current_frame = if let Some(playing) = &self.playing {
+            playing.current_frame
+        } else {
+            app.models().config.camera.current_frame(app)
+        };
 
         let preview_frame_region = self.frame_region();
         let drawing_region = preview_frame_region.intersection(canvas.drawing_region());
@@ -114,6 +120,16 @@ impl Widget for PreviewWidget {
                 }
             }
             self.set_focused(app, focused);
+            if self.focused && app.models().config.animation.is_enabled() && self.playing.is_none()
+            {
+                self.playing = Some(Playing::start(app));
+            }
+        }
+        if let Some(playing) = &mut self.playing {
+            playing.handle_event(app, event, self.region).or_fail()?;
+        }
+        if !self.focused {
+            self.playing = None;
         }
         Ok(())
     }
@@ -177,5 +193,40 @@ impl FixedSizeWidget for PreviewWidget {
 
     fn set_position(&mut self, app: &App, position: Position) {
         self.region = Region::new(position, self.requiring_size(app));
+    }
+}
+
+#[derive(Debug)]
+struct Playing {
+    timeout: TimeoutId,
+    current_frame: usize,
+}
+
+impl Playing {
+    fn start(app: &mut App) -> Self {
+        let current_frame = app.models().config.camera.current_frame(app);
+        let frame_interval = app.models().config.animation.frame_interval();
+        Self {
+            timeout: app.set_timeout(frame_interval),
+            current_frame,
+        }
+    }
+
+    fn handle_event(&mut self, app: &mut App, event: &Event, preview_region: Region) -> Result<()> {
+        match event {
+            Event::Timeout(id) if self.timeout == *id => {
+                let frame_interval = app.models().config.animation.frame_interval();
+                self.timeout = app.set_timeout(frame_interval);
+                self.current_frame += 1;
+                if self.current_frame
+                    >= app.models().config.animation.enabled_frame_count() as usize
+                {
+                    self.current_frame = 0;
+                }
+                app.request_redraw(preview_region);
+            }
+            _ => {}
+        }
+        Ok(())
     }
 }

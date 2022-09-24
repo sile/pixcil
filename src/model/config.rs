@@ -5,7 +5,10 @@ use crate::{
 };
 use pagurus::{failure::OrFail, spatial::Position, Result};
 use pagurus_game_std::color::Rgba;
-use std::io::{Read, Write};
+use std::{
+    io::{Read, Write},
+    time::Duration,
+};
 
 #[derive(Debug, Default, Clone)]
 pub struct ConfigModel {
@@ -607,6 +610,10 @@ impl Animation {
 
     pub fn set_frame_count(&mut self, n: u16) {
         self.frame_count = clip(Self::MIN_FRAME_COUNT, n, Self::MAX_FRAME_COUNT);
+    }
+
+    pub fn frame_interval(self) -> Duration {
+        Duration::from_secs(1) / u32::from(self.fps)
     }
 }
 
