@@ -105,7 +105,8 @@ impl Widget for ManipulateWidget {
                 let unit = app.models().config.minimum_pixel_size;
                 let abs_pixel_position =
                     unit.align(PixelPosition::from_screen_position(app, *position));
-                let pixel_position = abs_pixel_position - self.delta;
+                let pixel_position =
+                    PixelPosition::from_screen_position(app, *position) - self.delta;
                 // TODO: Consider non drawn pixels in the target region
                 if self.manipulating_pixels.contains_key(&pixel_position) {
                     self.state = State::Dragging {

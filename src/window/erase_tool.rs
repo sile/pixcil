@@ -1,52 +1,38 @@
-use super::Window;
-use crate::{
-    app::App,
-    canvas_ext::CanvasExt,
-    color,
-    event::{Event, MouseAction},
-};
-use pagurus::{
-    spatial::{Contains, Region, Size},
-    Result,
-};
+use super::{widget::WidgetWindow, Window};
+use crate::{app::App, event::Event, widget::erase_tool::EraseToolWidget};
+use pagurus::{failure::OrFail, spatial::Region, Result};
 use pagurus_game_std::image::Canvas;
 
-#[derive(Debug, Default)]
-pub struct EraseToolWindow {
-    region: Region,
-    terminated: bool,
+#[derive(Debug)]
+pub struct EraseToolWindow(WidgetWindow<EraseToolWidget>);
+
+impl EraseToolWindow {
+    pub fn new(app: &App) -> Result<Self> {
+        EraseToolWidget::new(app)
+            .or_fail()
+            .map(|w| WidgetWindow::with_margin(w, 8))
+            .map(Self)
+    }
 }
 
 impl Window for EraseToolWindow {
     fn region(&self) -> Region {
-        self.region
+        self.0.region()
     }
 
-    fn render(&self, _app: &App, canvas: &mut Canvas) {
-        canvas.fill_rectangle(self.region, color::WINDOW_BACKGROUND);
-        canvas.draw_rectangle(self.region, color::WINDOW_BORDER);
+    fn render(&self, app: &App, canvas: &mut Canvas) {
+        self.0.render(app, canvas);
     }
 
     fn is_terminated(&self) -> bool {
-        self.terminated
+        self.0.is_terminated()
     }
 
     fn handle_screen_resized(&mut self, app: &mut App) -> Result<()> {
-        let center = app.screen_size().to_region().center();
-        self.region = Region::new(center - 100, Size::square(200));
-        Ok(())
+        self.0.handle_screen_resized(app).or_fail()
     }
 
-    fn handle_event(&mut self, _app: &mut App, event: &mut Event) -> Result<()> {
-        if let Event::Mouse {
-            action, position, ..
-        } = event
-        {
-            if *action == MouseAction::Up && !self.region.contains(position) {
-                self.terminated = true;
-            }
-            event.consume();
-        }
-        Ok(())
+    fn handle_event(&mut self, app: &mut App, event: &mut Event) -> Result<()> {
+        self.0.handle_event(app, event).or_fail()
     }
 }

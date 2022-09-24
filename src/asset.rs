@@ -55,6 +55,8 @@ impl Assets {
             IconId::PenRectangle => &self.icons.pen_rectangle,
             IconId::PenCircle => &self.icons.pen_circle,
             IconId::Bucket => &self.icons.bucket,
+            IconId::ScissorRectangle => &self.icons.scissor_rectangle,
+            IconId::ScissorLasso => &self.icons.scissor_lasso,
         }
     }
 
@@ -90,6 +92,8 @@ pub enum IconId {
     PenRectangle,
     PenCircle,
     Bucket,
+    ScissorRectangle,
+    ScissorLasso,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -240,6 +244,8 @@ pub struct Icons {
     pub pen_rectangle: Sprite,
     pub pen_circle: Sprite,
     pub bucket: Sprite,
+    pub scissor_rectangle: Sprite,
+    pub scissor_lasso: Sprite,
 }
 
 impl Icons {
@@ -265,6 +271,12 @@ impl Icons {
                 .or_fail()?,
             pen_circle: decode_sprite(include_bytes!("../assets/icon-pen-circle.png")).or_fail()?,
             bucket: decode_sprite(include_bytes!("../assets/icon-bucket.png")).or_fail()?,
+            scissor_rectangle: decode_sprite(include_bytes!(
+                "../assets/icon-scissor-rectangle.png"
+            ))
+            .or_fail()?,
+            scissor_lasso: decode_sprite(include_bytes!("../assets/icon-scissor-lasso.png"))
+                .or_fail()?,
         })
     }
 }
