@@ -8,7 +8,6 @@ pub mod draw_tool;
 pub mod erase_tool;
 pub mod main;
 pub mod move_tool;
-pub mod pick_tool;
 pub mod select_tool;
 pub mod widget;
 

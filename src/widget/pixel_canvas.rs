@@ -213,6 +213,13 @@ impl Widget for PixelCanvasWidget {
                     ));
                 }
                 ToolKind::Move => {}
+                ToolKind::Pick => {
+                    if let Some(position) = self.marker_handler().marked_pixels(app).next() {
+                        if let Some(color) = app.models().pixel_canvas.get_pixel(position) {
+                            app.models_mut().config.color.set(color);
+                        }
+                    }
+                }
             }
         }
         Ok(())

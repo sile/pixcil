@@ -193,7 +193,7 @@ impl MinimumPixelSize {
 
 impl Default for MinimumPixelSize {
     fn default() -> Self {
-        Self(PixelSize::square(1))
+        Self(PixelSize::square(2))
     }
 }
 

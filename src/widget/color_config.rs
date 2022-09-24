@@ -78,12 +78,18 @@ impl Widget for ColorConfigWidget {
 
         event.consume_if_contained(self.region);
 
+        Ok(())
+    }
+
+    fn handle_event_after(&mut self, app: &mut App) -> Result<()> {
         let color = app.models().config.color.get();
         if self.label != color {
             self.label = color;
             app.request_redraw(self.color.region());
         }
-
+        for child in self.children() {
+            child.handle_event_after(app).or_fail()?;
+        }
         Ok(())
     }
 

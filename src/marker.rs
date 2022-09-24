@@ -6,11 +6,14 @@ use crate::{
 use pagurus::Result;
 use std::collections::HashSet;
 
-use self::{lasso::LassoMarker, line::LineMarker, noop::NoopMarker, stroke::StrokeMarker};
+use self::{
+    lasso::LassoMarker, line::LineMarker, noop::NoopMarker, pick::PickMarker, stroke::StrokeMarker,
+};
 
 pub mod lasso;
 pub mod line;
 pub mod noop;
+pub mod pick;
 pub mod stroke;
 
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash)]
@@ -33,6 +36,7 @@ pub enum MarkerKind {
     Line,
     Noop,
     Lasso,
+    Pick,
 }
 
 #[derive(Debug)]
@@ -41,6 +45,7 @@ pub enum Marker {
     Line(LineMarker),
     Noop(NoopMarker),
     Lasso(LassoMarker),
+    Pick(PickMarker),
 }
 
 impl Marker {
@@ -50,6 +55,7 @@ impl Marker {
             MarkerKind::Line => Self::Line(Default::default()),
             MarkerKind::Noop => Self::Noop(Default::default()),
             MarkerKind::Lasso => Self::Lasso(Default::default()),
+            MarkerKind::Pick => Self::Pick(Default::default()),
         }
     }
 }
@@ -67,6 +73,7 @@ impl Mark for Marker {
             Marker::Line(x) => x.mark(app, position, mouse),
             Marker::Noop(x) => x.mark(app, position, mouse),
             Marker::Lasso(x) => x.mark(app, position, mouse),
+            Marker::Pick(x) => x.mark(app, position, mouse),
         }
     }
 
@@ -76,6 +83,7 @@ impl Mark for Marker {
             Marker::Line(x) => x.marked_pixels(app),
             Marker::Noop(x) => x.marked_pixels(app),
             Marker::Lasso(x) => x.marked_pixels(app),
+            Marker::Pick(x) => x.marked_pixels(app),
         }
     }
 }
@@ -96,6 +104,7 @@ impl MarkerHandler {
             Marker::Line(_) => MarkerKind::Line,
             Marker::Noop(_) => MarkerKind::Noop,
             Marker::Lasso(_) => MarkerKind::Lasso,
+            Marker::Pick(_) => MarkerKind::Pick,
         }
     }
 

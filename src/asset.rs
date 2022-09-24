@@ -57,6 +57,7 @@ impl Assets {
         match kind {
             ButtonKind::Basic => &self.buttons.basic,
             ButtonKind::BasicDeep => &self.buttons.basic_deep,
+            ButtonKind::BasicPressed => &self.buttons.basic_pressed,
             ButtonKind::SliderLeft => &self.buttons.slider_left,
             ButtonKind::SliderRight => &self.buttons.slider_right,
         }
@@ -85,6 +86,7 @@ pub enum IconId {
 pub enum ButtonKind {
     Basic,
     BasicDeep,
+    BasicPressed,
     SliderLeft,
     SliderRight,
 }
@@ -94,6 +96,7 @@ impl ButtonKind {
         match self {
             ButtonKind::Basic => Size::square(64),
             ButtonKind::BasicDeep => Size::square(64),
+            ButtonKind::BasicPressed => Size::square(64),
             ButtonKind::SliderLeft => Size::square(32),
             ButtonKind::SliderRight => Size::square(32),
         }
@@ -249,6 +252,7 @@ impl Icons {
 pub struct Buttons {
     pub basic: Button,
     pub basic_deep: Button,
+    pub basic_pressed: Button,
     pub slider_left: Button,
     pub slider_right: Button,
 }
@@ -264,6 +268,11 @@ impl Buttons {
             basic.pressed.clone(),
             decode_sprite(include_bytes!("../assets/button-basic-deep-focused.png")).or_fail()?,
             decode_sprite(include_bytes!("../assets/button-basic-deep-pressed.png")).or_fail()?,
+        );
+        let basic_pressed = Button::new(
+            basic.pressed.clone(),
+            basic.pressed.clone(),
+            basic.pressed.clone(),
         );
 
         let slider_buttons =
@@ -292,6 +301,7 @@ impl Buttons {
         Ok(Self {
             basic,
             basic_deep,
+            basic_pressed,
             slider_left,
             slider_right,
         })

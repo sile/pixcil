@@ -8,7 +8,7 @@ use crate::{
     model::tool::ToolKind,
     window::{
         draw_tool::DrawToolWindow, erase_tool::EraseToolWindow, move_tool::MoveToolWindow,
-        pick_tool::PickToolWindow, select_tool::SelectToolWindow,
+        select_tool::SelectToolWindow,
     },
 };
 use pagurus::{
@@ -62,9 +62,14 @@ impl Widget for ToolBoxWidget {
         self.tools
             .on_selected(|state, button| {
                 if state.is_selected() {
-                    button.set_kind(ButtonKind::BasicDeep);
-
                     let next = Tool::from_icon(button.icon()).or_fail()?;
+
+                    if next == Tool::Pick {
+                        button.set_kind(ButtonKind::BasicPressed);
+                    } else {
+                        button.set_kind(ButtonKind::BasicDeep);
+                    }
+
                     if self.current == next {
                         // Double clicked
                         self.current.spawn_window(app).or_fail()?;
@@ -74,11 +79,8 @@ impl Widget for ToolBoxWidget {
                             Tool::Draw => app.models_mut().tool.current = ToolKind::Draw,
                             Tool::Erase => app.models_mut().tool.current = ToolKind::Erase,
                             Tool::Select => app.models_mut().tool.current = ToolKind::Select,
-                            Tool::Move => {
-                                app.models_mut().tool.current = ToolKind::Move;
-                                //let widget = ok;
-                            }
-                            _ => return Err(Failure::todo()),
+                            Tool::Move => app.models_mut().tool.current = ToolKind::Move,
+                            Tool::Pick => app.models_mut().tool.current = ToolKind::Pick,
                         }
                     }
                 } else {
@@ -136,8 +138,8 @@ impl Tool {
             Tool::Draw => app.spawn_window(DrawToolWindow::default()).or_fail(),
             Tool::Erase => app.spawn_window(EraseToolWindow::default()).or_fail(),
             Tool::Select => app.spawn_window(SelectToolWindow::default()).or_fail(),
-            Tool::Pick => app.spawn_window(PickToolWindow::default()).or_fail(),
             Tool::Move => app.spawn_window(MoveToolWindow::default()).or_fail(),
+            Tool::Pick => Ok(()),
         }
     }
 }

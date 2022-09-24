@@ -105,6 +105,10 @@ impl ColorSelectorWidget {
         self.cancel_color_replace_if_need(app).or_fail()?;
 
         let new_color = app.models().config.color.get();
+        if new_color == self.old_color {
+            return Ok(());
+        }
+
         app.models_mut()
             .pixel_canvas
             .replace_color(self.old_color, new_color)
