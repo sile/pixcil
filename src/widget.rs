@@ -12,6 +12,7 @@ pub mod button;
 pub mod color_config;
 pub mod color_selector;
 pub mod config;
+pub mod draw_tool;
 pub mod hsv_selector;
 pub mod manipulate;
 pub mod move_camera;

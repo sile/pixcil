@@ -50,6 +50,11 @@ impl Assets {
             IconId::Save => &self.icons.save,
             IconId::Load => &self.icons.load,
             IconId::Import => &self.icons.import,
+            IconId::PenStroke => &self.icons.pen_stroke,
+            IconId::PenLine => &self.icons.pen_line,
+            IconId::PenRectangle => &self.icons.pen_rectangle,
+            IconId::PenCircle => &self.icons.pen_circle,
+            IconId::Bucket => &self.icons.bucket,
         }
     }
 
@@ -80,6 +85,11 @@ pub enum IconId {
     Save,
     Load,
     Import,
+    PenStroke,
+    PenLine,
+    PenRectangle,
+    PenCircle,
+    Bucket,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -225,6 +235,11 @@ pub struct Icons {
     pub save: Sprite,
     pub load: Sprite,
     pub import: Sprite,
+    pub pen_stroke: Sprite,
+    pub pen_line: Sprite,
+    pub pen_rectangle: Sprite,
+    pub pen_circle: Sprite,
+    pub bucket: Sprite,
 }
 
 impl Icons {
@@ -244,6 +259,12 @@ impl Icons {
             save: decode_sprite(include_bytes!("../assets/icon-save.png")).or_fail()?,
             load: decode_sprite(include_bytes!("../assets/icon-load.png")).or_fail()?,
             import: decode_sprite(include_bytes!("../assets/icon-import.png")).or_fail()?,
+            pen_stroke: decode_sprite(include_bytes!("../assets/icon-pen-stroke.png")).or_fail()?,
+            pen_line: decode_sprite(include_bytes!("../assets/icon-pen-line.png")).or_fail()?,
+            pen_rectangle: decode_sprite(include_bytes!("../assets/icon-pen-rectangle.png"))
+                .or_fail()?,
+            pen_circle: decode_sprite(include_bytes!("../assets/icon-pen-circle.png")).or_fail()?,
+            bucket: decode_sprite(include_bytes!("../assets/icon-bucket.png")).or_fail()?,
         })
     }
 }

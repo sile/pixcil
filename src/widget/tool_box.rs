@@ -169,7 +169,9 @@ impl Tool {
 
     fn spawn_window(self, app: &mut App) -> Result<()> {
         match self {
-            Tool::Draw => app.spawn_window(DrawToolWindow::default()).or_fail(),
+            Tool::Draw => app
+                .spawn_window(DrawToolWindow::new(app).or_fail()?)
+                .or_fail(),
             Tool::Erase => app.spawn_window(EraseToolWindow::default()).or_fail(),
             Tool::Select => app.spawn_window(SelectToolWindow::default()).or_fail(),
             Tool::Move => app.spawn_window(MoveToolWindow::default()).or_fail(),
