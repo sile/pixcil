@@ -62,6 +62,10 @@ impl SliderWidget {
         self.input.value()
     }
 
+    pub fn set_value(&mut self, app: &mut App, value: u32) {
+        self.input.set_value(app, value);
+    }
+
     fn render_cursor(&self, app: &App, canvas: &mut Canvas) {
         let cursor = &app.assets().slider_cursor;
         let mut position = self.bar_region().position;

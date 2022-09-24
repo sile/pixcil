@@ -5,7 +5,7 @@ use pagurus::{
     spatial::{Position, Region, Size},
     Result,
 };
-use pagurus_game_std::{color::Rgba, image::Canvas};
+use pagurus_game_std::{color::Rgb, color::Rgba, image::Canvas};
 
 const MARGIN: u32 = 8;
 
@@ -52,8 +52,8 @@ impl RgbSelectorWidget {
         }
     }
 
-    fn rgb(&self) -> (u8, u8, u8) {
-        (
+    fn rgb(&self) -> Rgb {
+        Rgb::new(
             self.r.value() as u8,
             self.g.value() as u8,
             self.b.value() as u8,
@@ -82,11 +82,24 @@ impl Widget for RgbSelectorWidget {
         let new = self.rgb();
         if old != new {
             let mut c = app.models().config.color.get();
-            c.r = new.0;
-            c.g = new.1;
-            c.b = new.2;
+            c.r = new.r;
+            c.g = new.g;
+            c.b = new.b;
             app.models_mut().config.color.set(c);
             app.request_redraw(self.region);
+        }
+        Ok(())
+    }
+
+    fn handle_event_after(&mut self, app: &mut App) -> Result<()> {
+        let rgb = app.models().config.color.get().to_rgb();
+        if self.rgb() != rgb {
+            self.r.set_value(app, u32::from(rgb.r));
+            self.g.set_value(app, u32::from(rgb.g));
+            self.b.set_value(app, u32::from(rgb.b));
+        }
+        for child in self.children() {
+            child.handle_event_after(app).or_fail()?;
         }
         Ok(())
     }
