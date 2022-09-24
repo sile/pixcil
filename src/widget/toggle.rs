@@ -16,6 +16,12 @@ pub struct ToggleWidget {
 }
 
 impl ToggleWidget {
+    pub fn default_off() -> Self {
+        let mut this = Self::default();
+        this.state = ToggleState::OffNeutral;
+        this
+    }
+
     pub fn is_on(&self) -> bool {
         matches!(self.state, ToggleState::OnNeutral | ToggleState::OnFocused)
     }

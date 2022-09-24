@@ -1,7 +1,7 @@
 use super::{
     block::BlockWidget, hsv_selector::HsvSelectorWidget, rgb_selector,
-    rgb_selector::RgbSelectorWidget, slider::SliderWidget, FixedSizeWidget, VariableSizeWidget,
-    Widget,
+    rgb_selector::RgbSelectorWidget, slider::SliderWidget, toggle::ToggleWidget, FixedSizeWidget,
+    VariableSizeWidget, Widget,
 };
 use crate::{app::App, canvas_ext::CanvasExt, color, event::Event};
 use pagurus::{
@@ -19,7 +19,8 @@ pub struct ColorSelectorWidget {
     region: Region,
     hsv: BlockWidget<HsvSelectorWidget>,
     rgb: BlockWidget<RgbSelectorWidget>,
-    alpha: BlockWidget<SliderWidget>, // toggle
+    alpha: BlockWidget<SliderWidget>,
+    replace: BlockWidget<ToggleWidget>,
 }
 
 impl ColorSelectorWidget {
@@ -51,6 +52,10 @@ impl ColorSelectorWidget {
                         );
                     },
                 ),
+            ),
+            replace: BlockWidget::new(
+                "REPLACE OLD COLOR PIXELS".parse().expect("unreachable"),
+                ToggleWidget::default_off(),
             ),
         }
     }
