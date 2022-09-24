@@ -10,7 +10,6 @@ pub mod main;
 pub mod move_tool;
 pub mod pick_tool;
 pub mod select_tool;
-pub mod tab_bar;
 pub mod widget;
 
 pub trait Window: 'static + std::fmt::Debug {

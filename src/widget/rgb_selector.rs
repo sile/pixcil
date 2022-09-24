@@ -131,7 +131,7 @@ impl FixedSizeWidget for RgbSelectorWidget {
     }
 }
 
-fn render_color_bar<F>(app: &App, canvas: &mut Canvas, mut region: Region, f: F)
+pub fn render_color_bar<F>(app: &App, canvas: &mut Canvas, mut region: Region, f: F)
 where
     F: Fn(&mut Rgba, u8),
 {

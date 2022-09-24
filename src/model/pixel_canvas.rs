@@ -21,12 +21,12 @@ pub struct PixelCanvasModel {
 
 impl PixelCanvasModel {
     pub fn draw_pixels(&mut self, pixels: impl Iterator<Item = Pixel>) -> Result<()> {
-        // TODO: consider alpha blending
         let mut command = PixelCanvasCommand::default();
         command.draw = pixels.collect();
         command.draw.sort_by_key(|x| x.position);
-        for pixel in &command.draw {
+        for pixel in &mut command.draw {
             if let Some(color) = self.pixels.get_pixel(pixel.position) {
+                pixel.color = pixel.color.alpha_blend(color);
                 command.erase.push(Pixel::new(pixel.position, color));
             }
         }
@@ -60,10 +60,13 @@ impl PixelCanvasModel {
             let dst = src + delta;
             if let Some(color) = self.pixels.get_pixel(src) {
                 command.erase.push(Pixel::new(src, color));
+                let color = if let Some(old_color) = self.pixels.get_pixel(dst) {
+                    command.erase.push(Pixel::new(dst, old_color));
+                    color.alpha_blend(old_color)
+                } else {
+                    color
+                };
                 command.draw.push(Pixel::new(dst, color));
-                if let Some(color) = self.pixels.get_pixel(dst) {
-                    command.erase.push(Pixel::new(dst, color));
-                }
             }
         }
         command.draw.sort_by_key(|x| x.position);

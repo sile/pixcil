@@ -35,7 +35,6 @@ impl ColorConfigWidget {
         label_region.position.y += 4 + offset;
         label_region.size.height -= 4 + 12;
 
-        canvas.fill_rectangle(label_region, Rgba::new(255, 255, 255, 255).into());
         canvas.fill_rectangle(label_region.without_margin(2), self.label.into());
     }
 }
