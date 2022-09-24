@@ -114,7 +114,7 @@ impl Camera {
 impl Default for Camera {
     fn default() -> Self {
         let zoom = i32::from(Zoom::default().get());
-        let frame = FrameRegion::default().get().size();
+        let frame = FrameRegion::default().get_base_region().size();
 
         Self(Position::from_xy(
             i32::from(frame.width) * zoom / 2,
@@ -258,8 +258,14 @@ pub struct FrameRegion {
 }
 
 impl FrameRegion {
-    pub const fn get(self) -> PixelRegion {
+    pub const fn get_base_region(self) -> PixelRegion {
         self.region
+    }
+
+    pub fn get_preview_region(self, config: &ConfigModel) -> PixelRegion {
+        let layers = config.layer.enabled_count() - 1;
+        let region = self.get_base_region();
+        region.move_y(region.size().height as i16 * layers as i16)
     }
 
     pub fn set_width(&mut self, width: u16) {
@@ -411,7 +417,7 @@ impl Layer {
             return;
         }
 
-        let frame = frame.get();
+        let frame = frame.get_base_region();
         if frame.contains(position) {
             f(position);
             return;
@@ -453,7 +459,7 @@ impl Layer {
             return;
         }
 
-        let frame = frame.get();
+        let frame = frame.get_base_region();
         let layer_region = PixelRegion::from_position_and_size(
             frame.start,
             PixelSize::from_wh(frame.size().width, frame.size().height * layers),

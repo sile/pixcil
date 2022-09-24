@@ -33,7 +33,7 @@ impl Models {
         let image_data = self
             .config
             .frame
-            .get()
+            .get_preview_region(&self.config)
             .pixels()
             .flat_map(|position| {
                 let color = self
@@ -43,7 +43,7 @@ impl Models {
                 [color.r, color.g, color.b, color.a].into_iter()
             })
             .collect::<Vec<_>>();
-        let image_size = self.config.frame.get().size();
+        let image_size = self.config.frame.get_base_region().size();
 
         let mut metadata = Vec::new();
         self.serialize(&mut metadata).or_fail()?;

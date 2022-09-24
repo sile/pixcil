@@ -40,7 +40,7 @@ impl ConfigWidget {
     pub fn new(app: &App) -> Self {
         let minimum_pixel_size = app.models().config.minimum_pixel_size.get();
         let max_undos = app.models().config.max_undos.get();
-        let frame_size = app.models().config.frame.get().size();
+        let frame_size = app.models().config.frame.get_base_region().size();
         let layer = app.models().config.layer;
         Self {
             region: Region::default(),

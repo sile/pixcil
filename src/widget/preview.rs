@@ -26,7 +26,12 @@ impl PreviewWidget {
     fn render_pixels(&self, app: &App, canvas: &mut Canvas) {
         let preview_frame_region = self.frame_region();
         let drawing_region = preview_frame_region.intersection(canvas.drawing_region());
-        let pixel_frame_start = app.models().config.frame.get().start;
+        let pixel_frame_start = app
+            .models()
+            .config
+            .frame
+            .get_preview_region(&app.models().config)
+            .start;
         let mut offset = preview_frame_region.start();
         offset.x -= i32::from(pixel_frame_start.x);
         offset.y -= i32::from(pixel_frame_start.y);
@@ -118,10 +123,15 @@ impl Widget for PreviewWidget {
             return Ok(());
         }
 
+        let preview_pixel_region = app
+            .models()
+            .config
+            .frame
+            .get_preview_region(&app.models().config);
         if let Some(frame_size) = self.frame_size {
-            if frame_size != app.models().config.frame.get().size() {
+            if frame_size != preview_pixel_region.size() {
                 let old = frame_size;
-                let new = app.models().config.frame.get().size();
+                let new = preview_pixel_region.size();
                 self.frame_size = Some(new);
 
                 let old_region = self.region;
@@ -131,7 +141,7 @@ impl Widget for PreviewWidget {
                 app.request_redraw(self.region.union(old_region));
             }
         } else {
-            self.frame_size = Some(app.models().config.frame.get().size());
+            self.frame_size = Some(preview_pixel_region.size());
         }
 
         let dirty_pixels = app.models().pixel_canvas.dirty_positions();
@@ -140,7 +150,7 @@ impl Widget for PreviewWidget {
         }
 
         let pixel_region = PixelRegion::from_positions(dirty_pixels.iter().copied());
-        let pixel_frame_start = app.models().config.frame.get().start;
+        let pixel_frame_start = preview_pixel_region.start;
         let preview_frame_region = self.frame_region();
         let mut drawing_region = preview_frame_region;
         drawing_region.position.x += i32::from(pixel_region.start.x - pixel_frame_start.x);
@@ -158,7 +168,7 @@ impl Widget for PreviewWidget {
 
 impl FixedSizeWidget for PreviewWidget {
     fn requiring_size(&self, app: &App) -> Size {
-        let frame = app.models().config.frame.get().size();
+        let frame = app.models().config.frame.get_base_region().size();
         Size::from_wh(u32::from(frame.width), u32::from(frame.height)) + (BORDER * 2)
     }
 
