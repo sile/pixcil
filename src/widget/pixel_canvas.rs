@@ -126,32 +126,50 @@ impl PixelCanvasWidget {
 
     fn render_pixels(&self, app: &App, canvas: &mut Canvas) {
         let erasing_pixels = if self.tool.tool_kind() == ToolKind::Erase {
-            self.marker_handler.marked_pixels(app).collect()
+            self.marker_handler
+                .marked_pixels(app)
+                .filter(|p| app.models().pixel_canvas.get_direct_pixel(*p).is_some())
+                .collect()
         } else {
             HashSet::new()
         };
 
+        let config = &app.models().config;
         let pixel_region = PixelRegion::from_screen_region(app, canvas.drawing_region());
         for pixel in app
             .models()
             .pixel_canvas
             .get_pixels(&app.models().config, pixel_region)
         {
+            let mut color = pixel.color;
+            let mut alpha = 255;
             if let Some(w) = &self.manipulate {
                 if w.selected_pixels().contains(&pixel.position) {
-                    continue;
+                    alpha = 0;
                 }
             }
 
             let region = pixel.position.to_screen_region(app);
-            let mut color = pixel.color;
             if erasing_pixels.contains(&pixel.position) {
                 if self.marker_handler.is_neutral() {
-                    color.a /= 4;
+                    alpha = alpha.min(color.a / 5);
                 } else {
-                    color.a /= 8;
+                    alpha = alpha.min(color.a / 10);
                 }
             }
+
+            if alpha != 255 {
+                if let Some(c) =
+                    app.models()
+                        .pixel_canvas
+                        .get_pixel_with_alpha(config, pixel.position, alpha)
+                {
+                    color = c;
+                } else {
+                    continue;
+                }
+            }
+
             canvas.fill_rectangle(region, color.into());
         }
     }

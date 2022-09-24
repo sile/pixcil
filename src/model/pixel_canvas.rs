@@ -139,6 +139,37 @@ impl PixelCanvasModel {
         self.get_layered_pixel(config.frame, config.layer, position)
     }
 
+    pub fn get_pixel_with_alpha(
+        &self,
+        config: &ConfigModel,
+        position: PixelPosition,
+        alpha: u8,
+    ) -> Option<Rgba> {
+        let layer = config.layer;
+        let frame = config.frame;
+        let mut color = None;
+        layer.for_each_lower_layer_pixel_but_last(frame, position, |position| {
+            if let Some(c) = self.pixels.get_pixel(position) {
+                color = Some(color.map_or(c, |d| c.alpha_blend(d)));
+            }
+        });
+
+        if alpha == 0 {
+            return color;
+        }
+
+        if let Some(mut c) = self.get_direct_pixel(position) {
+            c.a = alpha;
+            Some(color.map_or(c, |d| c.alpha_blend(d)))
+        } else {
+            color
+        }
+    }
+
+    pub fn get_direct_pixel(&self, position: PixelPosition) -> Option<Rgba> {
+        self.pixels.get_pixel(position)
+    }
+
     fn get_layered_pixel(
         &self,
         frame: FrameRegion,

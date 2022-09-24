@@ -28,7 +28,7 @@ impl ManipulateWidget {
             .filter_map(|pos| {
                 app.models()
                     .pixel_canvas
-                    .get_pixel(&app.models().config, pos)
+                    .get_direct_pixel(pos)
                     .map(|color| (pos, color))
             })
             .collect();

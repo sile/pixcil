@@ -445,6 +445,46 @@ impl Layer {
         }
     }
 
+    // TODO: refactor
+    pub fn for_each_lower_layer_pixel_but_last<F>(
+        self,
+        frame: FrameRegion,
+        position: PixelPosition,
+        mut f: F,
+    ) where
+        F: FnMut(PixelPosition),
+    {
+        let layers = self.enabled_count();
+        if layers == 1 {
+            return;
+        }
+
+        let frame = frame.get_base_region();
+        if frame.contains(position) {
+            return;
+        }
+
+        let layer_region = PixelRegion::from_position_and_size(
+            frame.start,
+            PixelSize::from_wh(frame.size().width, frame.size().height * layers),
+        );
+        if !layer_region.contains(position) {
+            return;
+        }
+
+        let mut current = PixelPosition::from_xy(
+            position.x,
+            (position.y - frame.start.y) % frame.size().height as i16 + frame.start.y,
+        );
+        for _ in 0..=layers {
+            f(current);
+            current.y += frame.size().height as i16;
+            if current == position {
+                break;
+            }
+        }
+    }
+
     pub fn for_each_upper_layer_pixel<F>(
         self,
         frame: FrameRegion,
