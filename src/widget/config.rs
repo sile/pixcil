@@ -31,6 +31,9 @@ pub struct ConfigWidget {
     frame_width: BlockWidget<NumberBoxWidget>,
     frame_height: BlockWidget<NumberBoxWidget>,
     frame_preview: BlockWidget<ToggleWidget>,
+
+    // Layer settings
+    layer_enable: BlockWidget<ToggleWidget>,
 }
 
 impl ConfigWidget {
@@ -38,6 +41,7 @@ impl ConfigWidget {
         let minimum_pixel_size = app.models().config.minimum_pixel_size.get();
         let max_undos = app.models().config.max_undos.get();
         let frame_size = app.models().config.frame.get().size();
+        let layer = app.models().config.layer;
         Self {
             region: Region::default(),
 
@@ -62,7 +66,13 @@ impl ConfigWidget {
             ),
             frame_preview: BlockWidget::new(
                 "FRAME PREVIEW".parse().expect("unreachable"),
-                ToggleWidget::default(),
+                ToggleWidget::default(), // TOOD: use saved value
+            ),
+
+            // Layer
+            layer_enable: BlockWidget::new(
+                "LAYER ENABLE".parse().expect("unreachable"),
+                ToggleWidget::new(layer.is_enabled()),
             ),
         }
     }
@@ -82,6 +92,9 @@ impl Widget for ConfigWidget {
         self.frame_width.render_if_need(app, canvas);
         self.frame_height.render_if_need(app, canvas);
         self.frame_preview.render_if_need(app, canvas);
+
+        // Layer
+        self.layer_enable.render_if_need(app, canvas);
     }
 
     fn handle_event(&mut self, app: &mut App, event: &mut Event) -> Result<()> {
@@ -119,6 +132,17 @@ impl Widget for ConfigWidget {
             .frame_preview
             .set(self.frame_preview.body().is_on());
 
+        // Layer
+        let layer = app.models_mut().config.layer;
+        self.layer_enable.handle_event(app, event).or_fail()?;
+        app.models_mut()
+            .config
+            .layer
+            .set_enabled(self.layer_enable.body().is_on());
+        if layer != app.models_mut().config.layer {
+            app.request_redraw(app.screen_size().to_region());
+        }
+
         Ok(())
     }
 
@@ -131,6 +155,8 @@ impl Widget for ConfigWidget {
             &mut self.frame_width,
             &mut self.frame_height,
             &mut self.frame_preview,
+            // Layer
+            &mut self.layer_enable,
         ]
     }
 }
@@ -146,9 +172,19 @@ impl FixedSizeWidget for ConfigWidget {
         frame_settings_size.width += MARGIN + self.frame_width.requiring_size(app).width;
         frame_settings_size.width += MARGIN + self.frame_height.requiring_size(app).width;
 
+        // Layer
+        let layer_settings_size = self.layer_enable.requiring_size(app);
+
         Size::from_wh(
-            general_settings_size.width.max(frame_settings_size.width),
-            general_settings_size.height + GROUP_MARGIN + frame_settings_size.height,
+            general_settings_size
+                .width
+                .max(frame_settings_size.width)
+                .max(layer_settings_size.width),
+            general_settings_size.height
+                + GROUP_MARGIN
+                + frame_settings_size.height
+                + GROUP_MARGIN
+                + layer_settings_size.height,
         ) + MARGIN * 2
     }
 
@@ -171,17 +207,23 @@ impl FixedSizeWidget for ConfigWidget {
 
         // Frame
         let mut frame_width_region = region;
-        frame_width_region.size.width = self.frame_width.requiring_size(app).width;
+        frame_width_region.size = self.frame_width.requiring_size(app);
         self.frame_width.set_region(app, frame_width_region);
 
         let mut frame_height_region = region;
         frame_height_region.position.x = frame_width_region.end().x + MARGIN as i32;
-        frame_height_region.size.width = self.frame_height.requiring_size(app).width;
+        frame_height_region.size = self.frame_height.requiring_size(app);
         self.frame_height.set_region(app, frame_height_region);
 
         let mut frame_preview_region = region;
         frame_preview_region.position.x = frame_height_region.end().x + MARGIN as i32;
-        frame_preview_region.size.width = self.frame_preview.requiring_size(app).width;
+        frame_preview_region.size = self.frame_preview.requiring_size(app);
         self.frame_preview.set_region(app, frame_preview_region);
+        region.consume_y(frame_preview_region.size.height + GROUP_MARGIN);
+
+        // Layer
+        let mut layer_enable_region = region;
+        layer_enable_region.size = self.layer_enable.requiring_size(app);
+        self.layer_enable.set_region(app, layer_enable_region);
     }
 }

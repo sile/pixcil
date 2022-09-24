@@ -16,10 +16,18 @@ pub struct ToggleWidget {
 }
 
 impl ToggleWidget {
-    pub fn default_off() -> Self {
+    pub fn new(on: bool) -> Self {
         let mut this = Self::default();
-        this.state = ToggleState::OffNeutral;
+        this.state = if on {
+            ToggleState::OnNeutral
+        } else {
+            ToggleState::OffNeutral
+        };
         this
+    }
+
+    pub fn default_off() -> Self {
+        Self::new(false)
     }
 
     pub fn is_on(&self) -> bool {

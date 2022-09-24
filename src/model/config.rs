@@ -250,45 +250,54 @@ impl Deserialize for DrawingColor {
     }
 }
 
+// TODO: Rename s/FrameRegion/Frame/
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct FrameRegion(PixelRegion);
+pub struct FrameRegion {
+    preview: bool,
+    region: PixelRegion,
+}
 
 impl FrameRegion {
     pub const fn get(self) -> PixelRegion {
-        self.0
+        self.region
     }
 
     pub fn set_width(&mut self, width: u16) {
-        let mut size = self.0.size();
+        let mut size = self.region.size();
         size.width = width;
-        self.0 = PixelRegion::from_position_and_size(self.0.start, size);
+        self.region = PixelRegion::from_position_and_size(self.region.start, size);
     }
 
     pub fn set_height(&mut self, height: u16) {
-        let mut size = self.0.size();
+        let mut size = self.region.size();
         size.height = height;
-        self.0 = PixelRegion::from_position_and_size(self.0.start, size);
+        self.region = PixelRegion::from_position_and_size(self.region.start, size);
     }
 }
 
 impl Default for FrameRegion {
     fn default() -> Self {
-        Self(PixelRegion::new(
-            PixelPosition::from_xy(0, 0),
-            PixelPosition::from_xy(64, 64),
-        ))
+        Self {
+            preview: true,
+            region: PixelRegion::new(PixelPosition::from_xy(0, 0), PixelPosition::from_xy(64, 64)),
+        }
     }
 }
 
 impl Serialize for FrameRegion {
     fn serialize<W: Write>(&self, writer: &mut W) -> Result<()> {
-        self.0.serialize(writer).or_fail()
+        self.preview.serialize(writer).or_fail()?;
+        self.region.serialize(writer).or_fail()?;
+        Ok(())
     }
 }
 
 impl Deserialize for FrameRegion {
     fn deserialize<R: Read>(reader: &mut R) -> Result<Self> {
-        PixelRegion::deserialize(reader).map(Self).or_fail()
+        Ok(Self {
+            preview: bool::deserialize(reader).or_fail()?,
+            region: PixelRegion::deserialize(reader).or_fail()?,
+        })
     }
 }
 
