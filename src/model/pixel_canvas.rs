@@ -30,9 +30,7 @@ impl PixelCanvasModel {
                 command.erase.push(Pixel::new(pixel.position, color));
             }
         }
-        self.command_log.truncate(self.command_log_tail);
-        self.command_log.push_back(command);
-        self.redo_command().or_fail()?;
+        self.apply_command(command).or_fail()?;
         Ok(())
     }
 
@@ -44,9 +42,7 @@ impl PixelCanvasModel {
             }
         }
         command.erase.sort_by_key(|x| x.position);
-        self.command_log.truncate(self.command_log_tail);
-        self.command_log.push_back(command);
-        self.redo_command().or_fail()?;
+        self.apply_command(command).or_fail()?;
         Ok(())
     }
 
@@ -73,6 +69,31 @@ impl PixelCanvasModel {
         command.erase.sort_by_key(|x| x.position);
         command.erase.dedup();
 
+        self.apply_command(command).or_fail()?;
+        Ok(())
+    }
+
+    pub fn replace_color(&mut self, old: Rgba, new: Rgba) -> Result<()> {
+        // TODO: optimize (e.g., to use cache to get target pixels)
+
+        let mut command = PixelCanvasCommand::default();
+        for (&position, &color) in &self.pixels.0 {
+            if color != old {
+                continue;
+            }
+
+            command.erase.push(Pixel::new(position, old));
+            command.draw.push(Pixel::new(position, new));
+        }
+        command.draw.sort_by_key(|x| x.position);
+        command.erase.sort_by_key(|x| x.position);
+        command.erase.dedup();
+
+        self.apply_command(command).or_fail()?;
+        Ok(())
+    }
+
+    fn apply_command(&mut self, command: PixelCanvasCommand) -> Result<()> {
         self.command_log.truncate(self.command_log_tail);
         self.command_log.push_back(command);
         self.redo_command().or_fail()?;

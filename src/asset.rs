@@ -13,6 +13,7 @@ pub struct Assets {
     pub alphabet_10x14: [Sprite; 27],
     pub number_box: Sprite,
     pub slider_cursor: Sprite,
+    pub right_arrow: Sprite,
 }
 
 impl Assets {
@@ -29,6 +30,7 @@ impl Assets {
                 .or_fail()?,
             slider_cursor: decode_sprite(include_bytes!("../assets/slider-cursor.png"))
                 .or_fail()?,
+            right_arrow: decode_sprite(include_bytes!("../assets/right-arrow.png")).or_fail()?,
         })
     }
 
