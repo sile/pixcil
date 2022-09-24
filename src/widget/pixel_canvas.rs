@@ -240,10 +240,11 @@ impl Widget for PixelCanvasWidget {
                         .or_fail()?;
                 }
                 ToolKind::Select => {
-                    self.manipulate = Some(ManipulateWidget::new(
-                        app,
-                        self.marker_handler.marked_pixels(app).collect(),
-                    ));
+                    let target_pixels: HashSet<_> =
+                        self.marker_handler.marked_pixels(app).collect();
+                    if !target_pixels.is_empty() {
+                        self.manipulate = Some(ManipulateWidget::new(app, target_pixels));
+                    }
                 }
                 ToolKind::Move => {}
                 ToolKind::Pick => {

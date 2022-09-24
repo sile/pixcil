@@ -16,6 +16,7 @@ pub struct ConfigModel {
     pub frame: FrameRegion,
     pub frame_preview: FramePreview,
     pub layer: Layer,
+    pub animation: Animation,
 }
 
 impl Serialize for ConfigModel {
@@ -28,6 +29,7 @@ impl Serialize for ConfigModel {
         self.frame.serialize(writer).or_fail()?;
         self.frame_preview.serialize(writer).or_fail()?;
         self.layer.serialize(writer).or_fail()?;
+        self.animation.serialize(writer).or_fail()?;
         Ok(())
     }
 }
@@ -43,6 +45,7 @@ impl Deserialize for ConfigModel {
             frame: Deserialize::deserialize_or_default(reader).or_fail()?,
             frame_preview: Deserialize::deserialize_or_default(reader).or_fail()?,
             layer: Deserialize::deserialize_or_default(reader).or_fail()?,
+            animation: Deserialize::deserialize_or_default(reader).or_fail()?,
         })
     }
 }
@@ -521,7 +524,7 @@ impl Default for Layer {
     fn default() -> Self {
         Self {
             enabled: false,
-            count: 1,
+            count: 2,
         }
     }
 }
@@ -539,6 +542,50 @@ impl Deserialize for Layer {
         Ok(Self {
             enabled: Deserialize::deserialize(reader).or_fail()?,
             count: Deserialize::deserialize(reader).or_fail()?,
+        })
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
+pub struct Animation {
+    enabled: bool,
+    fps: u8,
+    frame_count: u16,
+}
+
+impl Animation {
+    pub const MIN_FPS: u8 = 1;
+    pub const MAX_FPS: u8 = 120;
+
+    pub const MIN_FRAME_COUNT: u16 = 1;
+    pub const MAX_FRAME_COUNT: u16 = 1000;
+}
+
+impl Default for Animation {
+    fn default() -> Self {
+        Self {
+            enabled: true,
+            fps: 10,
+            frame_count: 2,
+        }
+    }
+}
+
+impl Serialize for Animation {
+    fn serialize<W: Write>(&self, writer: &mut W) -> Result<()> {
+        self.enabled.serialize(writer).or_fail()?;
+        self.fps.serialize(writer).or_fail()?;
+        self.frame_count.serialize(writer).or_fail()?;
+        Ok(())
+    }
+}
+
+impl Deserialize for Animation {
+    fn deserialize<R: Read>(reader: &mut R) -> Result<Self> {
+        Ok(Self {
+            enabled: Deserialize::deserialize(reader).or_fail()?,
+            fps: Deserialize::deserialize(reader).or_fail()?,
+            frame_count: Deserialize::deserialize(reader).or_fail()?,
         })
     }
 }
