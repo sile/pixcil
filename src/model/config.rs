@@ -620,7 +620,7 @@ impl Animation {
 impl Default for Animation {
     fn default() -> Self {
         Self {
-            enabled: true,
+            enabled: false,
             fps: 10,
             frame_count: 2,
         }
