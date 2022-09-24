@@ -559,6 +559,30 @@ impl Animation {
 
     pub const MIN_FRAME_COUNT: u16 = 1;
     pub const MAX_FRAME_COUNT: u16 = 1000;
+
+    pub const fn is_enabled(self) -> bool {
+        self.enabled
+    }
+
+    pub fn set_enabled(&mut self, enabled: bool) {
+        self.enabled = enabled;
+    }
+
+    pub const fn fps(self) -> u8 {
+        self.fps
+    }
+
+    pub fn set_fps(&mut self, fps: u8) {
+        self.fps = clip(Self::MIN_FPS, fps, Self::MAX_FPS);
+    }
+
+    pub const fn frame_count(self) -> u16 {
+        self.frame_count
+    }
+
+    pub fn set_frame_count(&mut self, n: u16) {
+        self.frame_count = clip(Self::MIN_FRAME_COUNT, n, Self::MAX_FRAME_COUNT);
+    }
 }
 
 impl Default for Animation {
