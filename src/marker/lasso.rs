@@ -40,7 +40,7 @@ impl Mark for LassoMarker {
         let pixel_canvas = &app.models().pixel_canvas;
         let mut drawn_pixels = Vec::new();
         for p in pixels {
-            if pixel_canvas.get_pixel(p).is_some() {
+            if pixel_canvas.get_pixel(&app.models().config, p).is_some() {
                 drawn_pixels.push(p);
             }
         }

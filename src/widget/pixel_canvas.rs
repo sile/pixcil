@@ -127,7 +127,11 @@ impl PixelCanvasWidget {
         };
 
         let pixel_region = PixelRegion::from_screen_region(app, canvas.drawing_region());
-        for pixel in app.models().pixel_canvas.get_pixels(pixel_region) {
+        for pixel in app
+            .models()
+            .pixel_canvas
+            .get_pixels(&app.models().config, pixel_region)
+        {
             if let Some(w) = &self.manipulate {
                 if w.selected_pixels().contains(&pixel.position) {
                     continue;
@@ -215,7 +219,11 @@ impl Widget for PixelCanvasWidget {
                 ToolKind::Move => {}
                 ToolKind::Pick => {
                     if let Some(position) = self.marker_handler().marked_pixels(app).next() {
-                        if let Some(color) = app.models().pixel_canvas.get_pixel(position) {
+                        if let Some(color) = app
+                            .models()
+                            .pixel_canvas
+                            .get_pixel(&app.models().config, position)
+                        {
                             app.models_mut().config.color.set(color);
                         }
                     }
@@ -224,7 +232,11 @@ impl Widget for PixelCanvasWidget {
             }
         } else if self.tool.tool_kind() == ToolKind::Pick {
             if let Some(position) = self.marker_handler().marked_pixels(app).next() {
-                if let Some(color) = app.models().pixel_canvas.get_pixel(position) {
+                if let Some(color) = app
+                    .models()
+                    .pixel_canvas
+                    .get_pixel(&app.models().config, position)
+                {
                     app.models_mut().tool.pick.preview_color = Some(color);
                 } else {
                     app.models_mut().tool.pick.preview_color = None;

@@ -1,5 +1,8 @@
 use self::{config::ConfigModel, pixel_canvas::PixelCanvasModel, tool::ToolModel};
-use crate::serialize::{Deserialize, Serialize};
+use crate::{
+    app::App,
+    serialize::{Deserialize, Serialize},
+};
 use pagurus::{
     failure::{Failure, OrFail},
     Result,
@@ -26,7 +29,7 @@ pub struct Models {
 }
 
 impl Models {
-    pub fn to_png(&self) -> Result<Vec<u8>> {
+    pub fn to_png(&self, app: &App) -> Result<Vec<u8>> {
         let image_data = self
             .config
             .frame
@@ -35,7 +38,7 @@ impl Models {
             .flat_map(|position| {
                 let color = self
                     .pixel_canvas
-                    .get_pixel(position)
+                    .get_pixel(&app.models().config, position)
                     .unwrap_or(Rgba::new(0, 0, 0, 0));
                 [color.r, color.g, color.b, color.a].into_iter()
             })

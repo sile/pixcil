@@ -124,7 +124,7 @@ impl<S: System> Game<S> for PixcilGame {
             }
             "workspacePng" => {
                 let app = self.app.as_ref().or_fail()?;
-                let data = app.models().to_png().or_fail()?;
+                let data = app.models().to_png(app).or_fail()?;
                 Ok(data)
             }
             _ => Err(pagurus::failure::Failure::new(format!(

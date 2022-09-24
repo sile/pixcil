@@ -1,5 +1,5 @@
 use crate::{
-    pixel::{Pixel, PixelPosition, PixelRegion},
+    pixel::{Pixel, PixelPosition, PixelRegion, PixelSize},
     serialize::{Deserialize, Serialize},
 };
 use pagurus::{failure::OrFail, Result};
@@ -8,6 +8,8 @@ use std::{
     collections::{BTreeMap, BTreeSet, VecDeque},
     io::{Read, Write},
 };
+
+use super::config::{ConfigModel, FrameRegion, Layer};
 
 #[derive(Debug, Default)]
 pub struct PixelCanvasModel {
@@ -105,12 +107,69 @@ impl PixelCanvasModel {
         Ok(())
     }
 
-    pub fn get_pixels(&self, region: PixelRegion) -> impl '_ + Iterator<Item = Pixel> {
-        self.pixels.get_pixels(region)
+    pub fn get_pixels(
+        &self,
+        config: &ConfigModel,
+        region: PixelRegion,
+    ) -> impl '_ + Iterator<Item = Pixel> {
+        // let layers = config.layer.enabled_count();
+        // if layers == 1 {
+        //     self.pixels.get_pixels(region)
+        // } else {
+        // TODO: optimize (e.g., use cache to avoid redundant calculation)
+        let frame = config.frame;
+        let layer = config.layer;
+        region.pixels().filter_map(move |position| {
+            self.get_layered_pixel(frame, layer, position)
+                .map(|color| Pixel::new(position, color))
+        })
+        //}
     }
 
-    pub fn get_pixel(&self, position: PixelPosition) -> Option<Rgba> {
-        self.pixels.get_pixel(position)
+    pub fn get_pixel(&self, config: &ConfigModel, position: PixelPosition) -> Option<Rgba> {
+        self.get_layered_pixel(config.frame, config.layer, position)
+    }
+
+    fn get_layered_pixel(
+        &self,
+        frame: FrameRegion,
+        layer: Layer,
+        position: PixelPosition,
+    ) -> Option<Rgba> {
+        let layers = layer.enabled_count();
+        if layers == 1 {
+            return self.pixels.get_pixel(position);
+        }
+
+        let frame = frame.get();
+        if frame.contains(position) {
+            return self.pixels.get_pixel(position);
+        }
+
+        let layer_region = PixelRegion::from_position_and_size(
+            frame.start,
+            PixelSize::from_wh(frame.size().width, frame.size().height * layers),
+        );
+        if !layer_region.contains(position) {
+            return self.pixels.get_pixel(position);
+        }
+
+        let mut current = PixelPosition::from_xy(
+            position.x,
+            (position.y - frame.start.y) % frame.size().height as i16 + frame.start.y,
+        );
+        let mut color = None;
+        for _ in 0..layers {
+            if let Some(c) = self.pixels.get_pixel(current) {
+                color = Some(color.map_or(c, |d| c.alpha_blend(d)));
+            }
+
+            current.y += frame.size().height as i16;
+            if current == position {
+                break;
+            }
+        }
+        color
     }
 
     pub fn undo_command(&mut self) -> Result<()> {
@@ -241,15 +300,15 @@ impl Deserialize for PixelCanvasCommand {
 struct Pixels(BTreeMap<PixelPosition, Rgba>);
 
 impl Pixels {
-    fn get_pixels(&self, region: PixelRegion) -> impl '_ + Iterator<Item = Pixel> {
-        (region.start.y..region.end.y).flat_map(move |y| {
-            let start = PixelPosition::from_xy(region.start.x, y);
-            let end = PixelPosition::from_xy(region.end.x, y);
-            self.0
-                .range(start..end)
-                .map(|(pos, color)| Pixel::new(*pos, *color))
-        })
-    }
+    // fn get_pixels(&self, region: PixelRegion) -> impl '_ + Iterator<Item = Pixel> {
+    //     (region.start.y..region.end.y).flat_map(move |y| {
+    //         let start = PixelPosition::from_xy(region.start.x, y);
+    //         let end = PixelPosition::from_xy(region.end.x, y);
+    //         self.0
+    //             .range(start..end)
+    //             .map(|(pos, color)| Pixel::new(*pos, *color))
+    //     })
+    // }
 
     fn get_pixel(&self, position: PixelPosition) -> Option<Rgba> {
         self.0.get(&position).copied()

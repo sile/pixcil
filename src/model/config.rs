@@ -15,6 +15,7 @@ pub struct ConfigModel {
     pub color: DrawingColor,
     pub frame: FrameRegion,
     pub frame_preview: FramePreview,
+    pub layer: Layer,
 }
 
 impl Serialize for ConfigModel {
@@ -26,6 +27,7 @@ impl Serialize for ConfigModel {
         self.color.serialize(writer).or_fail()?;
         self.frame.serialize(writer).or_fail()?;
         self.frame_preview.serialize(writer).or_fail()?;
+        self.layer.serialize(writer).or_fail()?;
         Ok(())
     }
 }
@@ -40,6 +42,7 @@ impl Deserialize for ConfigModel {
             color: Deserialize::deserialize_or_default(reader).or_fail()?,
             frame: Deserialize::deserialize_or_default(reader).or_fail()?,
             frame_preview: Deserialize::deserialize_or_default(reader).or_fail()?,
+            layer: Deserialize::deserialize_or_default(reader).or_fail()?,
         })
     }
 }
@@ -348,5 +351,66 @@ impl Serialize for MaxUndos {
 impl Deserialize for MaxUndos {
     fn deserialize<R: Read>(reader: &mut R) -> Result<Self> {
         u32::deserialize(reader).map(Self).or_fail()
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
+pub struct Layer {
+    enabled: bool,
+    count: u16,
+}
+
+impl Layer {
+    const MIN: u16 = 1;
+    const MAX: u16 = 100;
+
+    pub const fn is_enabled(self) -> bool {
+        self.enabled
+    }
+
+    pub const fn count(self) -> u16 {
+        self.count
+    }
+
+    pub fn enabled_count(self) -> u16 {
+        if self.enabled {
+            self.count
+        } else {
+            1
+        }
+    }
+
+    pub fn set_enabled(&mut self, enabled: bool) {
+        self.enabled = enabled;
+    }
+
+    pub fn set_count(&mut self, n: u16) {
+        self.count = clip(Self::MIN, n, Self::MAX);
+    }
+}
+
+impl Default for Layer {
+    fn default() -> Self {
+        Self {
+            enabled: true,
+            count: 2,
+        }
+    }
+}
+
+impl Serialize for Layer {
+    fn serialize<W: Write>(&self, writer: &mut W) -> Result<()> {
+        self.enabled.serialize(writer).or_fail()?;
+        self.count.serialize(writer).or_fail()?;
+        Ok(())
+    }
+}
+
+impl Deserialize for Layer {
+    fn deserialize<R: Read>(reader: &mut R) -> Result<Self> {
+        Ok(Self {
+            enabled: Deserialize::deserialize(reader).or_fail()?,
+            count: Deserialize::deserialize(reader).or_fail()?,
+        })
     }
 }

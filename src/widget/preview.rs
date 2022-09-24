@@ -40,7 +40,11 @@ impl PreviewWidget {
                 (drawing_region.end().y - offset.y) as i16,
             ),
         );
-        for pixel in app.models().pixel_canvas.get_pixels(pixel_region) {
+        for pixel in app
+            .models()
+            .pixel_canvas
+            .get_pixels(&app.models().config, pixel_region)
+        {
             canvas.draw_pixel(
                 Position::from_xy(
                     i32::from(pixel.position.x) + offset.x,

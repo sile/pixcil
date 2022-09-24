@@ -197,6 +197,21 @@ impl PixelRegion {
                 || p.y == self.end.y - 1
         })
     }
+
+    // TODO: remove
+    pub fn move_y(self, delta: i16) -> Self {
+        let size = self.size();
+        let mut position = self.start;
+        position.y += delta;
+        Self::from_position_and_size(position, size)
+    }
+
+    pub fn contains(self, position: PixelPosition) -> bool {
+        self.start.x <= position.x
+            && position.x < self.end.x
+            && self.start.y <= position.y
+            && position.y < self.end.y
+    }
 }
 
 impl Serialize for PixelRegion {
