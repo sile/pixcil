@@ -28,17 +28,23 @@ pub struct Models {
 
 impl Models {
     pub fn to_png(&self, app: &App) -> Result<Vec<u8>> {
-        let image_data = self
-            .config
-            .frame
-            .get_preview_region(&self.config, 0) // TODO: handle animation
-            .pixels()
-            .flat_map(|position| {
-                let color = self
-                    .pixel_canvas
-                    .get_pixel(&app.models().config, position)
-                    .unwrap_or(Rgba::new(0, 0, 0, 0));
-                [color.r, color.g, color.b, color.a].into_iter()
+        let frame_count = self.config.animation.enabled_frame_count();
+        let frames = (0..frame_count)
+            .map(|frame| {
+                let image_data = self
+                    .config
+                    .frame
+                    .get_preview_region(&self.config, frame as usize)
+                    .pixels()
+                    .flat_map(|position| {
+                        let color = self
+                            .pixel_canvas
+                            .get_pixel(&app.models().config, position)
+                            .unwrap_or(Rgba::new(0, 0, 0, 0));
+                        [color.r, color.g, color.b, color.a].into_iter()
+                    })
+                    .collect::<Vec<_>>();
+                image_data
             })
             .collect::<Vec<_>>();
         let image_size = self.config.frame.get_base_region().size();
@@ -55,8 +61,18 @@ impl Models {
             );
             encoder.set_color(png::ColorType::Rgba);
             encoder.set_depth(png::BitDepth::Eight);
+
+            if frame_count > 1 {
+                encoder.set_animated(frame_count as u32, 0).or_fail()?;
+                encoder
+                    .set_frame_delay(1, self.config.animation.fps() as u16)
+                    .or_fail()?;
+            }
+
             let mut writer = encoder.write_header().or_fail()?;
-            writer.write_image_data(&image_data).or_fail()?;
+            for image_data in &frames {
+                writer.write_image_data(image_data).or_fail()?;
+            }
             writer.write_chunk(PNG_CHUNK_TYPE, &metadata).or_fail()?;
         }
         Ok(png_data)
@@ -79,6 +95,8 @@ impl Models {
         }
 
         // Load the image with the default settings.
+        //
+        // TODO: Support animated PNG
         let mut models = Self::default();
         let image = decode_sprite(png_data).or_fail()?;
         models

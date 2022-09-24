@@ -189,6 +189,7 @@ impl Widget for ConfigWidget {
         }
 
         // Animation
+        let animation = app.models_mut().config.animation;
         self.animation_enable.handle_event(app, event).or_fail()?;
         app.models_mut()
             .config
@@ -206,6 +207,9 @@ impl Widget for ConfigWidget {
             .config
             .animation
             .set_fps(self.fps.body().value() as u8);
+        if animation != app.models_mut().config.animation {
+            app.request_redraw(app.screen_size().to_region());
+        }
 
         Ok(())
     }
