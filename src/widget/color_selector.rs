@@ -109,11 +109,14 @@ impl ColorSelectorWidget {
             return Ok(());
         }
 
+        let command_log_tail = app.models().pixel_canvas.command_log_tail();
         app.models_mut()
             .pixel_canvas
             .replace_color(self.old_color, new_color)
             .or_fail()?;
-        self.replaced = true;
+        if command_log_tail != app.models().pixel_canvas.command_log_tail() {
+            self.replaced = true;
+        }
         Ok(())
     }
 }
@@ -195,7 +198,7 @@ impl FixedSizeWidget for ColorSelectorWidget {
                 + rgb.height
                 + MARGIN
                 + alpha.height
-                + (MARGIN * 2)
+                + MARGIN
                 + replace.height,
         )
     }
@@ -216,7 +219,7 @@ impl FixedSizeWidget for ColorSelectorWidget {
         self.alpha
             .set_region(app, Region::new(offset, self.alpha.requiring_size(app)));
 
-        offset.y = self.alpha.region().end().y + (MARGIN * 2) as i32;
+        offset.y = self.alpha.region().end().y + MARGIN as i32;
         let mut replace_region = Region::new(offset, self.replace.requiring_size(app));
         replace_region.size.width = self.region.size.width;
         self.replace.set_region(app, replace_region);

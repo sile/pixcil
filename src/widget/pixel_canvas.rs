@@ -219,6 +219,15 @@ impl Widget for PixelCanvasWidget {
                             app.models_mut().config.color.set(color);
                         }
                     }
+                    app.models_mut().tool.current = ToolKind::Draw;
+                }
+            }
+        } else if self.tool.tool_kind() == ToolKind::Pick {
+            if let Some(position) = self.marker_handler().marked_pixels(app).next() {
+                if let Some(color) = app.models().pixel_canvas.get_pixel(position) {
+                    app.models_mut().tool.pick.preview_color = Some(color);
+                } else {
+                    app.models_mut().tool.pick.preview_color = None;
                 }
             }
         }

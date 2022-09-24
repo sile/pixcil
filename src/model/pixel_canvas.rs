@@ -94,6 +94,10 @@ impl PixelCanvasModel {
     }
 
     fn apply_command(&mut self, command: PixelCanvasCommand) -> Result<()> {
+        if command.erase.is_empty() && command.draw.is_empty() {
+            return Ok(());
+        }
+
         self.command_log.truncate(self.command_log_tail);
         self.command_log.push_back(command);
         self.redo_command().or_fail()?;

@@ -1,4 +1,5 @@
 use crate::marker::MarkerKind;
+use pagurus_game_std::color::Rgba;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ToolModel {
@@ -44,6 +45,7 @@ impl Default for ToolModel {
             },
             pick: PickToolState {
                 marker: MarkerKind::Pick,
+                preview_color: None,
             },
         }
     }
@@ -81,4 +83,5 @@ pub struct MoveToolState {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PickToolState {
     pub marker: MarkerKind,
+    pub preview_color: Option<Rgba>,
 }

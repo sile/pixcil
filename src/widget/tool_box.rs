@@ -27,6 +27,42 @@ pub struct ToolBoxWidget {
     current: Tool,
 }
 
+impl ToolBoxWidget {
+    fn handle_tool_change(&mut self, app: &mut App) -> Result<()> {
+        self.tools
+            .on_selected(|state, button| {
+                if state.is_selected() {
+                    let next = Tool::from_icon(button.icon()).or_fail()?;
+
+                    if next == Tool::Pick {
+                        button.set_kind(ButtonKind::BasicPressed);
+                    } else {
+                        button.set_kind(ButtonKind::BasicDeep);
+                    }
+
+                    if self.current == next {
+                        // Double clicked
+                        self.current.spawn_window(app).or_fail()?;
+                    } else {
+                        self.current = next;
+                        match self.current {
+                            Tool::Draw => app.models_mut().tool.current = ToolKind::Draw,
+                            Tool::Erase => app.models_mut().tool.current = ToolKind::Erase,
+                            Tool::Select => app.models_mut().tool.current = ToolKind::Select,
+                            Tool::Move => app.models_mut().tool.current = ToolKind::Move,
+                            Tool::Pick => app.models_mut().tool.current = ToolKind::Pick,
+                        }
+                    }
+                } else {
+                    button.set_kind(ButtonKind::Basic);
+                }
+                app.request_redraw(button.region());
+                Ok(())
+            })
+            .or_fail()
+    }
+}
+
 impl Default for ToolBoxWidget {
     fn default() -> Self {
         let mut buttons = vec![
@@ -59,39 +95,27 @@ impl Widget for ToolBoxWidget {
 
     fn handle_event(&mut self, app: &mut App, event: &mut Event) -> Result<()> {
         self.tools.handle_event(app, event).or_fail()?;
-        self.tools
-            .on_selected(|state, button| {
-                if state.is_selected() {
-                    let next = Tool::from_icon(button.icon()).or_fail()?;
-
-                    if next == Tool::Pick {
-                        button.set_kind(ButtonKind::BasicPressed);
-                    } else {
-                        button.set_kind(ButtonKind::BasicDeep);
-                    }
-
-                    if self.current == next {
-                        // Double clicked
-                        self.current.spawn_window(app).or_fail()?;
-                    } else {
-                        self.current = next;
-                        match self.current {
-                            Tool::Draw => app.models_mut().tool.current = ToolKind::Draw,
-                            Tool::Erase => app.models_mut().tool.current = ToolKind::Erase,
-                            Tool::Select => app.models_mut().tool.current = ToolKind::Select,
-                            Tool::Move => app.models_mut().tool.current = ToolKind::Move,
-                            Tool::Pick => app.models_mut().tool.current = ToolKind::Pick,
-                        }
-                    }
-                } else {
-                    button.set_kind(ButtonKind::Basic);
-                }
-                app.request_redraw(button.region());
-                Ok(())
-            })
-            .or_fail()?;
-
+        self.handle_tool_change(app).or_fail()?;
         event.consume_if_contained(self.region);
+        Ok(())
+    }
+
+    fn handle_event_after(&mut self, app: &mut App) -> Result<()> {
+        if self.current.kind() != app.models().tool.current {
+            let next = app.models().tool.current;
+            let i = self
+                .tools
+                .buttons()
+                .iter()
+                .position(|b| Some(next) == Tool::from_icon(b.icon()).ok().map(|x| x.kind()))
+                .or_fail()?;
+            self.tools.select(app, i).or_fail()?;
+            self.handle_tool_change(app).or_fail()?;
+        }
+
+        for child in self.children() {
+            child.handle_event_after(app).or_fail()?;
+        }
         Ok(())
     }
 
@@ -131,6 +155,16 @@ impl Tool {
             IconId::Move => Self::Move,
             _ => return Err(Failure::new(format!("unexpected icon: {icon:?}"))),
         })
+    }
+
+    fn kind(self) -> ToolKind {
+        match self {
+            Tool::Draw => ToolKind::Draw,
+            Tool::Erase => ToolKind::Erase,
+            Tool::Select => ToolKind::Select,
+            Tool::Pick => ToolKind::Pick,
+            Tool::Move => ToolKind::Move,
+        }
     }
 
     fn spawn_window(self, app: &mut App) -> Result<()> {

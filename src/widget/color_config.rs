@@ -5,6 +5,7 @@ use crate::{
     canvas_ext::CanvasExt,
     color,
     event::Event,
+    model::tool::ToolKind,
     region_ext::RegionExt,
     window::{color_selector::ColorSelectorWindow, config::ConfigWindow},
 };
@@ -82,6 +83,16 @@ impl Widget for ColorConfigWidget {
     }
 
     fn handle_event_after(&mut self, app: &mut App) -> Result<()> {
+        if app.models().tool.current == ToolKind::Pick {
+            if let Some(preview) = app.models().tool.pick.preview_color {
+                if preview != self.label {
+                    self.label = preview;
+                    app.request_redraw(self.color.region());
+                }
+                return Ok(());
+            }
+        }
+
         let color = app.models().config.color.get();
         if self.label != color {
             self.label = color;

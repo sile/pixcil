@@ -40,6 +40,19 @@ impl SelectBoxWidget {
         })
     }
 
+    pub fn select(&mut self, app: &mut App, i: usize) -> Result<()> {
+        if self.selected != i {
+            self.prev_selected = Some(self.selected);
+            self.selected = i;
+            app.request_redraw(self.region);
+        }
+        Ok(())
+    }
+
+    pub fn buttons(&self) -> &[ButtonWidget] {
+        &self.buttons
+    }
+
     pub fn on_selected<F>(&mut self, mut f: F) -> Result<()>
     where
         F: FnMut(ItemState, &mut ButtonWidget) -> Result<()>,
