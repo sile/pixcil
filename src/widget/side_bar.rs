@@ -50,7 +50,7 @@ impl VariableSizeWidget for SideBarWidget {
         let save_load_size = self.save_load.requiring_size(app);
         let save_load_position = Position::from_xy(
             MARGIN as i32,
-            region.size.height as i32 / 4 - save_load_size.height as i32 * 2 / 3,
+            region.size.height as i32 / 4 - save_load_size.height as i32 / 2,
         );
         self.save_load.set_position(app, save_load_position);
 

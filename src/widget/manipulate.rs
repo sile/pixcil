@@ -4,10 +4,13 @@ use crate::{
     canvas_ext::CanvasExt,
     event::{Event, MouseAction},
     model::tool::ToolKind,
-    pixel::PixelPosition,
+    pixel::{Pixel, PixelPosition},
 };
 use pagurus::{failure::OrFail, spatial::Region, Result};
-use pagurus_game_std::{color::Rgba, image::Canvas};
+use pagurus_game_std::{
+    color::Rgba,
+    image::{Canvas, Sprite},
+};
 use std::collections::{HashMap, HashSet};
 
 #[derive(Debug)]
@@ -18,10 +21,11 @@ pub struct ManipulateWidget {
     manipulating_pixels: HashMap<PixelPosition, Rgba>,
     delta: PixelPosition,
     state: State,
+    imported: bool,
 }
 
 impl ManipulateWidget {
-    pub fn new(app: &mut App, selected_pixels: HashSet<PixelPosition>) -> Self {
+    pub fn new(app: &App, selected_pixels: HashSet<PixelPosition>) -> Self {
         let manipulating_pixels = selected_pixels
             .iter()
             .copied()
@@ -39,6 +43,39 @@ impl ManipulateWidget {
             delta: PixelPosition::from_xy(0, 0),
             terminated: false,
             state: State::Neutral,
+            imported: false,
+        }
+    }
+
+    pub fn with_imported_image(app: &App, image: &Sprite) -> Self {
+        let screen_region = app.screen_size().to_region();
+        let mut base = PixelPosition::from_screen_position(app, screen_region.center());
+
+        let image_center = image.size().to_region().center();
+        base.x -= image_center.x as i16;
+        base.y -= image_center.y as i16;
+
+        let manipulating_pixels = image
+            .pixels()
+            .filter_map(|(position, color)| {
+                if color.a == 0 {
+                    return None;
+                }
+
+                let mut pixel_position = base;
+                pixel_position.x += position.x as i16;
+                pixel_position.y += position.y as i16;
+                Some((pixel_position, color))
+            })
+            .collect();
+        Self {
+            region: screen_region,
+            selected_pixels: HashSet::default(),
+            manipulating_pixels,
+            delta: PixelPosition::from_xy(0, 0),
+            terminated: false,
+            state: State::Neutral,
+            imported: true,
         }
     }
 
@@ -61,6 +98,32 @@ impl ManipulateWidget {
             }; // TODO
             canvas.fill_rectangle(region, color.into());
         }
+    }
+
+    fn handle_terminate(&mut self, app: &mut App) -> Result<()> {
+        let config = app.models().config.clone();
+        if self.imported {
+            app.models_mut()
+                .pixel_canvas
+                .draw_pixels(
+                    &config,
+                    self.manipulating_pixels
+                        .iter()
+                        .map(|(position, color)| Pixel::new(*position + self.delta, *color)),
+                )
+                .or_fail()?;
+        } else {
+            app.models_mut()
+                .pixel_canvas
+                .move_pixels(
+                    &config,
+                    self.manipulating_pixels.keys().copied(),
+                    self.delta,
+                )
+                .or_fail()?;
+        }
+
+        Ok(())
     }
 }
 
@@ -163,15 +226,7 @@ impl Widget for ManipulateWidget {
         }
 
         if self.terminated {
-            let config = app.models().config.clone();
-            app.models_mut()
-                .pixel_canvas
-                .move_pixels(
-                    &config,
-                    self.manipulating_pixels.keys().copied(),
-                    self.delta,
-                )
-                .or_fail()?;
+            self.handle_terminate(app).or_fail()?;
         }
 
         Ok(())
@@ -181,15 +236,7 @@ impl Widget for ManipulateWidget {
         if app.models().tool.current != ToolKind::Select {
             self.terminated = true;
             app.request_redraw(self.region);
-            let config = app.models().config.clone();
-            app.models_mut()
-                .pixel_canvas
-                .move_pixels(
-                    &config,
-                    self.manipulating_pixels.keys().copied(),
-                    self.delta,
-                )
-                .or_fail()?;
+            self.handle_terminate(app).or_fail()?;
         }
         Ok(())
     }

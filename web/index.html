@@ -51,6 +51,29 @@
           input.click();
       }
 
+      function importImage() {
+          const input = document.createElement("input")
+          input.setAttribute("type", "file");
+          input.setAttribute("accept", "image/png");
+          input.onchange = async () => {
+              const files = input.files;
+              if (files.length === 0) {
+                  return;
+              }
+
+              const file = files[0];
+
+              const data = new Uint8Array(await file.arrayBuffer());
+              try {
+                  game.command(system, "importImage", data);
+              } catch (e) {
+                  console.log(e);
+                  alert("Failed to load PNG file");
+              }
+          };
+          input.click();
+      }
+
       function now() {
           return new Intl.DateTimeFormat(
               [],
@@ -100,8 +123,8 @@
                   case "loadWorkspace":
                       loadWorkspace();
                       break;
-                  case "loadImage":
-                      alert("TODO");
+                  case "importImage":
+                      importImage();
                       break;
                   default:
                       if ("inputNumber" in requestJson) {

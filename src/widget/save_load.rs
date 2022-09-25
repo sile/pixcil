@@ -22,7 +22,6 @@ pub struct SaveLoadWidget {
     region: Region,
     save: ButtonWidget,
     load: ButtonWidget,
-    import: ButtonWidget,
 }
 
 impl Default for SaveLoadWidget {
@@ -31,7 +30,6 @@ impl Default for SaveLoadWidget {
             region: Default::default(),
             save: ButtonWidget::new(ButtonKind::Basic, IconId::Save),
             load: ButtonWidget::new(ButtonKind::Basic, IconId::Load),
-            import: ButtonWidget::new(ButtonKind::Basic, IconId::Import),
         }
     }
 }
@@ -45,8 +43,7 @@ impl Widget for SaveLoadWidget {
         canvas.fill_rectangle(self.region, color::BUTTONS_BACKGROUND);
         canvas.draw_rectangle(self.region, color::WINDOW_BORDER);
         self.save.render_if_need(app, canvas);
-        self.load.render_if_need(app, canvas); // TODO: Disable if there are dirty pixels
-        self.import.render_if_need(app, canvas);
+        self.load.render_if_need(app, canvas);
     }
 
     fn handle_event(&mut self, app: &mut App, event: &mut Event) -> Result<()> {
@@ -60,17 +57,12 @@ impl Widget for SaveLoadWidget {
             app.enqueue_io_request(IoRequest::LoadWorkspace);
         }
 
-        self.import.handle_event(app, event).or_fail()?;
-        if self.import.take_clicked(app) {
-            app.enqueue_io_request(IoRequest::ImportImage);
-        }
-
         event.consume_if_contained(self.region);
         Ok(())
     }
 
     fn children(&mut self) -> Vec<&mut dyn Widget> {
-        vec![&mut self.save, &mut self.load, &mut self.import]
+        vec![&mut self.save, &mut self.load]
     }
 }
 
@@ -79,7 +71,7 @@ impl FixedSizeWidget for SaveLoadWidget {
         let button_size = self.save.requiring_size(app);
         Size::from_wh(
             button_size.width + MARGIN * 2,
-            button_size.height * 3 + MARGIN * 6,
+            button_size.height * 2 + MARGIN * 4,
         )
     }
 
@@ -87,13 +79,11 @@ impl FixedSizeWidget for SaveLoadWidget {
         self.region = Region::new(position, self.requiring_size(app));
 
         let mut block = self.region;
-        block.size.height /= 3;
+        block.size.height /= 2;
 
         self.save
             .set_position(app, block.without_margin(MARGIN).position);
         self.load
             .set_position(app, block.shift_y(1).without_margin(MARGIN).position);
-        self.import
-            .set_position(app, block.shift_y(2).without_margin(MARGIN).position);
     }
 }

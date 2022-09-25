@@ -6,6 +6,7 @@ use crate::{
     app::App,
     asset::{ButtonKind, IconId, Text},
     event::Event,
+    io::IoRequest,
     model::tool::SelectTool,
 };
 use pagurus::{
@@ -15,11 +16,14 @@ use pagurus::{
 };
 use pagurus_game_std::image::Canvas;
 
+const MARGIN: u32 = 8;
+
 #[derive(Debug)]
 pub struct SelectToolWidget {
     region: Region,
-    tools: BlockWidget<SelectBoxWidget>,
     current: SelectTool,
+    tools: BlockWidget<SelectBoxWidget>,
+    import: BlockWidget<ButtonWidget>,
 }
 
 impl SelectToolWidget {
@@ -32,11 +36,15 @@ impl SelectToolWidget {
         buttons[tool_to_index(current)].set_kind(ButtonKind::BasicPressed);
         Ok(Self {
             region: Region::default(),
+            current,
             tools: BlockWidget::new(
                 "SELECTING TOOL".parse::<Text>().or_fail()?,
                 SelectBoxWidget::new(buttons, tool_to_index(current)).or_fail()?,
             ),
-            current,
+            import: BlockWidget::new(
+                "IMPORT IMAGE".parse::<Text>().or_fail()?,
+                ButtonWidget::new(ButtonKind::Basic, IconId::Import),
+            ),
         })
     }
 }
@@ -47,7 +55,8 @@ impl Widget for SelectToolWidget {
     }
 
     fn render(&self, app: &App, canvas: &mut Canvas) {
-        self.tools.render(app, canvas);
+        self.tools.render_if_need(app, canvas);
+        self.import.render_if_need(app, canvas);
     }
 
     fn handle_event(&mut self, app: &mut App, event: &mut Event) -> Result<()> {
@@ -69,22 +78,37 @@ impl Widget for SelectToolWidget {
                 Ok(())
             })
             .or_fail()?;
+
+        self.import.handle_event(app, event).or_fail()?;
+        if self.import.body_mut().take_clicked(app) {
+            app.enqueue_io_request(IoRequest::ImportImage);
+        }
+
         Ok(())
     }
 
     fn children(&mut self) -> Vec<&mut dyn Widget> {
-        vec![&mut self.tools]
+        vec![&mut self.tools, &mut self.import]
     }
 }
 
 impl FixedSizeWidget for SelectToolWidget {
     fn requiring_size(&self, app: &App) -> Size {
-        self.tools.requiring_size(app)
+        let mut size = self.tools.requiring_size(app);
+        size.width += MARGIN + self.import.requiring_size(app).width;
+        size
     }
 
     fn set_position(&mut self, app: &App, position: Position) {
         self.region = Region::new(position, self.requiring_size(app));
-        self.tools.set_region(app, self.region);
+
+        let mut region = self.region;
+        region.size = self.tools.requiring_size(app);
+        self.tools.set_region(app, region);
+
+        region.position.x = region.end().x + MARGIN as i32;
+        region.size = self.import.requiring_size(app);
+        self.import.set_region(app, region);
     }
 }
 

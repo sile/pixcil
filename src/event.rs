@@ -1,13 +1,16 @@
+use crate::app::App;
 use pagurus::event::{Event as PagurusEvent, MouseEvent};
 use pagurus::input::MouseButton;
 use pagurus::spatial::{Contains, Region};
 use pagurus::{spatial::Position, ActionId};
-
-use crate::app::App;
+use pagurus_game_std::image::Sprite;
 
 #[derive(Debug)]
 pub enum Event {
     Timeout(TimeoutId),
+    Import {
+        image: Sprite,
+    },
     Input {
         id: InputId,
         text: String,

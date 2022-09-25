@@ -8,7 +8,7 @@ use pagurus::{
     event::Event as PagurusEvent, event::WindowEvent as PagurusWindowEvent, failure::OrFail,
     video::VideoFrame, Game, Result, System,
 };
-use pagurus_game_std::{image::Canvas, logger::Logger};
+use pagurus_game_std::{image::Canvas, logger::Logger, png::decode_sprite};
 
 pagurus_game_std::export_wasm_functions!(PixcilGame);
 
@@ -155,6 +155,15 @@ impl<S: System> Game<S> for PixcilGame {
                 app.request_redraw(app.screen_size().to_region());
                 self.handle_pixcil_event(system, None).or_fail()?;
 
+                Ok(())
+            }
+            "importImage" => {
+                let image = decode_sprite(data).or_fail()?;
+                let event = Event::Import { image };
+                self.handle_pixcil_event(system, Some(event)).or_fail()?;
+
+                let app = self.app.as_mut().or_fail()?;
+                app.request_redraw(app.screen_size().to_region());
                 Ok(())
             }
             _ => Err(pagurus::failure::Failure::new(format!(
