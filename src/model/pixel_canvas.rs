@@ -64,21 +64,32 @@ impl PixelCanvasModel {
     ) -> Result<()> {
         let mut command = PixelCanvasCommand::default();
         for src in pixels {
-            let dst = src + delta;
             if let Some(color) = self.pixels.get_pixel(src) {
                 command.erase.push(Pixel::new(src, color));
-                let color = if let Some(old_color) = self.pixels.get_pixel(dst) {
-                    command.erase.push(Pixel::new(dst, old_color));
-                    color.alpha_blend(old_color)
-                } else {
-                    color
-                };
-                command.draw.push(Pixel::new(dst, color));
             }
         }
-        command.draw.sort_by_key(|x| x.position);
         command.erase.sort_by_key(|x| x.position);
-        command.erase.dedup();
+
+        let mut overwritten = Vec::new();
+        for src in &command.erase {
+            let dst = src.position + delta;
+            let color = if command
+                .erase
+                .binary_search_by_key(&dst, |x| x.position)
+                .is_ok()
+            {
+                src.color
+            } else if let Some(old_color) = self.pixels.get_pixel(dst) {
+                overwritten.push(Pixel::new(dst, old_color));
+                src.color.alpha_blend(old_color)
+            } else {
+                src.color
+            };
+            command.draw.push(Pixel::new(dst, color));
+        }
+        command.erase.extend(overwritten);
+        command.erase.sort_by_key(|x| x.position);
+        command.draw.sort_by_key(|x| x.position);
 
         self.apply_command(config, command).or_fail()?;
         Ok(())

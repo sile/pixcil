@@ -8,7 +8,7 @@ use crate::{
     canvas_ext::CanvasExt,
     color,
     event::Event,
-    marker::MarkerHandler,
+    marker::{MarkerHandler, MarkerKind},
     model::tool::{DrawTool, ToolKind, ToolModel},
     pixel::{Pixel, PixelRegion},
 };
@@ -187,7 +187,10 @@ impl Widget for PixelCanvasWidget {
         self.render_pixels(app, canvas);
         if self.tool.tool_kind() == ToolKind::Draw {
             self.render_drawn_pixels(app, canvas);
-        } else if self.tool.tool_kind() == ToolKind::Select {
+        } else if self.tool.tool_kind() == ToolKind::Select
+            || (self.tool.tool_kind() == ToolKind::Erase
+                && self.marker_handler.marker_kind() != MarkerKind::Stroke)
+        {
             self.render_selected_pixels(app, canvas);
         }
         if self.preview_focused {

@@ -6,7 +6,7 @@ use pagurus_game_std::color::Rgba;
 pub struct ToolModel {
     pub current: ToolKind,
     pub draw: DrawTool,
-    pub erase: EraseToolState,
+    pub erase: EraseTool,
     pub select: SelectToolState,
     pub r#move: MoveToolState,
     pub pick: PickToolState,
@@ -20,7 +20,7 @@ impl ToolModel {
     pub fn marker_kind(&self) -> MarkerKind {
         match self.current {
             ToolKind::Draw => self.draw.marker(),
-            ToolKind::Erase => self.erase.marker,
+            ToolKind::Erase => self.erase.marker(),
             ToolKind::Select => self.select.marker,
             ToolKind::Move => self.r#move.marker,
             ToolKind::Pick => self.pick.marker,
@@ -33,9 +33,7 @@ impl Default for ToolModel {
         Self {
             current: ToolKind::Draw,
             draw: DrawTool::default(),
-            erase: EraseToolState {
-                marker: MarkerKind::Stroke,
-            },
+            erase: EraseTool::default(),
             select: SelectToolState {
                 marker: MarkerKind::Lasso,
             },
@@ -120,9 +118,30 @@ impl DrawTool {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct EraseToolState {
-    pub marker: MarkerKind,
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
+pub enum EraseTool {
+    #[default]
+    Eraser,
+    ScissorLasso,
+    ScissorRectangle,
+}
+
+impl EraseTool {
+    fn marker(self) -> MarkerKind {
+        match self {
+            EraseTool::Eraser => MarkerKind::Stroke,
+            EraseTool::ScissorLasso => MarkerKind::Lasso,
+            EraseTool::ScissorRectangle => todo!(),
+        }
+    }
+
+    pub fn icon(self) -> IconId {
+        match self {
+            EraseTool::Eraser => IconId::Erase,
+            EraseTool::ScissorLasso => IconId::ScissorLasso,
+            EraseTool::ScissorRectangle => IconId::ScissorRectangle,
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
