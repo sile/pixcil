@@ -142,7 +142,8 @@ impl Camera {
         } else {
             let frame_height = config.frame.get_base_region().size().height;
             let base_frame_position = config.frame.get_base_region().start;
-            let position = PixelPosition::from_screen_position(app, self.0);
+            let screen_center = app.screen_size().to_region().center();
+            let position = PixelPosition::from_screen_position(app, screen_center);
             let index = (position.y - base_frame_position.y) / frame_height as i16;
             clip(0, index, layer_count as i16 - 1) as usize
         }
@@ -156,7 +157,8 @@ impl Camera {
         } else {
             let frame_width = config.frame.get_base_region().size().width;
             let base_frame_position = config.frame.get_base_region().start;
-            let position = PixelPosition::from_screen_position(app, self.0);
+            let screen_center = app.screen_size().to_region().center();
+            let position = PixelPosition::from_screen_position(app, screen_center);
             let index = (position.x - base_frame_position.x) / frame_width as i16;
             clip(0, index, frame_count as i16 - 1) as usize
         }

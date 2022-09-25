@@ -87,7 +87,6 @@ impl Widget for MoveToolWidget {
         let mut do_move = false;
         let mut layer = app.models().config.camera.current_layer(app);
         let mut frame = app.models().config.camera.current_frame(app);
-
         self.go_center.handle_event(app, event).or_fail()?;
         if self.go_center.body_mut().take_clicked(app) {
             do_move = true;

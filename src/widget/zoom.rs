@@ -5,6 +5,7 @@ use crate::{
     canvas_ext::CanvasExt,
     color,
     event::Event,
+    pixel::PixelPosition,
     region_ext::RegionExt,
 };
 use pagurus::{
@@ -56,13 +57,21 @@ impl Widget for ZoomWidget {
     fn handle_event(&mut self, app: &mut App, event: &mut Event) -> Result<()> {
         self.zoom_in.handle_event(app, event).or_fail()?;
         if self.zoom_in.take_clicked(app) {
+            let screen_center = app.screen_size().to_region().center();
+            let center_pixel = PixelPosition::from_screen_position(app, screen_center);
             app.models_mut().config.zoom.increment();
+            let delta = center_pixel.to_screen_position(app) - screen_center;
+            app.models_mut().config.camera.r#move(delta);
             app.request_redraw(app.screen_size().to_region());
         }
 
         self.zoom_out.handle_event(app, event).or_fail()?;
         if self.zoom_out.take_clicked(app) {
+            let screen_center = app.screen_size().to_region().center();
+            let center_pixel = PixelPosition::from_screen_position(app, screen_center);
             app.models_mut().config.zoom.decrement();
+            let delta = center_pixel.to_screen_position(app) - screen_center;
+            app.models_mut().config.camera.r#move(delta);
             app.request_redraw(app.screen_size().to_region());
         }
 
