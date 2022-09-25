@@ -37,10 +37,23 @@ impl Window for MainWindow {
     }
 
     fn render(&self, app: &App, canvas: &mut Canvas) {
-        self.pixel_canvas.render(app, canvas);
+        let preview_mode = app.models().preview_mode;
+
+        if preview_mode {
+            canvas.fill_rectangle(self.region(), color::CANVAS_PREVIEW_MODE_BACKGROUND);
+
+            let config = &app.models().config;
+            let region = config.frame.get_animation_frames_region(config);
+            let mut canvas = canvas.mask_region(region.to_screen_region(app));
+            self.pixel_canvas.render(app, &mut canvas);
+        } else {
+            self.pixel_canvas.render(app, canvas);
+        }
         self.preview.render_if_need(app, canvas);
-        self.side_bar.render_if_need(app, canvas);
-        self.bottom_bar.render_if_need(app, canvas);
+        if !preview_mode {
+            self.side_bar.render_if_need(app, canvas);
+            self.bottom_bar.render_if_need(app, canvas);
+        }
         canvas.draw_rectangle(self.region(), color::WINDOW_BORDER);
     }
 
@@ -79,8 +92,6 @@ impl Window for MainWindow {
             self.bottom_bar.handle_event(app, event).or_fail()?;
         }
         self.pixel_canvas.handle_event(app, event).or_fail()?;
-        self.pixel_canvas
-            .set_preview_focused(app, self.preview.is_focused());
 
         self.bottom_bar.handle_event_after(app).or_fail()?;
         self.side_bar.handle_event_after(app).or_fail()?;

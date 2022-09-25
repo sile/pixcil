@@ -317,6 +317,14 @@ impl FrameRegion {
     }
 
     // TODO: rename
+    pub fn get_animation_frames_region(self, config: &ConfigModel) -> PixelRegion {
+        let mut region = self.region.shift_y(config.layer.enabled_count() as i16 - 1);
+        let size = self.region.size();
+        region.end.x = size.width as i16 * config.animation.enabled_frame_count() as i16;
+        region
+    }
+
+    // TODO: rename
     pub fn get_full_region(self, config: &ConfigModel) -> PixelRegion {
         let mut region = self.region;
         let size = self.region.size();

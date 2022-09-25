@@ -24,6 +24,7 @@ pub struct Models {
 
     // The following fields are not serialized / deserialized.
     pub tool: ToolModel,
+    pub preview_mode: bool,
 }
 
 impl Models {

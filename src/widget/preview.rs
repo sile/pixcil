@@ -24,12 +24,6 @@ pub struct PreviewWidget {
     preview_off: bool,
 }
 
-impl PreviewWidget {
-    pub fn is_focused(&self) -> bool {
-        self.frame.is_focused()
-    }
-}
-
 impl Widget for PreviewWidget {
     fn region(&self) -> Region {
         self.region
@@ -99,7 +93,6 @@ impl FixedSizeWidget for PreviewWidget {
 #[derive(Debug, Default)]
 struct PreviewFrameWidget {
     region: Region,
-    focused: bool,
     frame_size: Option<PixelSize>,
     playing: Option<Playing>,
 }
@@ -154,17 +147,6 @@ impl PreviewFrameWidget {
         region.size = region.size;
         region
     }
-
-    fn set_focused(&mut self, app: &mut App, focused: bool) {
-        if self.focused != focused {
-            self.focused = focused;
-            app.request_redraw(self.region);
-        }
-    }
-
-    pub fn is_focused(&self) -> bool {
-        self.focused
-    }
 }
 
 impl Widget for PreviewFrameWidget {
@@ -186,16 +168,25 @@ impl Widget for PreviewFrameWidget {
                     event.consume();
                 }
             }
-            self.set_focused(app, focused);
-            if self.focused && app.models().config.animation.is_enabled() && self.playing.is_none()
-            {
+            if focused {
+                if !app.models().preview_mode {
+                    app.models_mut().preview_mode = true;
+                    app.request_redraw(app.screen_size().to_region());
+                }
+            } else {
+                if app.models().preview_mode {
+                    app.models_mut().preview_mode = false;
+                    app.request_redraw(app.screen_size().to_region());
+                }
+            }
+            if focused && app.models().config.animation.is_enabled() && self.playing.is_none() {
                 self.playing = Some(Playing::start(app));
             }
         }
         if let Some(playing) = &mut self.playing {
             playing.handle_event(app, event, self.region).or_fail()?;
         }
-        if !self.focused {
+        if !app.models().preview_mode {
             self.playing = None;
         }
         Ok(())

@@ -22,29 +22,12 @@ use pagurus_game_std::{
 pub struct PixelCanvasWidget {
     region: Region,
     marker_handler: MarkerHandler,
-    preview_focused: bool,
     tool: ToolModel,
     manipulate: Option<ManipulateWidget>,
     move_camera: Option<MoveCameraWidget>,
 }
 
 impl PixelCanvasWidget {
-    pub fn set_preview_focused(&mut self, app: &mut App, focused: bool) {
-        if self.preview_focused != focused {
-            self.preview_focused = focused;
-
-            let current_frame = app.models().config.camera.current_frame(app);
-            let mut region = app
-                .models()
-                .config
-                .frame
-                .get_preview_region(&app.models().config, current_frame)
-                .to_screen_region(app);
-            region.size = region.size + 1;
-            app.request_redraw(self.region.intersection(region));
-        }
-    }
-
     pub fn marker_handler(&self) -> &MarkerHandler {
         &self.marker_handler
     }
@@ -235,9 +218,18 @@ impl Widget for PixelCanvasWidget {
     }
 
     fn render(&self, app: &App, canvas: &mut Canvas) {
+        let preview_mode = app.models().preview_mode;
+
         canvas.fill_rectangle(self.region, color::CANVAS_BACKGROUND);
-        self.render_grid(app, canvas);
-        self.render_frame_edges(app, canvas);
+        if preview_mode {
+            if app.models().config.animation.enabled_frame_count() > 1 {
+                self.render_frame_edges(app, canvas);
+            }
+        } else {
+            self.render_grid(app, canvas);
+            self.render_frame_edges(app, canvas);
+        }
+
         self.render_pixels(app, canvas);
         if self.tool.tool_kind() == ToolKind::Draw {
             self.render_drawn_pixels(app, canvas);
@@ -247,17 +239,6 @@ impl Widget for PixelCanvasWidget {
                 && !self.marker_handler.is_completed())
         {
             self.render_selected_pixels(app, canvas);
-        }
-        if self.preview_focused {
-            let current_frame = app.models().config.camera.current_frame(app);
-            let mut region = app
-                .models()
-                .config
-                .frame
-                .get_preview_region(&app.models().config, current_frame)
-                .to_screen_region(app);
-            region.size = region.size + 1;
-            canvas.draw_rectangle(region, color::PREVIEW_FOCUSED_BORDER);
         }
         if let Some(w) = &self.manipulate {
             w.render(app, canvas);
