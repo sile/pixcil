@@ -122,6 +122,8 @@ impl PixelCanvasWidget {
                 let bottom_right = current.end - PixelPosition::from_xy(1, 1);
                 let top_right = PixelPosition::from_xy(bottom_right.x, top_left.y);
                 let bottom_left = PixelPosition::from_xy(top_left.x, bottom_right.y);
+
+                // TODO: Consider 1-px width / height frames
                 for pos in [
                     top_left,
                     top_left.move_x(1),
