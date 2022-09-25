@@ -35,7 +35,7 @@ impl EraseToolWidget {
             region: Region::default(),
             tools: BlockWidget::new(
                 "ERASING TOOL".parse::<Text>().or_fail()?,
-                SelectBoxWidget::new(buttons, 0).or_fail()?,
+                SelectBoxWidget::new(buttons, tool_to_index(current)).or_fail()?,
             ),
             current,
         })
