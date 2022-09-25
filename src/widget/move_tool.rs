@@ -79,8 +79,6 @@ impl Widget for MoveToolWidget {
         self.go_center.render_if_need(app, canvas);
         self.go_top.render_if_need(app, canvas);
         self.go_bottom.render_if_need(app, canvas);
-
-        // Layer
         self.go_left.render_if_need(app, canvas);
         self.go_right.render_if_need(app, canvas);
     }
@@ -88,7 +86,13 @@ impl Widget for MoveToolWidget {
     fn handle_event(&mut self, app: &mut App, event: &mut Event) -> Result<()> {
         self.go_center.handle_event(app, event).or_fail()?;
         if self.go_center.body_mut().take_clicked(app) {
-            // TODO
+            let screen_center = app.screen_size().to_region().center();
+            let frame_center = app.models().config.camera.current_frame_center(&app);
+            app.models_mut()
+                .config
+                .camera
+                .r#move(frame_center - screen_center);
+            app.request_redraw(app.screen_size().to_region());
         }
 
         self.go_top.handle_event(app, event).or_fail()?;

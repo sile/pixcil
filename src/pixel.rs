@@ -198,6 +198,16 @@ impl PixelRegion {
         })
     }
 
+    pub fn shift_y(self, delta: i16) -> Self {
+        let size = self.size();
+        self.move_y(size.height as i16 * delta)
+    }
+
+    pub fn shift_x(self, delta: i16) -> Self {
+        let size = self.size();
+        self.move_x(size.width as i16 * delta)
+    }
+
     pub fn move_y(self, delta: i16) -> Self {
         let size = self.size();
         let mut position = self.start;
@@ -224,7 +234,6 @@ impl PixelRegion {
             && position.y < self.end.y
     }
 
-    // TODO: remove
     pub fn center(self) -> PixelPosition {
         let mut size = self.size();
         size.width /= 2;

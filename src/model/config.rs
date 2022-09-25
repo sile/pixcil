@@ -117,6 +117,19 @@ impl Camera {
         self.0.y = clip(Self::MIN.0.y, self.0.y + delta.y, Self::MAX.0.y);
     }
 
+    pub fn current_frame_center(self, app: &App) -> Position {
+        let layer = self.current_layer(app);
+        let frame = self.current_frame(app);
+        let region = app
+            .models()
+            .config
+            .frame
+            .get_base_region()
+            .shift_x(frame as i16)
+            .shift_y(layer as i16);
+        region.center().to_screen_position(app)
+    }
+
     pub fn current_layer(self, app: &App) -> usize {
         let config = &app.models().config;
         let layer_count = config.layer.enabled_count();
