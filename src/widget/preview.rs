@@ -5,6 +5,7 @@ use crate::{
     color,
     event::{Event, TimeoutId},
     pixel::{PixelPosition, PixelRegion, PixelSize},
+    region_ext::RegionExt,
 };
 use pagurus::{
     failure::OrFail,
@@ -13,18 +14,97 @@ use pagurus::{
 };
 use pagurus_game_std::image::Canvas;
 
-const BORDER: u32 = 1;
+const MARGIN: u32 = 4;
 
 #[derive(Debug, Default)]
 pub struct PreviewWidget {
     region: Region,
-    focused: bool,
+    frame_size: Size,
+    frame: PreviewFrameWidget,
     preview_off: bool,
+}
+
+impl PreviewWidget {
+    pub fn is_focused(&self) -> bool {
+        self.frame.is_focused()
+    }
+}
+
+impl Widget for PreviewWidget {
+    fn region(&self) -> Region {
+        self.region
+    }
+
+    fn render(&self, app: &App, canvas: &mut Canvas) {
+        if self.preview_off {
+            return;
+        }
+
+        canvas.fill_rectangle(self.region, color::BUTTONS_BACKGROUND);
+        canvas.draw_rectangle(self.region, color::WINDOW_BORDER);
+
+        self.frame.render(app, canvas);
+    }
+
+    fn handle_event(&mut self, app: &mut App, event: &mut Event) -> Result<()> {
+        if self.preview_off {
+            return Ok(());
+        }
+
+        self.frame.handle_event(app, event).or_fail()?;
+        event.consume_if_contained(self.region);
+        Ok(())
+    }
+
+    fn handle_event_after(&mut self, app: &mut App) -> Result<()> {
+        if self.preview_off != !app.models().config.frame_preview.get() {
+            self.preview_off = !app.models().config.frame_preview.get();
+            app.request_redraw(self.region);
+            return Ok(());
+        }
+
+        for child in self.children() {
+            child.handle_event_after(app).or_fail()?;
+        }
+        if self.frame_size != self.frame.region.size {
+            let old_region = self.region;
+            self.frame_size = self.frame.region.size;
+
+            let size = self.requiring_size(app);
+            self.region.position.x = self.region.end().x - size.width as i32;
+            self.set_position(app, self.region.position);
+            app.request_redraw(self.region.union(old_region));
+        }
+        Ok(())
+    }
+
+    fn children(&mut self) -> Vec<&mut dyn Widget> {
+        vec![&mut self.frame]
+    }
+}
+
+impl FixedSizeWidget for PreviewWidget {
+    fn requiring_size(&self, app: &App) -> Size {
+        self.frame.requiring_size(app) + MARGIN * 2
+    }
+
+    fn set_position(&mut self, app: &App, position: Position) {
+        self.region = Region::new(position, self.requiring_size(app));
+        self.frame
+            .set_position(app, self.region.without_margin(MARGIN).position);
+        self.frame_size = self.frame.region.size;
+    }
+}
+
+#[derive(Debug, Default)]
+struct PreviewFrameWidget {
+    region: Region,
+    focused: bool,
     frame_size: Option<PixelSize>,
     playing: Option<Playing>,
 }
 
-impl PreviewWidget {
+impl PreviewFrameWidget {
     fn render_pixels(&self, app: &App, canvas: &mut Canvas) {
         let current_frame = if let Some(playing) = &self.playing {
             playing.current_frame
@@ -70,8 +150,8 @@ impl PreviewWidget {
 
     fn frame_region(&self) -> Region {
         let mut region = self.region;
-        region.position = region.position + BORDER as i32;
-        region.size = region.size - (BORDER * 2);
+        region.position = region.position;
+        region.size = region.size;
         region
     }
 
@@ -87,30 +167,17 @@ impl PreviewWidget {
     }
 }
 
-impl Widget for PreviewWidget {
+impl Widget for PreviewFrameWidget {
     fn region(&self) -> Region {
         self.region
     }
 
     fn render(&self, app: &App, canvas: &mut Canvas) {
-        if self.preview_off {
-            return;
-        }
-
         canvas.fill_rectangle(self.region, color::PREVIEW_BACKGROUND);
-        if self.focused {
-            canvas.draw_rectangle(self.region, color::PREVIEW_FOCUSED_BORDER);
-        } else {
-            canvas.draw_rectangle(self.region, color::PREVIEW_BORDER);
-        }
         self.render_pixels(app, canvas);
     }
 
     fn handle_event(&mut self, app: &mut App, event: &mut Event) -> Result<()> {
-        if self.preview_off {
-            return Ok(());
-        }
-
         if let Some(position) = event.position() {
             let mut focused = false;
             if self.region.contains(&position) {
@@ -135,12 +202,6 @@ impl Widget for PreviewWidget {
     }
 
     fn handle_event_after(&mut self, app: &mut App) -> Result<()> {
-        if self.preview_off != !app.models().config.frame_preview.get() {
-            self.preview_off = !app.models().config.frame_preview.get();
-            app.request_redraw(self.region);
-            return Ok(());
-        }
-
         let current_frame = app.models().config.camera.current_frame(app);
         let preview_pixel_region = app
             .models()
@@ -185,10 +246,10 @@ impl Widget for PreviewWidget {
     }
 }
 
-impl FixedSizeWidget for PreviewWidget {
+impl FixedSizeWidget for PreviewFrameWidget {
     fn requiring_size(&self, app: &App) -> Size {
         let frame = app.models().config.frame.get_base_region().size();
-        Size::from_wh(u32::from(frame.width), u32::from(frame.height)) + (BORDER * 2)
+        Size::from_wh(u32::from(frame.width), u32::from(frame.height))
     }
 
     fn set_position(&mut self, app: &App, position: Position) {
