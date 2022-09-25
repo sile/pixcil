@@ -2,6 +2,12 @@
 name = "pixcil"
 version = "0.1.0"
 edition = "2021"
+authors = ["Takeru Ohta <phjgt308@gmail.com>"]
+license = "MIT OR Apache-2.0"
+description = "Pixel art editor"
+homepage = "https://github.com/sile/pixcil"
+repository = "https://github.com/sile/pixcil"
+readme = "README.md"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
