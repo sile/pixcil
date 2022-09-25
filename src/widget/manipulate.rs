@@ -292,7 +292,6 @@ impl VariableSizeWidget for ManipulateWidget {
             region.size.height as i32 / 2 - tool_size.height as i32 / 2,
         );
         self.tool.set_position(app, tool_position);
-        log::info!("regin: {:?}", self.tool.region());
     }
 }
 
