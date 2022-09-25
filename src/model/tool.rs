@@ -7,7 +7,7 @@ pub struct ToolModel {
     pub current: ToolKind,
     pub draw: DrawTool,
     pub erase: EraseTool,
-    pub select: SelectToolState,
+    pub select: SelectTool,
     pub r#move: MoveToolState,
     pub pick: PickToolState,
 }
@@ -21,7 +21,7 @@ impl ToolModel {
         match self.current {
             ToolKind::Draw => self.draw.marker(),
             ToolKind::Erase => self.erase.marker(),
-            ToolKind::Select => self.select.marker,
+            ToolKind::Select => self.select.marker(),
             ToolKind::Move => self.r#move.marker,
             ToolKind::Pick => self.pick.marker,
         }
@@ -34,9 +34,7 @@ impl Default for ToolModel {
             current: ToolKind::Draw,
             draw: DrawTool::default(),
             erase: EraseTool::default(),
-            select: SelectToolState {
-                marker: MarkerKind::Lasso,
-            },
+            select: SelectTool::default(),
             r#move: MoveToolState {
                 marker: MarkerKind::Noop,
             },
@@ -71,6 +69,7 @@ impl ToolKind {
             IconId::ScissorRectangle => Ok(Self::Erase),
             IconId::ScissorLasso => Ok(Self::Erase),
             IconId::Select => Ok(Self::Select),
+            IconId::Lasso => Ok(Self::Select),
             IconId::Pick => Ok(Self::Pick),
             IconId::Move => Ok(Self::Move),
             _ => Err(Failure::unreachable()),
@@ -136,9 +135,27 @@ impl EraseTool {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct SelectToolState {
-    pub marker: MarkerKind,
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
+pub enum SelectTool {
+    #[default]
+    Rectangle,
+    Lasso,
+}
+
+impl SelectTool {
+    fn marker(self) -> MarkerKind {
+        match self {
+            SelectTool::Rectangle => MarkerKind::FillRectangle,
+            SelectTool::Lasso => MarkerKind::Lasso,
+        }
+    }
+
+    pub fn icon(self) -> IconId {
+        match self {
+            SelectTool::Rectangle => IconId::Select,
+            SelectTool::Lasso => IconId::Lasso,
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

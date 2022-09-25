@@ -24,6 +24,7 @@ pub mod preview;
 pub mod rgb_selector;
 pub mod save_load;
 pub mod select_box;
+pub mod select_tool;
 pub mod side_bar;
 pub mod slider;
 pub mod toggle;

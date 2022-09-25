@@ -119,6 +119,12 @@ impl Widget for ToolBoxWidget {
             self.tools.buttons_mut()[ERASE_INDEX].set_icon(app, erase_icon);
         }
 
+        const SELECT_INDEX: usize = 3;
+        let select_icon = app.models().tool.select.icon();
+        if self.tools.buttons()[SELECT_INDEX].icon() != select_icon {
+            self.tools.buttons_mut()[SELECT_INDEX].set_icon(app, select_icon);
+        }
+
         for child in self.children() {
             child.handle_event_after(app).or_fail()?;
         }
@@ -149,7 +155,9 @@ fn spawn_window(tool: ToolKind, app: &mut App) -> Result<()> {
         ToolKind::Erase => app
             .spawn_window(EraseToolWindow::new(app).or_fail()?)
             .or_fail(),
-        ToolKind::Select => app.spawn_window(SelectToolWindow::default()).or_fail(),
+        ToolKind::Select => app
+            .spawn_window(SelectToolWindow::new(app).or_fail()?)
+            .or_fail(),
         ToolKind::Move => app.spawn_window(MoveToolWindow::new(app)).or_fail(),
         ToolKind::Pick => Ok(()),
     }
