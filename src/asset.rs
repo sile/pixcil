@@ -65,6 +65,8 @@ impl Assets {
             IconId::GoTop => &self.icons.go_top,
             IconId::GoBottom => &self.icons.go_bottom,
             IconId::GoCenter => &self.icons.go_center,
+            IconId::Cut => &self.icons.cut,
+            IconId::Copy => &self.icons.copy,
         }
     }
 
@@ -108,6 +110,8 @@ pub enum IconId {
     GoTop,
     GoBottom,
     GoCenter,
+    Cut,
+    Copy,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -266,6 +270,8 @@ pub struct Icons {
     pub go_top: Sprite,
     pub go_bottom: Sprite,
     pub go_center: Sprite,
+    pub cut: Sprite,
+    pub copy: Sprite,
 }
 
 impl Icons {
@@ -305,6 +311,8 @@ impl Icons {
             go_top: go.clip(block.shift_x(2)).or_fail()?,
             go_bottom: go.clip(block.shift_x(3)).or_fail()?,
             go_center: go.clip(block.shift_x(4)).or_fail()?,
+            cut: decode_sprite(include_bytes!("../assets/icon-cut.png")).or_fail()?,
+            copy: decode_sprite(include_bytes!("../assets/icon-copy.png")).or_fail()?,
         })
     }
 }
