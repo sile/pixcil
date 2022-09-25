@@ -79,7 +79,7 @@ pub enum IconId {
     ZoomOut,
     Null,
     Settings,
-    Draw,
+    Draw, // TODO: remove
     Erase,
     Select,
     Pick,

@@ -53,6 +53,10 @@ impl SelectBoxWidget {
         &self.buttons
     }
 
+    pub fn buttons_mut(&mut self) -> &mut [ButtonWidget] {
+        &mut self.buttons
+    }
+
     pub fn on_selected<F>(&mut self, mut f: F) -> Result<()>
     where
         F: FnMut(ItemState, &mut ButtonWidget) -> Result<()>,

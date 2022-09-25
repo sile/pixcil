@@ -52,6 +52,11 @@ impl ButtonWidget {
         self.icon
     }
 
+    pub fn set_icon(&mut self, app: &mut App, icon: IconId) {
+        self.icon = icon;
+        app.request_redraw(self.region);
+    }
+
     pub fn kind(&self) -> ButtonKind {
         self.kind
     }

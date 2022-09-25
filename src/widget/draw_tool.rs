@@ -6,9 +6,10 @@ use crate::{
     app::App,
     asset::{ButtonKind, IconId, Text},
     event::Event,
+    model::tool::DrawTool,
 };
 use pagurus::{
-    failure::OrFail,
+    failure::{Failure, OrFail},
     spatial::{Position, Region, Size},
     Result,
 };
@@ -18,10 +19,12 @@ use pagurus_game_std::image::Canvas;
 pub struct DrawToolWidget {
     region: Region,
     tools: BlockWidget<SelectBoxWidget>,
+    current: DrawTool,
 }
 
 impl DrawToolWidget {
-    pub fn new(_app: &App) -> Result<Self> {
+    pub fn new(app: &App) -> Result<Self> {
+        let current = app.models().tool.draw;
         let mut buttons = vec![
             ButtonWidget::new(ButtonKind::Basic, IconId::PenStroke),
             ButtonWidget::new(ButtonKind::Basic, IconId::PenLine),
@@ -29,13 +32,14 @@ impl DrawToolWidget {
             ButtonWidget::new(ButtonKind::Basic, IconId::PenCircle),
             ButtonWidget::new(ButtonKind::Basic, IconId::Bucket),
         ];
-        buttons[0].set_kind(ButtonKind::BasicPressed);
+        buttons[tool_to_index(current)].set_kind(ButtonKind::BasicPressed);
         Ok(Self {
             region: Region::default(),
             tools: BlockWidget::new(
                 "DRAWING TOOL".parse::<Text>().or_fail()?,
-                SelectBoxWidget::new(buttons, 0).or_fail()?,
+                SelectBoxWidget::new(buttons, tool_to_index(current)).or_fail()?,
             ),
+            current,
         })
     }
 }
@@ -51,6 +55,23 @@ impl Widget for DrawToolWidget {
 
     fn handle_event(&mut self, app: &mut App, event: &mut Event) -> Result<()> {
         self.tools.handle_event(app, event).or_fail()?;
+        self.tools
+            .body_mut()
+            .on_selected(|state, button| {
+                if state.is_selected() {
+                    button.set_kind(ButtonKind::BasicPressed);
+                    let selected = icon_to_tool(button.icon()).or_fail()?;
+                    if self.current != selected {
+                        self.current = selected;
+                        app.models_mut().tool.draw = selected;
+                    }
+                } else {
+                    button.set_kind(ButtonKind::Basic);
+                }
+                app.request_redraw(button.region());
+                Ok(())
+            })
+            .or_fail()?;
         Ok(())
     }
 
@@ -67,5 +88,26 @@ impl FixedSizeWidget for DrawToolWidget {
     fn set_position(&mut self, app: &App, position: Position) {
         self.region = Region::new(position, self.requiring_size(app));
         self.tools.set_region(app, self.region);
+    }
+}
+
+fn tool_to_index(tool: DrawTool) -> usize {
+    match tool {
+        DrawTool::PenStroke => 0,
+        DrawTool::PenLine => 1,
+        DrawTool::PenRectangle => 2,
+        DrawTool::PenCircle => 3,
+        DrawTool::Bucket => 4,
+    }
+}
+
+fn icon_to_tool(icon: IconId) -> Result<DrawTool> {
+    match icon {
+        IconId::PenStroke => Ok(DrawTool::PenStroke),
+        IconId::PenLine => Ok(DrawTool::PenLine),
+        IconId::PenRectangle => Ok(DrawTool::PenRectangle),
+        IconId::PenCircle => Ok(DrawTool::PenCircle),
+        IconId::Bucket => Ok(DrawTool::Bucket),
+        _ => Err(Failure::unreachable()),
     }
 }

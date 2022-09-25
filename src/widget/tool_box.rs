@@ -12,7 +12,7 @@ use crate::{
     },
 };
 use pagurus::{
-    failure::{Failure, OrFail},
+    failure::OrFail,
     spatial::{Position, Region, Size},
     Result,
 };
@@ -24,7 +24,7 @@ const MARGIN: u32 = 8;
 pub struct ToolBoxWidget {
     region: Region,
     tools: SelectBoxWidget,
-    current: Tool,
+    current: ToolKind,
 }
 
 impl ToolBoxWidget {
@@ -32,9 +32,9 @@ impl ToolBoxWidget {
         self.tools
             .on_selected(|state, button| {
                 if state.is_selected() {
-                    let next = Tool::from_icon(button.icon()).or_fail()?;
+                    let next = ToolKind::from_icon(button.icon()).or_fail()?;
 
-                    if next == Tool::Pick {
+                    if next == ToolKind::Pick {
                         button.set_kind(ButtonKind::BasicPressed);
                     } else {
                         button.set_kind(ButtonKind::BasicDeep);
@@ -42,16 +42,10 @@ impl ToolBoxWidget {
 
                     if self.current == next {
                         // Double clicked
-                        self.current.spawn_window(app).or_fail()?;
+                        spawn_window(next, app).or_fail()?;
                     } else {
                         self.current = next;
-                        match self.current {
-                            Tool::Draw => app.models_mut().tool.current = ToolKind::Draw,
-                            Tool::Erase => app.models_mut().tool.current = ToolKind::Erase,
-                            Tool::Select => app.models_mut().tool.current = ToolKind::Select,
-                            Tool::Move => app.models_mut().tool.current = ToolKind::Move,
-                            Tool::Pick => app.models_mut().tool.current = ToolKind::Pick,
-                        }
+                        app.models_mut().tool.current = next;
                     }
                 } else {
                     button.set_kind(ButtonKind::Basic);
@@ -67,7 +61,7 @@ impl Default for ToolBoxWidget {
     fn default() -> Self {
         let mut buttons = vec![
             ButtonWidget::new(ButtonKind::Basic, IconId::Pick),
-            ButtonWidget::new(ButtonKind::Basic, IconId::Draw),
+            ButtonWidget::new(ButtonKind::Basic, IconId::PenStroke),
             ButtonWidget::new(ButtonKind::Basic, IconId::Erase),
             ButtonWidget::new(ButtonKind::Basic, IconId::Select),
             ButtonWidget::new(ButtonKind::Basic, IconId::Move),
@@ -77,7 +71,7 @@ impl Default for ToolBoxWidget {
         Self {
             region: Default::default(),
             tools: SelectBoxWidget::new(buttons, 1).expect("unreachable"),
-            current: Tool::default(),
+            current: ToolKind::default(),
         }
     }
 }
@@ -101,16 +95,22 @@ impl Widget for ToolBoxWidget {
     }
 
     fn handle_event_after(&mut self, app: &mut App) -> Result<()> {
-        if self.current.kind() != app.models().tool.current {
+        if self.current != app.models().tool.current {
             let next = app.models().tool.current;
             let i = self
                 .tools
                 .buttons()
                 .iter()
-                .position(|b| Some(next) == Tool::from_icon(b.icon()).ok().map(|x| x.kind()))
+                .position(|b| Some(next) == ToolKind::from_icon(b.icon()).ok())
                 .or_fail()?;
             self.tools.select(app, i).or_fail()?;
             self.handle_tool_change(app).or_fail()?;
+        }
+
+        const DRAW_INDEX: usize = 1;
+        let draw_icon = app.models().tool.draw.icon();
+        if self.tools.buttons()[DRAW_INDEX].icon() != draw_icon {
+            self.tools.buttons_mut()[DRAW_INDEX].set_icon(app, draw_icon);
         }
 
         for child in self.children() {
@@ -135,49 +135,16 @@ impl FixedSizeWidget for ToolBoxWidget {
     }
 }
 
-#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum Tool {
-    #[default]
-    Draw,
-    Erase,
-    Select,
-    Pick,
-    Move,
-}
-
-impl Tool {
-    fn from_icon(icon: IconId) -> Result<Self> {
-        Ok(match icon {
-            IconId::Draw => Self::Draw,
-            IconId::Erase => Self::Erase,
-            IconId::Select => Self::Select,
-            IconId::Pick => Self::Pick,
-            IconId::Move => Self::Move,
-            _ => return Err(Failure::new(format!("unexpected icon: {icon:?}"))),
-        })
-    }
-
-    fn kind(self) -> ToolKind {
-        match self {
-            Tool::Draw => ToolKind::Draw,
-            Tool::Erase => ToolKind::Erase,
-            Tool::Select => ToolKind::Select,
-            Tool::Pick => ToolKind::Pick,
-            Tool::Move => ToolKind::Move,
-        }
-    }
-
-    fn spawn_window(self, app: &mut App) -> Result<()> {
-        match self {
-            Tool::Draw => app
-                .spawn_window(DrawToolWindow::new(app).or_fail()?)
-                .or_fail(),
-            Tool::Erase => app
-                .spawn_window(EraseToolWindow::new(app).or_fail()?)
-                .or_fail(),
-            Tool::Select => app.spawn_window(SelectToolWindow::default()).or_fail(),
-            Tool::Move => app.spawn_window(MoveToolWindow::default()).or_fail(),
-            Tool::Pick => Ok(()),
-        }
+fn spawn_window(tool: ToolKind, app: &mut App) -> Result<()> {
+    match tool {
+        ToolKind::Draw => app
+            .spawn_window(DrawToolWindow::new(app).or_fail()?)
+            .or_fail(),
+        ToolKind::Erase => app
+            .spawn_window(EraseToolWindow::new(app).or_fail()?)
+            .or_fail(),
+        ToolKind::Select => app.spawn_window(SelectToolWindow::default()).or_fail(),
+        ToolKind::Move => app.spawn_window(MoveToolWindow::default()).or_fail(),
+        ToolKind::Pick => Ok(()),
     }
 }
