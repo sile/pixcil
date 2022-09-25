@@ -113,6 +113,12 @@ impl Widget for ToolBoxWidget {
             self.tools.buttons_mut()[DRAW_INDEX].set_icon(app, draw_icon);
         }
 
+        const ERASE_INDEX: usize = 2;
+        let erase_icon = app.models().tool.erase.icon();
+        if self.tools.buttons()[ERASE_INDEX].icon() != erase_icon {
+            self.tools.buttons_mut()[ERASE_INDEX].set_icon(app, erase_icon);
+        }
+
         for child in self.children() {
             child.handle_event_after(app).or_fail()?;
         }

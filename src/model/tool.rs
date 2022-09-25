@@ -131,7 +131,7 @@ impl EraseTool {
         match self {
             EraseTool::Eraser => MarkerKind::Stroke,
             EraseTool::ScissorLasso => MarkerKind::Lasso,
-            EraseTool::ScissorRectangle => todo!(),
+            EraseTool::ScissorRectangle => MarkerKind::FillRectangle,
         }
     }
 

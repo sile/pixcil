@@ -9,6 +9,16 @@ use std::collections::HashSet;
 pub struct RectangleMarker {
     start: Option<PixelPosition>,
     marked: HashSet<PixelPosition>,
+    fill: bool,
+}
+
+impl RectangleMarker {
+    pub fn fill() -> Self {
+        Self {
+            fill: true,
+            ..Self::default()
+        }
+    }
 }
 
 impl Mark for RectangleMarker {
@@ -29,7 +39,11 @@ impl Mark for RectangleMarker {
                     let start =
                         PixelPosition::from_xy(start.x.min(position.x), start.y.min(position.y));
                     let region = PixelRegion::new(start, end);
-                    self.marked = region.edges().collect();
+                    if self.fill {
+                        self.marked = region.pixels().collect();
+                    } else {
+                        self.marked = region.edges().collect();
+                    }
                     if mouse == MouseState::Clicked {
                         self.start = None;
                     }
