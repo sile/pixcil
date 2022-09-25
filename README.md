@@ -1,4 +1,4 @@
 pixcil
 ======
 
-![Pixcil image](web/pixel.png)
+![Pixcil image](web/pixcil.png)
