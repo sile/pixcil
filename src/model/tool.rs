@@ -73,15 +73,7 @@ impl ToolKind {
             IconId::Select => Ok(Self::Select),
             IconId::Pick => Ok(Self::Pick),
             IconId::Move => Ok(Self::Move),
-            IconId::Save => Err(Failure::unreachable()),
-            IconId::Load => Err(Failure::unreachable()),
-            IconId::Import => Err(Failure::unreachable()),
-            IconId::Undo => Err(Failure::unreachable()),
-            IconId::Redo => Err(Failure::unreachable()),
-            IconId::ZoomIn => Err(Failure::unreachable()),
-            IconId::ZoomOut => Err(Failure::unreachable()),
-            IconId::Null => Err(Failure::unreachable()),
-            IconId::Settings => Err(Failure::unreachable()),
+            _ => Err(Failure::unreachable()),
         }
     }
 }

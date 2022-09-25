@@ -150,7 +150,7 @@ fn spawn_window(tool: ToolKind, app: &mut App) -> Result<()> {
             .spawn_window(EraseToolWindow::new(app).or_fail()?)
             .or_fail(),
         ToolKind::Select => app.spawn_window(SelectToolWindow::default()).or_fail(),
-        ToolKind::Move => app.spawn_window(MoveToolWindow::default()).or_fail(),
+        ToolKind::Move => app.spawn_window(MoveToolWindow::new(app)).or_fail(),
         ToolKind::Pick => Ok(()),
     }
 }

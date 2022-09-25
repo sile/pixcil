@@ -59,6 +59,11 @@ impl Assets {
             IconId::Bucket => &self.icons.bucket,
             IconId::ScissorRectangle => &self.icons.scissor_rectangle,
             IconId::ScissorLasso => &self.icons.scissor_lasso,
+            IconId::GoLeft => &self.icons.go_left,
+            IconId::GoRight => &self.icons.go_right,
+            IconId::GoTop => &self.icons.go_top,
+            IconId::GoBottom => &self.icons.go_bottom,
+            IconId::GoCenter => &self.icons.go_center,
         }
     }
 
@@ -96,6 +101,11 @@ pub enum IconId {
     Bucket,
     ScissorRectangle,
     ScissorLasso,
+    GoLeft,
+    GoRight,
+    GoTop,
+    GoBottom,
+    GoCenter,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -248,10 +258,17 @@ pub struct Icons {
     pub bucket: Sprite,
     pub scissor_rectangle: Sprite,
     pub scissor_lasso: Sprite,
+    pub go_left: Sprite,
+    pub go_right: Sprite,
+    pub go_top: Sprite,
+    pub go_bottom: Sprite,
+    pub go_center: Sprite,
 }
 
 impl Icons {
     fn load() -> Result<Self> {
+        let go = decode_sprite(include_bytes!("../assets/icon-go.png")).or_fail()?;
+        let block = Size::square(64).to_region();
         Ok(Self {
             undo: decode_sprite(include_bytes!("../assets/icon-undo.png")).or_fail()?,
             redo: decode_sprite(include_bytes!("../assets/icon-redo.png")).or_fail()?,
@@ -279,6 +296,11 @@ impl Icons {
             .or_fail()?,
             scissor_lasso: decode_sprite(include_bytes!("../assets/icon-scissor-lasso.png"))
                 .or_fail()?,
+            go_left: go.clip(block).or_fail()?,
+            go_right: go.clip(block.shift_x(1)).or_fail()?,
+            go_top: go.clip(block.shift_x(2)).or_fail()?,
+            go_bottom: go.clip(block.shift_x(3)).or_fail()?,
+            go_center: go.clip(block.shift_x(4)).or_fail()?,
         })
     }
 }

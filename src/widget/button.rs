@@ -94,6 +94,11 @@ impl ButtonWidget {
         self.long_press = Some(LongPressState::default());
     }
 
+    pub fn with_disabled_callback(mut self, f: fn(&App) -> bool) -> Self {
+        self.set_disabled_callback(f);
+        self
+    }
+
     pub fn set_disabled_callback(&mut self, f: fn(&App) -> bool) {
         self.disabled = Some(f);
     }
