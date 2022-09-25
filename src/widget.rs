@@ -16,6 +16,7 @@ pub mod draw_tool;
 pub mod erase_tool;
 pub mod hsv_selector;
 pub mod manipulate;
+pub mod manipulate_tool;
 pub mod move_camera;
 pub mod move_tool;
 pub mod number_box;

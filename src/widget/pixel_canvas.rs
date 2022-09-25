@@ -288,7 +288,10 @@ impl Widget for PixelCanvasWidget {
                 ToolKind::Select => {
                     let target_pixels: HashSet<_> =
                         self.marker_handler.marked_pixels(app).collect();
-                    if !target_pixels.is_empty() {
+                    if target_pixels
+                        .iter()
+                        .any(|p| app.models().pixel_canvas.get_direct_pixel(*p).is_some())
+                    {
                         self.manipulate = Some(ManipulateWidget::new(app, target_pixels));
                     }
                 }

@@ -1,4 +1,4 @@
-use super::{VariableSizeWidget, Widget};
+use super::{manipulate_tool::ManipulateToolWidget, FixedSizeWidget, VariableSizeWidget, Widget};
 use crate::{
     app::App,
     canvas_ext::CanvasExt,
@@ -6,7 +6,11 @@ use crate::{
     model::tool::ToolKind,
     pixel::{Pixel, PixelPosition},
 };
-use pagurus::{failure::OrFail, spatial::Region, Result};
+use pagurus::{
+    failure::OrFail,
+    spatial::{Position, Region},
+    Result,
+};
 use pagurus_game_std::{
     color::Rgba,
     image::{Canvas, Sprite},
@@ -21,11 +25,11 @@ pub struct ManipulateWidget {
     manipulating_pixels: HashMap<PixelPosition, Rgba>,
     delta: PixelPosition,
     state: State,
-    imported: bool,
+    tool: ManipulateToolWidget,
 }
 
 impl ManipulateWidget {
-    pub fn new(app: &App, selected_pixels: HashSet<PixelPosition>) -> Self {
+    pub fn new(app: &mut App, selected_pixels: HashSet<PixelPosition>) -> Self {
         let manipulating_pixels = selected_pixels
             .iter()
             .copied()
@@ -36,15 +40,18 @@ impl ManipulateWidget {
                     .map(|color| (pos, color))
             })
             .collect();
-        Self {
+        let mut this = Self {
             region: app.screen_size().to_region(),
             selected_pixels,
             manipulating_pixels,
             delta: PixelPosition::from_xy(0, 0),
             terminated: false,
             state: State::Neutral,
-            imported: false,
-        }
+            tool: ManipulateToolWidget::default(),
+        };
+        this.set_region(app, app.screen_size().to_region());
+        app.request_redraw(this.tool.region());
+        this
     }
 
     pub fn with_imported_image(app: &App, image: &Sprite) -> Self {
@@ -68,15 +75,17 @@ impl ManipulateWidget {
                 Some((pixel_position, color))
             })
             .collect();
-        Self {
+        let mut this = Self {
             region: screen_region,
             selected_pixels: HashSet::default(),
             manipulating_pixels,
             delta: PixelPosition::from_xy(0, 0),
             terminated: false,
             state: State::Neutral,
-            imported: true,
-        }
+            tool: ManipulateToolWidget::default(),
+        };
+        this.set_region(app, app.screen_size().to_region());
+        this
     }
 
     pub fn selected_pixels(&self) -> &HashSet<PixelPosition> {
@@ -102,7 +111,8 @@ impl ManipulateWidget {
 
     fn handle_terminate(&mut self, app: &mut App) -> Result<()> {
         let config = app.models().config.clone();
-        if self.imported {
+        if self.selected_pixels.is_empty() {
+            // paste mode
             app.models_mut()
                 .pixel_canvas
                 .draw_pixels(
@@ -134,9 +144,31 @@ impl Widget for ManipulateWidget {
 
     fn render(&self, app: &App, canvas: &mut Canvas) {
         self.render_manipulating_pixels(app, canvas);
+        self.tool.render_if_need(app, canvas);
     }
 
     fn handle_event(&mut self, app: &mut App, event: &mut Event) -> Result<()> {
+        if !matches!(self.state, State::Dragging { .. }) {
+            self.tool.handle_event(app, event).or_fail()?;
+            if self.tool.is_cut_clicked(app) {
+                self.terminated = true;
+                let config = app.models().config.clone();
+                app.models_mut()
+                    .pixel_canvas
+                    .erase_pixels(&config, self.selected_pixels.iter().copied())
+                    .or_fail()?;
+                app.request_redraw(app.screen_size().to_region());
+                return Ok(());
+            }
+            if self.tool.is_copy_clicked(app) {
+                self.handle_terminate(app).or_fail()?; // TODO: rename
+                self.selected_pixels.clear();
+                self.delta.x += 2;
+                self.delta.y += 2;
+                app.request_redraw(app.screen_size().to_region());
+            }
+        }
+
         let prev = (self.state, self.delta);
         match (self.state, &event) {
             (
@@ -238,17 +270,29 @@ impl Widget for ManipulateWidget {
             app.request_redraw(self.region);
             self.handle_terminate(app).or_fail()?;
         }
+        for child in self.children() {
+            child.handle_event_after(app).or_fail()?;
+        }
         Ok(())
     }
 
     fn children(&mut self) -> Vec<&mut dyn Widget> {
-        vec![]
+        vec![&mut self.tool]
     }
 }
 
 impl VariableSizeWidget for ManipulateWidget {
-    fn set_region(&mut self, _app: &App, region: Region) {
+    fn set_region(&mut self, app: &App, region: Region) {
         self.region = region;
+
+        let margin = 8;
+        let tool_size = self.tool.requiring_size(app);
+        let tool_position = Position::from_xy(
+            region.size.width as i32 - margin - tool_size.width as i32,
+            region.size.height as i32 / 2 - tool_size.height as i32 / 2,
+        );
+        self.tool.set_position(app, tool_position);
+        log::info!("regin: {:?}", self.tool.region());
     }
 }
 
