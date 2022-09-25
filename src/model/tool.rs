@@ -104,7 +104,7 @@ impl DrawTool {
             DrawTool::PenStroke => MarkerKind::Stroke,
             DrawTool::PenLine => MarkerKind::Line,
             DrawTool::PenRectangle => MarkerKind::Rectangle,
-            DrawTool::PenCircle => todo!(),
+            DrawTool::PenCircle => MarkerKind::Ellipse,
             DrawTool::Bucket => MarkerKind::Fill,
         }
     }

@@ -7,10 +7,11 @@ use pagurus::Result;
 use std::collections::HashSet;
 
 use self::{
-    fill::FillMarker, lasso::LassoMarker, line::LineMarker, noop::NoopMarker, pick::PickMarker,
-    rectangle::RectangleMarker, stroke::StrokeMarker,
+    ellipse::EllipseMarker, fill::FillMarker, lasso::LassoMarker, line::LineMarker,
+    noop::NoopMarker, pick::PickMarker, rectangle::RectangleMarker, stroke::StrokeMarker,
 };
 
+pub mod ellipse;
 pub mod fill;
 pub mod lasso;
 pub mod line;
@@ -38,6 +39,7 @@ pub enum MarkerKind {
     Stroke,
     Line,
     Rectangle,
+    Ellipse,
     Noop,
     Lasso,
     Pick,
@@ -49,6 +51,7 @@ pub enum Marker {
     Stroke(StrokeMarker),
     Line(LineMarker),
     Rectangle(RectangleMarker),
+    Ellipse(EllipseMarker),
     Noop(NoopMarker),
     Lasso(LassoMarker),
     Pick(PickMarker),
@@ -61,6 +64,7 @@ impl Marker {
             MarkerKind::Stroke => Self::Stroke(Default::default()),
             MarkerKind::Line => Self::Line(Default::default()),
             MarkerKind::Rectangle => Self::Rectangle(Default::default()),
+            MarkerKind::Ellipse => Self::Ellipse(Default::default()),
             MarkerKind::Noop => Self::Noop(Default::default()),
             MarkerKind::Lasso => Self::Lasso(Default::default()),
             MarkerKind::Pick => Self::Pick(Default::default()),
@@ -81,6 +85,7 @@ impl Mark for Marker {
             Marker::Stroke(x) => x.mark(app, position, mouse),
             Marker::Line(x) => x.mark(app, position, mouse),
             Marker::Rectangle(x) => x.mark(app, position, mouse),
+            Marker::Ellipse(x) => x.mark(app, position, mouse),
             Marker::Noop(x) => x.mark(app, position, mouse),
             Marker::Lasso(x) => x.mark(app, position, mouse),
             Marker::Pick(x) => x.mark(app, position, mouse),
@@ -93,6 +98,7 @@ impl Mark for Marker {
             Marker::Stroke(x) => x.marked_pixels(app),
             Marker::Line(x) => x.marked_pixels(app),
             Marker::Rectangle(x) => x.marked_pixels(app),
+            Marker::Ellipse(x) => x.marked_pixels(app),
             Marker::Noop(x) => x.marked_pixels(app),
             Marker::Lasso(x) => x.marked_pixels(app),
             Marker::Pick(x) => x.marked_pixels(app),
@@ -116,6 +122,7 @@ impl MarkerHandler {
             Marker::Stroke(_) => MarkerKind::Stroke,
             Marker::Line(_) => MarkerKind::Line,
             Marker::Rectangle(_) => MarkerKind::Rectangle,
+            Marker::Ellipse(_) => MarkerKind::Ellipse,
             Marker::Noop(_) => MarkerKind::Noop,
             Marker::Lasso(_) => MarkerKind::Lasso,
             Marker::Pick(_) => MarkerKind::Pick,
