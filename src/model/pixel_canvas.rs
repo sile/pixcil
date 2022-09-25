@@ -143,15 +143,21 @@ impl PixelCanvasModel {
         // TODO: optimize (e.g., use cache to avoid redundant calculation)
         let frame = config.frame;
         let layer = config.layer;
+        let frame_count = config.animation.enabled_frame_count();
         region.pixels().filter_map(move |position| {
-            self.get_layered_pixel(frame, layer, position)
+            self.get_layered_pixel(frame, frame_count, layer, position)
                 .map(|color| Pixel::new(position, color))
         })
         //}
     }
 
     pub fn get_pixel(&self, config: &ConfigModel, position: PixelPosition) -> Option<Rgba> {
-        self.get_layered_pixel(config.frame, config.layer, position)
+        self.get_layered_pixel(
+            config.frame,
+            config.animation.enabled_frame_count(),
+            config.layer,
+            position,
+        )
     }
 
     pub fn get_pixel_with_alpha(
@@ -162,8 +168,9 @@ impl PixelCanvasModel {
     ) -> Option<Rgba> {
         let layer = config.layer;
         let frame = config.frame;
+        let frame_count = config.animation.enabled_frame_count();
         let mut color = None;
-        layer.for_each_lower_layer_pixel_but_last(frame, position, |position| {
+        layer.for_each_lower_layer_pixel_but_last(frame, frame_count, position, |position| {
             if let Some(c) = self.pixels.get_pixel(position) {
                 color = Some(color.map_or(c, |d| c.alpha_blend(d)));
             }
@@ -188,11 +195,12 @@ impl PixelCanvasModel {
     fn get_layered_pixel(
         &self,
         frame: FrameRegion,
+        frame_count: u16,
         layer: Layer,
         position: PixelPosition,
     ) -> Option<Rgba> {
         let mut color = None;
-        layer.for_each_lower_layer_pixel(frame, position, |position| {
+        layer.for_each_lower_layer_pixel(frame, frame_count, position, |position| {
             if let Some(c) = self.pixels.get_pixel(position) {
                 color = Some(color.map_or(c, |d| c.alpha_blend(d)));
             }
@@ -204,16 +212,17 @@ impl PixelCanvasModel {
         if let Some(i) = self.command_log_tail.checked_sub(1) {
             let layer = config.layer;
             let frame = config.frame;
+            let frame_count = config.animation.enabled_frame_count();
             let command = &self.command_log[i];
             for &pixel in &command.draw {
                 self.pixels.erase_pixel(pixel).or_fail()?;
-                layer.for_each_upper_layer_pixel(frame, pixel.position, |position| {
+                layer.for_each_upper_layer_pixel(frame, frame_count, pixel.position, |position| {
                     self.dirty_positions.insert(position);
                 });
             }
             for &pixel in &command.erase {
                 self.pixels.draw_pixel(pixel).or_fail()?;
-                layer.for_each_upper_layer_pixel(frame, pixel.position, |position| {
+                layer.for_each_upper_layer_pixel(frame, frame_count, pixel.position, |position| {
                     self.dirty_positions.insert(position);
                 });
             }
@@ -226,15 +235,16 @@ impl PixelCanvasModel {
         if let Some(command) = self.command_log.get(self.command_log_tail) {
             let layer = config.layer;
             let frame = config.frame;
+            let frame_count = config.animation.enabled_frame_count();
             for &pixel in &command.erase {
                 self.pixels.erase_pixel(pixel).or_fail()?;
-                layer.for_each_upper_layer_pixel(frame, pixel.position, |position| {
+                layer.for_each_upper_layer_pixel(frame, frame_count, pixel.position, |position| {
                     self.dirty_positions.insert(position);
                 });
             }
             for &pixel in &command.draw {
                 self.pixels.draw_pixel(pixel).or_fail()?;
-                layer.for_each_upper_layer_pixel(frame, pixel.position, |position| {
+                layer.for_each_upper_layer_pixel(frame, frame_count, pixel.position, |position| {
                     self.dirty_positions.insert(position);
                 });
             }

@@ -212,6 +212,11 @@ impl PixelRegion {
         Self::from_position_and_size(position, size)
     }
 
+    // TODO: refactor
+    pub fn set_width(&mut self, w: u16) {
+        self.end.x = self.start.x + w as i16;
+    }
+
     pub fn contains(self, position: PixelPosition) -> bool {
         self.start.x <= position.x
             && position.x < self.end.x

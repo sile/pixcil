@@ -429,6 +429,7 @@ impl Layer {
     pub fn for_each_lower_layer_pixel<F>(
         self,
         frame: FrameRegion,
+        frames: u16,
         position: PixelPosition,
         mut f: F,
     ) where
@@ -440,7 +441,8 @@ impl Layer {
             return;
         }
 
-        let frame = frame.get_base_region();
+        let mut frame = frame.get_base_region();
+        frame.set_width(frame.size().width * frames);
         if frame.contains(position) {
             f(position);
             return;
@@ -472,6 +474,7 @@ impl Layer {
     pub fn for_each_lower_layer_pixel_but_last<F>(
         self,
         frame: FrameRegion,
+        frames: u16,
         position: PixelPosition,
         mut f: F,
     ) where
@@ -482,7 +485,8 @@ impl Layer {
             return;
         }
 
-        let frame = frame.get_base_region();
+        let mut frame = frame.get_base_region();
+        frame.set_width(frame.size().width * frames);
         if frame.contains(position) {
             return;
         }
@@ -511,6 +515,7 @@ impl Layer {
     pub fn for_each_upper_layer_pixel<F>(
         self,
         frame: FrameRegion,
+        frames: u16,
         position: PixelPosition,
         mut f: F,
     ) where
@@ -525,7 +530,7 @@ impl Layer {
         let frame = frame.get_base_region();
         let layer_region = PixelRegion::from_position_and_size(
             frame.start,
-            PixelSize::from_wh(frame.size().width, frame.size().height * layers),
+            PixelSize::from_wh(frame.size().width * frames, frame.size().height * layers),
         );
         if !layer_region.contains(position) {
             f(position);
