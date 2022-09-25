@@ -84,35 +84,47 @@ impl Widget for MoveToolWidget {
     }
 
     fn handle_event(&mut self, app: &mut App, event: &mut Event) -> Result<()> {
+        let mut do_move = false;
+        let mut layer = app.models().config.camera.current_layer(app);
+        let mut frame = app.models().config.camera.current_frame(app);
+
         self.go_center.handle_event(app, event).or_fail()?;
         if self.go_center.body_mut().take_clicked(app) {
+            do_move = true;
+        }
+
+        self.go_top.handle_event(app, event).or_fail()?;
+        if self.go_top.body_mut().take_clicked(app) {
+            do_move = true;
+            layer -= 1;
+        }
+
+        self.go_bottom.handle_event(app, event).or_fail()?;
+        if self.go_bottom.body_mut().take_clicked(app) {
+            do_move = true;
+            layer += 1;
+        }
+
+        self.go_left.handle_event(app, event).or_fail()?;
+        if self.go_left.body_mut().take_clicked(app) {
+            do_move = true;
+            frame -= 1;
+        }
+
+        self.go_right.handle_event(app, event).or_fail()?;
+        if self.go_right.body_mut().take_clicked(app) {
+            do_move = true;
+            frame += 1;
+        }
+
+        if do_move {
             let screen_center = app.screen_size().to_region().center();
-            let frame_center = app.models().config.camera.current_frame_center(&app);
+            let frame_center = app.models().config.camera.frame_center(&app, frame, layer);
             app.models_mut()
                 .config
                 .camera
                 .r#move(frame_center - screen_center);
             app.request_redraw(app.screen_size().to_region());
-        }
-
-        self.go_top.handle_event(app, event).or_fail()?;
-        if self.go_top.body_mut().take_clicked(app) {
-            //
-        }
-
-        self.go_bottom.handle_event(app, event).or_fail()?;
-        if self.go_bottom.body_mut().take_clicked(app) {
-            //
-        }
-
-        self.go_left.handle_event(app, event).or_fail()?;
-        if self.go_left.body_mut().take_clicked(app) {
-            //
-        }
-
-        self.go_right.handle_event(app, event).or_fail()?;
-        if self.go_right.body_mut().take_clicked(app) {
-            //
         }
 
         Ok(())
