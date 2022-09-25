@@ -10,7 +10,7 @@ use crate::{
     event::Event,
     marker::{MarkerHandler, MarkerKind},
     model::tool::{DrawTool, ToolKind, ToolModel},
-    pixel::{Pixel, PixelRegion},
+    pixel::{Pixel, PixelPosition, PixelRegion},
 };
 use pagurus::{failure::OrFail, spatial::Region, Result};
 use pagurus_game_std::{
@@ -88,6 +88,57 @@ impl PixelCanvasWidget {
                 canvas.draw_vertical_line(current, screen_region.size.height, line_color(x));
             }
             current.x += i32::from(zoom);
+        }
+    }
+
+    fn render_frame_edges(&self, app: &App, canvas: &mut Canvas) {
+        let config = &app.models().config;
+        let pixel_drawing_region = PixelRegion::from_screen_region(app, canvas.drawing_region());
+        let pixel_frames_region = config.frame.get_full_region(config);
+        let region = pixel_drawing_region.intersection(pixel_frames_region);
+        if region.is_empty() {
+            return;
+        }
+
+        let current_frame = config.camera.current_frame(app) as i16;
+        let current_layer = config.camera.current_layer(app) as i16;
+
+        let frame_region = config.frame.get_base_region();
+        let frame_size = frame_region.size();
+        let first_frame = (region.start.x - frame_region.start.x) / frame_size.width as i16;
+        let first_layer = (region.start.y - frame_region.start.y) / frame_size.height as i16;
+        let last_frame = (region.end.x - 1 - frame_region.start.x) / frame_size.width as i16;
+        let last_layer = (region.end.y - 1 - frame_region.start.y) / frame_size.height as i16;
+        for frame in first_frame..=last_frame {
+            for layer in first_layer..=last_layer {
+                let current = frame_region.shift_x(frame).shift_y(layer);
+                let color = if current_frame == frame && current_layer == layer {
+                    color::CURRENT_FRAME_EDGE
+                } else {
+                    color::FRAME_EDGE
+                };
+
+                let top_left = current.start;
+                let bottom_right = current.end - PixelPosition::from_xy(1, 1);
+                let top_right = PixelPosition::from_xy(bottom_right.x, top_left.y);
+                let bottom_left = PixelPosition::from_xy(top_left.x, bottom_right.y);
+                for pos in [
+                    top_left,
+                    top_left.move_x(1),
+                    top_left.move_y(1),
+                    top_right,
+                    top_right.move_x(-1),
+                    top_right.move_y(1),
+                    bottom_left,
+                    bottom_left.move_x(1),
+                    bottom_left.move_y(-1),
+                    bottom_right,
+                    bottom_right.move_x(-1),
+                    bottom_right.move_y(-1),
+                ] {
+                    canvas.fill_rectangle(pos.to_screen_region(app), color);
+                }
+            }
         }
     }
 
@@ -184,6 +235,7 @@ impl Widget for PixelCanvasWidget {
     fn render(&self, app: &App, canvas: &mut Canvas) {
         canvas.fill_rectangle(self.region, color::CANVAS_BACKGROUND);
         self.render_grid(app, canvas);
+        self.render_frame_edges(app, canvas);
         self.render_pixels(app, canvas);
         if self.tool.tool_kind() == ToolKind::Draw {
             self.render_drawn_pixels(app, canvas);

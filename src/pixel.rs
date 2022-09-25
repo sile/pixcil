@@ -176,6 +176,11 @@ impl PixelRegion {
         )
     }
 
+    pub fn is_empty(self) -> bool {
+        let size = self.size();
+        size.width == 0 || size.height == 0
+    }
+
     pub fn size(self) -> PixelSize {
         PixelSize::from_wh(
             std::cmp::max(0, self.end.x - self.start.x) as u16,
@@ -244,6 +249,28 @@ impl PixelRegion {
         position.y += size.height as i16;
 
         position
+    }
+
+    pub fn intersection(self, other: Self) -> Self {
+        Self::from_pagurus_region(
+            self.to_pagurus_region()
+                .intersection(other.to_pagurus_region()),
+        )
+    }
+
+    // TODO
+    pub fn from_pagurus_region(region: Region) -> Self {
+        Self::new(
+            PixelPosition::from_xy(region.start().x as i16, region.start().y as i16),
+            PixelPosition::from_xy(region.end().x as i16, region.end().y as i16),
+        )
+    }
+
+    pub fn to_pagurus_region(self) -> Region {
+        Region::new(
+            Position::from_xy(self.start.x as i32, self.start.y as i32),
+            Size::from_wh(self.size().width as u32, self.size().height as u32),
+        )
     }
 }
 

@@ -153,6 +153,7 @@ impl Widget for ConfigWidget {
             .set(self.max_undos.body().value());
 
         // Frame
+        let frame = app.models().config.frame;
         self.frame_width.handle_event(app, event).or_fail()?;
         app.models_mut()
             .config
@@ -170,6 +171,9 @@ impl Widget for ConfigWidget {
             .config
             .frame_preview
             .set(self.frame_preview.body().is_on());
+        if frame != app.models().config.frame {
+            app.request_redraw(app.screen_size().to_region());
+        }
 
         // Layer
         let layer = app.models_mut().config.layer;
