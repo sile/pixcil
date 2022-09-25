@@ -103,7 +103,7 @@ impl DrawTool {
         match self {
             DrawTool::PenStroke => MarkerKind::Stroke,
             DrawTool::PenLine => MarkerKind::Line,
-            DrawTool::PenRectangle => todo!(),
+            DrawTool::PenRectangle => MarkerKind::Rectangle,
             DrawTool::PenCircle => todo!(),
             DrawTool::Bucket => MarkerKind::Fill,
         }
