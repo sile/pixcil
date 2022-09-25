@@ -14,6 +14,7 @@ pub struct Assets {
     pub number_box: Sprite,
     pub slider_cursor: Sprite,
     pub right_arrow: Sprite,
+    pub hand: Hand,
 }
 
 impl Assets {
@@ -31,6 +32,7 @@ impl Assets {
             slider_cursor: decode_sprite(include_bytes!("../assets/slider-cursor.png"))
                 .or_fail()?,
             right_arrow: decode_sprite(include_bytes!("../assets/right-arrow.png")).or_fail()?,
+            hand: Hand::load().or_fail()?,
         })
     }
 
@@ -376,6 +378,23 @@ impl Toggle {
             on_focused: on.clip(block.shift_y(1)).or_fail()?,
             off_neutral: off.clip(block).or_fail()?,
             off_focused: off.clip(block.shift_y(1)).or_fail()?,
+        })
+    }
+}
+
+#[derive(Debug)]
+pub struct Hand {
+    pub open: Sprite,
+    pub close: Sprite,
+}
+
+impl Hand {
+    fn load() -> Result<Self> {
+        let sprite = decode_sprite(include_bytes!("../assets/drag-hands.png")).or_fail()?;
+        let block = Region::new(Position::ORIGIN, Size::square(64));
+        Ok(Self {
+            open: sprite.clip(block).or_fail()?,
+            close: sprite.clip(block.shift_x(1)).or_fail()?,
         })
     }
 }

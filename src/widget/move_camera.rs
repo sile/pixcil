@@ -14,6 +14,7 @@ use pagurus_game_std::image::Canvas;
 #[derive(Debug)]
 pub struct MoveCameraWidget {
     region: Region,
+    cursor: Option<Position>,
     start: Option<Position>,
     in_redraw_interval: Option<TimeoutId>,
 }
@@ -22,6 +23,7 @@ impl MoveCameraWidget {
     pub fn new(app: &App) -> Self {
         Self {
             region: app.screen_size().to_region(),
+            cursor: None,
             start: None,
             in_redraw_interval: None,
         }
@@ -33,8 +35,17 @@ impl Widget for MoveCameraWidget {
         self.region
     }
 
-    fn render(&self, _app: &App, _canvas: &mut Canvas) {
-        // TODO: render drag cursor icon
+    fn render(&self, app: &App, canvas: &mut Canvas) {
+        if let Some(cursor) = self.cursor {
+            let sprite = if self.start.is_none() {
+                &app.assets().hand.open
+            } else {
+                &app.assets().hand.close
+            };
+            canvas
+                .offset(cursor - (sprite.size().width / 2) as i32)
+                .draw_sprite(sprite);
+        }
     }
 
     fn handle_event(&mut self, app: &mut App, event: &mut Event) -> Result<()> {
@@ -70,6 +81,25 @@ impl Widget for MoveCameraWidget {
             }
             _ => {}
         }
+
+        if let Some(position) = event.position() {
+            let old = self.cursor;
+            if event.is_consumed() {
+                self.cursor = None;
+            } else {
+                self.cursor = Some(position);
+            }
+            if self.cursor != old && self.in_redraw_interval.is_none() {
+                let sprite_size = app.assets().hand.open.size();
+                for &position in old.iter().chain(self.cursor.iter()) {
+                    app.request_redraw(Region::new(
+                        position - (sprite_size.width / 2) as i32,
+                        sprite_size,
+                    ));
+                }
+            }
+        }
+
         Ok(())
     }
 
