@@ -9,7 +9,7 @@ use crate::{
     color,
     event::Event,
     marker::MarkerHandler,
-    model::tool::{ToolKind, ToolModel},
+    model::tool::{DrawTool, ToolKind, ToolModel},
     pixel::{Pixel, PixelRegion},
 };
 use pagurus::{failure::OrFail, spatial::Region, Result};
@@ -93,7 +93,7 @@ impl PixelCanvasWidget {
 
     fn render_drawn_pixels(&self, app: &App, canvas: &mut Canvas) {
         let color = app.models().config.color.get();
-        if self.marker_handler.is_neutral() {
+        if self.marker_handler.is_neutral() && app.models().tool.draw != DrawTool::Bucket {
             let pixel_region = PixelRegion::from_positions(self.marker_handler.marked_pixels(app));
             let region = pixel_region.to_screen_region(app);
             canvas.draw_rectangle(region, color.into());

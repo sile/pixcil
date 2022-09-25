@@ -68,8 +68,8 @@ impl ToolKind {
             IconId::PenLine => Ok(Self::Draw),
             IconId::PenRectangle => Ok(Self::Draw),
             IconId::PenCircle => Ok(Self::Draw),
+            IconId::Bucket => Ok(Self::Draw),
             IconId::Erase => Ok(Self::Erase),
-            IconId::Bucket => Ok(Self::Erase),
             IconId::ScissorRectangle => Ok(Self::Erase),
             IconId::ScissorLasso => Ok(Self::Erase),
             IconId::Select => Ok(Self::Select),
@@ -105,7 +105,7 @@ impl DrawTool {
             DrawTool::PenLine => MarkerKind::Line,
             DrawTool::PenRectangle => todo!(),
             DrawTool::PenCircle => todo!(),
-            DrawTool::Bucket => todo!(),
+            DrawTool::Bucket => MarkerKind::Fill,
         }
     }
 

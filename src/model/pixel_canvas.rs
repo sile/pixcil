@@ -116,6 +116,10 @@ impl PixelCanvasModel {
         Ok(())
     }
 
+    pub fn region(&self) -> PixelRegion {
+        PixelRegion::from_positions(self.pixels.0.keys().copied())
+    }
+
     pub fn get_pixels(
         &self,
         config: &ConfigModel,
