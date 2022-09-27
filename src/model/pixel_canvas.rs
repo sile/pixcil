@@ -56,36 +56,35 @@ impl PixelCanvasModel {
         Ok(())
     }
 
-    pub fn move_pixels(
+    pub fn erase_and_draw_pixels(
         &mut self,
         config: &ConfigModel,
-        pixels: impl Iterator<Item = PixelPosition>,
-        delta: PixelPosition,
+        erase_pixels: impl Iterator<Item = PixelPosition>,
+        draw_pixels: impl Iterator<Item = Pixel>,
     ) -> Result<()> {
         let mut command = PixelCanvasCommand::default();
-        for src in pixels {
-            if let Some(color) = self.pixels.get_pixel(src) {
-                command.erase.push(Pixel::new(src, color));
+        for position in erase_pixels {
+            if let Some(color) = self.pixels.get_pixel(position) {
+                command.erase.push(Pixel::new(position, color));
             }
         }
         command.erase.sort_by_key(|x| x.position);
 
         let mut overwritten = Vec::new();
-        for src in &command.erase {
-            let dst = src.position + delta;
+        for pixel in draw_pixels {
             let color = if command
                 .erase
-                .binary_search_by_key(&dst, |x| x.position)
+                .binary_search_by_key(&pixel.position, |x| x.position)
                 .is_ok()
             {
-                src.color
-            } else if let Some(old_color) = self.pixels.get_pixel(dst) {
-                overwritten.push(Pixel::new(dst, old_color));
-                src.color.alpha_blend(old_color)
+                pixel.color
+            } else if let Some(old_color) = self.pixels.get_pixel(pixel.position) {
+                overwritten.push(Pixel::new(pixel.position, old_color));
+                pixel.color.alpha_blend(old_color)
             } else {
-                src.color
+                pixel.color
             };
-            command.draw.push(Pixel::new(dst, color));
+            command.draw.push(Pixel::new(pixel.position, color));
         }
         command.erase.extend(overwritten);
         command.erase.sort_by_key(|x| x.position);

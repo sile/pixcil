@@ -111,27 +111,16 @@ impl ManipulateWidget {
 
     fn handle_terminate(&mut self, app: &mut App) -> Result<()> {
         let config = app.models().config.clone();
-        if self.selected_pixels.is_empty() {
-            // paste mode
-            app.models_mut()
-                .pixel_canvas
-                .draw_pixels(
-                    &config,
-                    self.manipulating_pixels
-                        .iter()
-                        .map(|(position, color)| Pixel::new(*position + self.delta, *color)),
-                )
-                .or_fail()?;
-        } else {
-            app.models_mut()
-                .pixel_canvas
-                .move_pixels(
-                    &config,
-                    self.manipulating_pixels.keys().copied(),
-                    self.delta,
-                )
-                .or_fail()?;
-        }
+        app.models_mut()
+            .pixel_canvas
+            .erase_and_draw_pixels(
+                &config,
+                self.selected_pixels.iter().copied(),
+                self.manipulating_pixels
+                    .iter()
+                    .map(|(position, color)| Pixel::new(*position + self.delta, *color)),
+            )
+            .or_fail()?;
 
         Ok(())
     }
@@ -174,28 +163,31 @@ impl ManipulateWidget {
 
     fn clockwise_rotate(&mut self, app: &mut App) {
         let region = PixelRegion::from_positions(self.manipulating_pixels.keys().copied());
-        let mut center = region.center();
-        let is_x_even = region.size().width % 2 == 0;
-        let is_y_even = region.size().height % 2 == 0;
-        if is_x_even {
-            center.end.x += 1;
-        }
-        if is_y_even {
-            center
-        }
-        self.manipulating_pixels = self
+        app.request_redraw(region.to_screen_region(app));
+
+        let start = region.start;
+        let center = region.center();
+
+        let temp = self
             .manipulating_pixels
             .drain()
-            .map(|(old, color)| {
-                let delta = old - center;
-                let mut new = center;
-                new.x += -delta.y;
-                new.y += delta.x;
-                (new, color)
+            .map(|(position, color)| {
+                let delta = position - center;
+                let position = PixelPosition::from_xy(center.x - delta.y, center.y + delta.x);
+                (position, color)
+            })
+            .collect::<Vec<_>>();
+
+        let delta = PixelRegion::from_positions(temp.iter().map(|x| x.0)).start - start;
+        self.manipulating_pixels = temp
+            .into_iter()
+            .map(|(mut position, color)| {
+                position.x -= delta.x;
+                position.y -= delta.y;
+                (position, color)
             })
             .collect();
 
-        app.request_redraw(region.to_screen_region(app));
         let region = PixelRegion::from_positions(self.manipulating_pixels.keys().copied());
         app.request_redraw(region.to_screen_region(app));
     }
