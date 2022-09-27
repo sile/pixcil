@@ -4,7 +4,7 @@ use crate::{
     canvas_ext::CanvasExt,
     event::{Event, MouseAction},
     model::tool::ToolKind,
-    pixel::{Pixel, PixelPosition},
+    pixel::{Pixel, PixelPosition, PixelRegion},
 };
 use pagurus::{
     failure::OrFail,
@@ -135,6 +135,70 @@ impl ManipulateWidget {
 
         Ok(())
     }
+
+    fn vertical_flip(&mut self, app: &mut App) {
+        let region = PixelRegion::from_positions(self.manipulating_pixels.keys().copied());
+        let center = region.center();
+        let is_even = region.size().height % 2 == 0;
+        self.manipulating_pixels = self
+            .manipulating_pixels
+            .drain()
+            .map(|(mut position, color)| {
+                position.y = center.y - (position.y - center.y);
+                if is_even {
+                    position.y -= 1;
+                }
+                (position, color)
+            })
+            .collect();
+        app.request_redraw(region.to_screen_region(app));
+    }
+
+    fn horizontal_flip(&mut self, app: &mut App) {
+        let region = PixelRegion::from_positions(self.manipulating_pixels.keys().copied());
+        let center = region.center();
+        let is_even = region.size().width % 2 == 0;
+        self.manipulating_pixels = self
+            .manipulating_pixels
+            .drain()
+            .map(|(mut position, color)| {
+                position.x = center.x - (position.x - center.x);
+                if is_even {
+                    position.x -= 1;
+                }
+                (position, color)
+            })
+            .collect();
+        app.request_redraw(region.to_screen_region(app));
+    }
+
+    fn clockwise_rotate(&mut self, app: &mut App) {
+        let region = PixelRegion::from_positions(self.manipulating_pixels.keys().copied());
+        let mut center = region.center();
+        let is_x_even = region.size().width % 2 == 0;
+        let is_y_even = region.size().height % 2 == 0;
+        if is_x_even {
+            center.end.x += 1;
+        }
+        if is_y_even {
+            center
+        }
+        self.manipulating_pixels = self
+            .manipulating_pixels
+            .drain()
+            .map(|(old, color)| {
+                let delta = old - center;
+                let mut new = center;
+                new.x += -delta.y;
+                new.y += delta.x;
+                (new, color)
+            })
+            .collect();
+
+        app.request_redraw(region.to_screen_region(app));
+        let region = PixelRegion::from_positions(self.manipulating_pixels.keys().copied());
+        app.request_redraw(region.to_screen_region(app));
+    }
 }
 
 impl Widget for ManipulateWidget {
@@ -166,6 +230,15 @@ impl Widget for ManipulateWidget {
                 self.delta.x += 2;
                 self.delta.y += 2;
                 app.request_redraw(app.screen_size().to_region());
+            }
+            if self.tool.is_vertical_flip_clicked(app) {
+                self.vertical_flip(app);
+            }
+            if self.tool.is_horizontal_flip_clicked(app) {
+                self.horizontal_flip(app);
+            }
+            if self.tool.is_clockwise_rotate_clicked(app) {
+                self.clockwise_rotate(app);
             }
         }
 

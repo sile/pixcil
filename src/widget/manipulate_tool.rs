@@ -35,6 +35,18 @@ impl ManipulateToolWidget {
     pub fn is_copy_clicked(&mut self, app: &mut App) -> bool {
         self.copy.take_clicked(app)
     }
+
+    pub fn is_vertical_flip_clicked(&mut self, app: &mut App) -> bool {
+        self.vertical_flip.take_clicked(app)
+    }
+
+    pub fn is_horizontal_flip_clicked(&mut self, app: &mut App) -> bool {
+        self.horizontal_flip.take_clicked(app)
+    }
+
+    pub fn is_clockwise_rotate_clicked(&mut self, app: &mut App) -> bool {
+        self.clockwise_rotate.take_clicked(app)
+    }
 }
 
 impl Default for ManipulateToolWidget {

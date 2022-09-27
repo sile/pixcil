@@ -323,8 +323,8 @@ impl Icons {
             go_center: go.clip(block.shift_x(4)).or_fail()?,
             cut: decode_sprite(include_bytes!("../assets/icon-cut.png")).or_fail()?,
             copy: decode_sprite(include_bytes!("../assets/icon-copy.png")).or_fail()?,
-            vertical_flip: rotate.clip(block).or_fail()?,
-            horizontal_flip: rotate.clip(block.shift_x(1)).or_fail()?,
+            horizontal_flip: rotate.clip(block).or_fail()?,
+            vertical_flip: rotate.clip(block.shift_x(1)).or_fail()?,
             clockwise_rotate: rotate.clip(block.shift_x(2)).or_fail()?,
         })
     }
