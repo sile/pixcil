@@ -67,6 +67,9 @@ impl Assets {
             IconId::GoCenter => &self.icons.go_center,
             IconId::Cut => &self.icons.cut,
             IconId::Copy => &self.icons.copy,
+            IconId::VerticalFlip => &self.icons.vertical_flip,
+            IconId::HorizontalFlip => &self.icons.horizontal_flip,
+            IconId::ClockwiseRotate => &self.icons.clockwise_rotate,
         }
     }
 
@@ -112,6 +115,9 @@ pub enum IconId {
     GoCenter,
     Cut,
     Copy,
+    VerticalFlip,
+    HorizontalFlip,
+    ClockwiseRotate,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -272,11 +278,15 @@ pub struct Icons {
     pub go_center: Sprite,
     pub cut: Sprite,
     pub copy: Sprite,
+    pub vertical_flip: Sprite,
+    pub horizontal_flip: Sprite,
+    pub clockwise_rotate: Sprite,
 }
 
 impl Icons {
     fn load() -> Result<Self> {
         let go = decode_sprite(include_bytes!("../assets/icon-go.png")).or_fail()?;
+        let rotate = decode_sprite(include_bytes!("../assets/icon-rotate.png")).or_fail()?;
         let block = Size::square(64).to_region();
         Ok(Self {
             undo: decode_sprite(include_bytes!("../assets/icon-undo.png")).or_fail()?,
@@ -313,6 +323,9 @@ impl Icons {
             go_center: go.clip(block.shift_x(4)).or_fail()?,
             cut: decode_sprite(include_bytes!("../assets/icon-cut.png")).or_fail()?,
             copy: decode_sprite(include_bytes!("../assets/icon-copy.png")).or_fail()?,
+            vertical_flip: rotate.clip(block).or_fail()?,
+            horizontal_flip: rotate.clip(block.shift_x(1)).or_fail()?,
+            clockwise_rotate: rotate.clip(block.shift_x(2)).or_fail()?,
         })
     }
 }
