@@ -219,8 +219,10 @@ impl Widget for ManipulateWidget {
             if self.tool.is_copy_clicked(app) {
                 self.handle_terminate(app).or_fail()?; // TODO: rename
                 self.selected_pixels.clear();
-                self.delta.x += 2;
-                self.delta.y += 2;
+
+                let unit = app.models().config.minimum_pixel_size.get();
+                self.delta.x += unit.width as i16;
+                self.delta.y += unit.height as i16;
                 app.request_redraw(app.screen_size().to_region());
             }
             if self.tool.is_vertical_flip_clicked(app) {
