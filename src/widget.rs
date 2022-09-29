@@ -21,6 +21,7 @@ pub mod move_camera;
 pub mod move_tool;
 pub mod number_box;
 pub mod pixel_canvas;
+pub mod pixel_size;
 pub mod preview;
 pub mod rgb_selector;
 pub mod save_load;

@@ -1,6 +1,6 @@
 use super::{
-    block::BlockWidget, number_box::NumberBoxWidget, toggle::ToggleWidget, FixedSizeWidget,
-    VariableSizeWidget, Widget,
+    block::BlockWidget, number_box::NumberBoxWidget, pixel_size::PixelSizeWidget,
+    toggle::ToggleWidget, FixedSizeWidget, VariableSizeWidget, Widget,
 };
 use crate::{
     app::App,
@@ -24,7 +24,7 @@ pub struct ConfigWidget {
     region: Region,
 
     // General settings
-    minimum_pixel_size: BlockWidget<NumberBoxWidget>,
+    minimum_pixel_size: BlockWidget<PixelSizeWidget>,
     max_undos: BlockWidget<NumberBoxWidget>,
 
     // Frame settings
@@ -44,7 +44,6 @@ pub struct ConfigWidget {
 
 impl ConfigWidget {
     pub fn new(app: &App) -> Self {
-        let minimum_pixel_size = app.models().config.minimum_pixel_size.get();
         let max_undos = app.models().config.max_undos.get();
         let frame_size = app.models().config.frame.get_base_region().size();
         let layer = app.models().config.layer;
@@ -55,7 +54,7 @@ impl ConfigWidget {
             // General
             minimum_pixel_size: BlockWidget::new(
                 "PIXEL SIZE".parse().expect("unreachable"),
-                NumberBoxWidget::new(1, minimum_pixel_size.width as u32, 9999),
+                PixelSizeWidget::new(app),
             ),
             max_undos: BlockWidget::new(
                 "MAX UNDOS".parse().expect("unreachable"),

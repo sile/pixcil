@@ -297,7 +297,8 @@ impl Icons {
         let go = decode_sprite(include_bytes!("../assets/icon-go.png")).or_fail()?;
         let rotate = decode_sprite(include_bytes!("../assets/icon-rotate.png")).or_fail()?;
         let block = Size::square(64).to_region();
-        let pixel_size_op = decode_sprite(include_bytes!("../assets/icon-rotate.png")).or_fail()?;
+        let pixel_size_op =
+            decode_sprite(include_bytes!("../assets/icon-pixel-size-op.png")).or_fail()?;
         let middle_block = Size::from_wh(48, 20).to_region();
         Ok(Self {
             undo: decode_sprite(include_bytes!("../assets/icon-undo.png")).or_fail()?,
@@ -396,7 +397,7 @@ impl Buttons {
 
         let middle_buttons =
             decode_sprite(include_bytes!("../assets/button-middle.png")).or_fail()?;
-        let middle_button_block = Size::from_wh(48, 24).to_region();
+        let middle_button_block = Size::from_wh(48, 26).to_region();
         let middle = Button::new(
             middle_buttons.clip(middle_button_block).or_fail()?,
             middle_buttons
