@@ -68,6 +68,8 @@ impl Default for ToolBoxWidget {
         ];
         buttons[1].set_kind(ButtonKind::BasicDeep);
 
+        buttons[0].set_disabled_callback(|app| app.models().tool.current == ToolKind::Pick);
+
         Self {
             region: Default::default(),
             tools: SelectBoxWidget::new(buttons, 1).expect("unreachable"),
