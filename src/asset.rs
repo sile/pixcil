@@ -70,6 +70,8 @@ impl Assets {
             IconId::VerticalFlip => &self.icons.vertical_flip,
             IconId::HorizontalFlip => &self.icons.horizontal_flip,
             IconId::ClockwiseRotate => &self.icons.clockwise_rotate,
+            IconId::Halve => &self.icons.halve,
+            IconId::Double => &self.icons.double,
         }
     }
 
@@ -80,6 +82,7 @@ impl Assets {
             ButtonKind::BasicPressed => &self.buttons.basic_pressed,
             ButtonKind::SliderLeft => &self.buttons.slider_left,
             ButtonKind::SliderRight => &self.buttons.slider_right,
+            ButtonKind::Middle => &self.buttons.middle,
         }
     }
 }
@@ -118,6 +121,8 @@ pub enum IconId {
     VerticalFlip,
     HorizontalFlip,
     ClockwiseRotate,
+    Halve,
+    Double,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -127,6 +132,7 @@ pub enum ButtonKind {
     BasicPressed,
     SliderLeft,
     SliderRight,
+    Middle,
 }
 
 impl ButtonKind {
@@ -137,6 +143,7 @@ impl ButtonKind {
             ButtonKind::BasicPressed => Size::square(64),
             ButtonKind::SliderLeft => Size::square(32),
             ButtonKind::SliderRight => Size::square(32),
+            ButtonKind::Middle => Size::from_wh(48, 24),
         }
     }
 }
@@ -281,6 +288,8 @@ pub struct Icons {
     pub vertical_flip: Sprite,
     pub horizontal_flip: Sprite,
     pub clockwise_rotate: Sprite,
+    pub halve: Sprite,
+    pub double: Sprite,
 }
 
 impl Icons {
@@ -288,6 +297,8 @@ impl Icons {
         let go = decode_sprite(include_bytes!("../assets/icon-go.png")).or_fail()?;
         let rotate = decode_sprite(include_bytes!("../assets/icon-rotate.png")).or_fail()?;
         let block = Size::square(64).to_region();
+        let pixel_size_op = decode_sprite(include_bytes!("../assets/icon-rotate.png")).or_fail()?;
+        let middle_block = Size::from_wh(48, 20).to_region();
         Ok(Self {
             undo: decode_sprite(include_bytes!("../assets/icon-undo.png")).or_fail()?,
             redo: decode_sprite(include_bytes!("../assets/icon-redo.png")).or_fail()?,
@@ -326,6 +337,8 @@ impl Icons {
             horizontal_flip: rotate.clip(block).or_fail()?,
             vertical_flip: rotate.clip(block.shift_x(1)).or_fail()?,
             clockwise_rotate: rotate.clip(block.shift_x(2)).or_fail()?,
+            halve: pixel_size_op.clip(middle_block).or_fail()?,
+            double: pixel_size_op.clip(middle_block.shift_x(1)).or_fail()?,
         })
     }
 }
@@ -337,6 +350,7 @@ pub struct Buttons {
     pub basic_pressed: Button,
     pub slider_left: Button,
     pub slider_right: Button,
+    pub middle: Button,
 }
 
 impl Buttons {
@@ -380,12 +394,26 @@ impl Buttons {
                 .or_fail()?,
         );
 
+        let middle_buttons =
+            decode_sprite(include_bytes!("../assets/button-middle.png")).or_fail()?;
+        let middle_button_block = Size::from_wh(48, 24).to_region();
+        let middle = Button::new(
+            middle_buttons.clip(middle_button_block).or_fail()?,
+            middle_buttons
+                .clip(middle_button_block.shift_x(1))
+                .or_fail()?,
+            middle_buttons
+                .clip(middle_button_block.shift_x(2))
+                .or_fail()?,
+        );
+
         Ok(Self {
             basic,
             basic_deep,
             basic_pressed,
             slider_left,
             slider_right,
+            middle,
         })
     }
 }
