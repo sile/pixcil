@@ -338,7 +338,7 @@ impl Icons {
             vertical_flip: rotate.clip(block.shift_x(1)).or_fail()?,
             clockwise_rotate: rotate.clip(block.shift_x(2)).or_fail()?,
             halve: pixel_size_op.clip(middle_block).or_fail()?,
-            double: pixel_size_op.clip(middle_block.shift_x(1)).or_fail()?,
+            double: pixel_size_op.clip(middle_block.shift_y(1)).or_fail()?,
         })
     }
 }
@@ -400,10 +400,10 @@ impl Buttons {
         let middle = Button::new(
             middle_buttons.clip(middle_button_block).or_fail()?,
             middle_buttons
-                .clip(middle_button_block.shift_x(1))
+                .clip(middle_button_block.shift_y(1))
                 .or_fail()?,
             middle_buttons
-                .clip(middle_button_block.shift_x(2))
+                .clip(middle_button_block.shift_y(2))
                 .or_fail()?,
         );
 
