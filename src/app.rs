@@ -22,7 +22,7 @@ pub struct App {
     models: Models,
     spawned_windows: Vec<Box<dyn Window>>,
     io_requests: VecDeque<IoRequest>,
-    redraw_requests: Vec<Region>,
+    redraw_region: Region,
     next_timeout_id: TimeoutId,
     pending_timeouts: Vec<(TimeoutId, Duration)>,
     timeouts: HashMap<ActionId, TimeoutId>,
@@ -37,7 +37,7 @@ impl App {
             models: Models::default(),
             spawned_windows: Vec::new(),
             io_requests: VecDeque::new(),
-            redraw_requests: Vec::new(),
+            redraw_region: Region::default(),
             next_timeout_id: TimeoutId::default(),
             pending_timeouts: Vec::new(),
             timeouts: HashMap::new(),
@@ -66,14 +66,15 @@ impl App {
     }
 
     pub fn request_redraw(&mut self, region: Region) {
-        if region.is_empty() {
-            return;
-        }
-        self.redraw_requests.push(region);
+        self.redraw_region = self.redraw_region.union(region);
     }
 
-    pub fn take_redraw_requests(&mut self) -> Vec<Region> {
-        std::mem::take(&mut self.redraw_requests)
+    pub fn take_redraw_requests(&mut self) -> Option<Region> {
+        if self.redraw_region.is_empty() {
+            None
+        } else {
+            Some(std::mem::take(&mut self.redraw_region))
+        }
     }
 
     pub fn enqueue_input_number_request(&mut self) -> InputId {

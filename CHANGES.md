@@ -1,6 +1,7 @@
 main
 ====
 
+- [UPDATE] Merge multiple redraw requests issued during an event handling
 - [UPDATE] Change the pick-button into non-clickable state when it's selected.
 - [ADD] Add buttons to halve / double the pixel size setting
 - [FIX] Consider pixel size when copying
