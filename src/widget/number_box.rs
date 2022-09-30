@@ -62,8 +62,11 @@ impl Widget for NumberBoxWidget {
 
     fn render(&self, app: &App, canvas: &mut Canvas) {
         if self.focused {
-            canvas.fill_rectangle(self.region.without_margin(4), color::CANVAS_BACKGROUND);
+            canvas.fill_rectangle(self.region.without_margin(4), color::TEXT_BOX_FOCUSED);
+        } else {
+            canvas.fill_rectangle(self.region.without_margin(4), color::TEXT_BOX_UNFOCUSED);
         }
+
         canvas
             .offset(self.region.position)
             .draw_sprite(&app.assets().number_box);
