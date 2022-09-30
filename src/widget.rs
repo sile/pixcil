@@ -13,7 +13,6 @@ pub mod color_config;
 pub mod color_selector;
 pub mod config;
 pub mod draw_tool;
-pub mod erase_tool;
 pub mod hsv_selector;
 pub mod manipulate;
 pub mod manipulate_tool;

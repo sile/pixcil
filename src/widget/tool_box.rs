@@ -6,10 +6,7 @@ use crate::{
     color,
     event::Event,
     model::tool::ToolKind,
-    window::{
-        draw_tool::DrawToolWindow, erase_tool::EraseToolWindow, move_tool::MoveToolWindow,
-        select_tool::SelectToolWindow,
-    },
+    window::{draw_tool::DrawToolWindow, move_tool::MoveToolWindow, select_tool::SelectToolWindow},
 };
 use pagurus::{
     failure::OrFail,
@@ -34,7 +31,7 @@ impl ToolBoxWidget {
                 if state.is_selected() {
                     let next = ToolKind::from_icon(button.icon()).or_fail()?;
 
-                    if next == ToolKind::Pick {
+                    if matches!(next, ToolKind::Pick | ToolKind::Erase) {
                         button.set_kind(ButtonKind::BasicPressed);
                     } else {
                         button.set_kind(ButtonKind::BasicDeep);
@@ -69,6 +66,7 @@ impl Default for ToolBoxWidget {
         buttons[1].set_kind(ButtonKind::BasicDeep);
 
         buttons[0].set_disabled_callback(|app| app.models().tool.current == ToolKind::Pick);
+        buttons[2].set_disabled_callback(|app| app.models().tool.current == ToolKind::Erase);
 
         Self {
             region: Default::default(),
@@ -154,9 +152,7 @@ fn spawn_window(tool: ToolKind, app: &mut App) -> Result<()> {
         ToolKind::Draw => app
             .spawn_window(DrawToolWindow::new(app).or_fail()?)
             .or_fail(),
-        ToolKind::Erase => app
-            .spawn_window(EraseToolWindow::new(app).or_fail()?)
-            .or_fail(),
+        ToolKind::Erase => Ok(()),
         ToolKind::Select => app
             .spawn_window(SelectToolWindow::new(app).or_fail()?)
             .or_fail(),

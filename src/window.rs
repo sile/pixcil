@@ -5,7 +5,6 @@ use pagurus_game_std::image::Canvas;
 pub mod color_selector;
 pub mod config;
 pub mod draw_tool;
-pub mod erase_tool;
 pub mod main;
 pub mod move_tool;
 pub mod select_tool;

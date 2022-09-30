@@ -1,6 +1,7 @@
 main
 ====
 
+- [CHANGE] Remove erasing tool dialog as it's redundant with the selection-then-cut feature
 - [UPDATE] Merge multiple redraw requests issued during an event handling
 - [UPDATE] Change the pick-button into non-clickable state when it's selected.
 - [ADD] Add buttons to halve / double the pixel size setting
