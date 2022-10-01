@@ -88,6 +88,7 @@ impl PixelCanvasModel {
         }
         command.erase.extend(overwritten);
         command.erase.sort_by_key(|x| x.position);
+        command.erase.dedup();
         command.draw.sort_by_key(|x| x.position);
 
         self.apply_command(config, command).or_fail()?;
@@ -108,7 +109,6 @@ impl PixelCanvasModel {
         }
         command.draw.sort_by_key(|x| x.position);
         command.erase.sort_by_key(|x| x.position);
-        command.erase.dedup();
 
         self.apply_command(config, command).or_fail()?;
         Ok(())
@@ -344,22 +344,16 @@ impl Deserialize for PixelCanvasCommand {
 struct Pixels(BTreeMap<PixelPosition, Rgba>);
 
 impl Pixels {
-    // fn get_pixels(&self, region: PixelRegion) -> impl '_ + Iterator<Item = Pixel> {
-    //     (region.start.y..region.end.y).flat_map(move |y| {
-    //         let start = PixelPosition::from_xy(region.start.x, y);
-    //         let end = PixelPosition::from_xy(region.end.x, y);
-    //         self.0
-    //             .range(start..end)
-    //             .map(|(pos, color)| Pixel::new(*pos, *color))
-    //     })
-    // }
-
     fn get_pixel(&self, position: PixelPosition) -> Option<Rgba> {
         self.0.get(&position).copied()
     }
 
     fn draw_pixel(&mut self, pixel: Pixel) -> Result<()> {
-        let prev = self.0.insert(pixel.position, pixel.color);
+        let prev = if pixel.color.a == 0 {
+            self.0.remove(&pixel.position)
+        } else {
+            self.0.insert(pixel.position, pixel.color)
+        };
         prev.is_none().or_fail()
     }
 
