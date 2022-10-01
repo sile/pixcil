@@ -62,6 +62,8 @@ impl ManipulateWidget {
         base.x -= image_center.x as i16;
         base.y -= image_center.y as i16;
 
+        base = app.models().config.minimum_pixel_size.align(base);
+
         let manipulating_pixels = image
             .pixels()
             .filter_map(|(position, color)| {

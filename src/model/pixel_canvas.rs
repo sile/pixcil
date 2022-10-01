@@ -135,10 +135,6 @@ impl PixelCanvasModel {
         config: &ConfigModel,
         region: PixelRegion,
     ) -> impl '_ + Iterator<Item = Pixel> {
-        // let layers = config.layer.enabled_count();
-        // if layers == 1 {
-        //     self.pixels.get_pixels(region)
-        // } else {
         // TODO: optimize (e.g., use cache to avoid redundant calculation)
         let frame = config.frame;
         let layer = config.layer;
@@ -147,7 +143,6 @@ impl PixelCanvasModel {
             self.get_layered_pixel(frame, frame_count, layer, position)
                 .map(|color| Pixel::new(position, color))
         })
-        //}
     }
 
     pub fn get_pixel(&self, config: &ConfigModel, position: PixelPosition) -> Option<Rgba> {
