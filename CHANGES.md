@@ -1,6 +1,9 @@
 main
 ====
 
+0.2.0
+=====
+
 - [UPDATE] Skip storing a pixel instance if it's alpha is zero
 - [FIX] Ensure imported image positions align with pixel size
 - [UPDATE] Brighten unfocused text box background color
