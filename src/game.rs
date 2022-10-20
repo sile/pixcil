@@ -10,6 +10,7 @@ use pagurus::{
 };
 use pagurus_game_std::{image::Canvas, logger::Logger, png::decode_sprite};
 
+#[cfg(feature = "wasm")]
 pagurus_game_std::export_wasm_functions!(PixcilGame);
 
 #[derive(Default)]
