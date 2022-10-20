@@ -48,13 +48,7 @@ impl PixelCanvasWidget {
         }
 
         fn skip(i: i16, zoom: u8) -> bool {
-            if zoom == 1 && i % 32 != 0 {
-                true
-            } else if zoom == 2 && i % 8 != 0 {
-                true
-            } else {
-                false
-            }
+            (zoom == 1 && i % 32 != 0) || (zoom == 2 && i % 8 != 0)
         }
 
         let mut current = screen_region.start();
@@ -336,10 +330,8 @@ impl Widget for PixelCanvasWidget {
 
             if self.tool.tool_kind() == ToolKind::Move {
                 self.move_camera = Some(MoveCameraWidget::new(app));
-            } else {
-                if self.move_camera.take().is_some() {
-                    app.request_redraw(self.region);
-                }
+            } else if self.move_camera.take().is_some() {
+                app.request_redraw(self.region);
             }
         }
 

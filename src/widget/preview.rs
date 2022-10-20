@@ -142,10 +142,7 @@ impl PreviewFrameWidget {
     }
 
     fn frame_region(&self) -> Region {
-        let mut region = self.region;
-        region.position = region.position;
-        region.size = region.size;
-        region
+        self.region
     }
 }
 
@@ -162,22 +159,18 @@ impl Widget for PreviewFrameWidget {
     fn handle_event(&mut self, app: &mut App, event: &mut Event) -> Result<()> {
         if let Some(position) = event.position() {
             let mut focused = false;
-            if self.region.contains(&position) {
-                if !event.is_consumed() {
-                    focused = true;
-                    event.consume();
-                }
+            if self.region.contains(&position) && !event.is_consumed() {
+                focused = true;
+                event.consume();
             }
             if focused {
                 if !app.models().preview_mode {
                     app.models_mut().preview_mode = true;
                     app.request_redraw(app.screen_size().to_region());
                 }
-            } else {
-                if app.models().preview_mode {
-                    app.models_mut().preview_mode = false;
-                    app.request_redraw(app.screen_size().to_region());
-                }
+            } else if app.models().preview_mode {
+                app.models_mut().preview_mode = false;
+                app.request_redraw(app.screen_size().to_region());
             }
             if focused && app.models().config.animation.is_enabled() && self.playing.is_none() {
                 self.playing = Some(Playing::start(app));

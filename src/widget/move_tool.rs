@@ -118,7 +118,7 @@ impl Widget for MoveToolWidget {
 
         if do_move {
             let screen_center = app.screen_size().to_region().center();
-            let frame_center = app.models().config.camera.frame_center(&app, frame, layer);
+            let frame_center = app.models().config.camera.frame_center(app, frame, layer);
             app.models_mut()
                 .config
                 .camera

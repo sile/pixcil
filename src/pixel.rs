@@ -341,8 +341,8 @@ impl PixelLine {
         let mut start = self.start;
         let mut finish = self.finish;
         let size = PixelSize::from_wh(
-            (finish.x - start.x).abs() as u16,
-            (finish.y - start.y).abs() as u16,
+            (finish.x - start.x).unsigned_abs(),
+            (finish.y - start.y).unsigned_abs(),
         );
         if size.width < size.height {
             if finish.y < start.y {

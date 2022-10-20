@@ -119,23 +119,20 @@ impl Widget for SliderWidget {
             self.input.set_value(app, self.input.value() + 1);
         }
 
-        match event {
-            Event::Mouse {
-                consumed: false,
-                action: MouseAction::Up,
-                position,
-            } => {
-                let bar_region = self.bar_region();
-                if bar_region.contains(position) {
-                    let value =
-                        (position.x - bar_region.position.x) as f64 / bar_region.size.width as f64;
-                    let value = ((self.input.max() - self.input.min()) as f64 * value).round()
-                        as u32
-                        + self.input.min();
-                    self.input.set_value(app, value);
-                }
+        if let Event::Mouse {
+            consumed: false,
+            action: MouseAction::Up,
+            position,
+        } = event
+        {
+            let bar_region = self.bar_region();
+            if bar_region.contains(position) {
+                let value =
+                    (position.x - bar_region.position.x) as f64 / bar_region.size.width as f64;
+                let value = ((self.input.max() - self.input.min()) as f64 * value).round() as u32
+                    + self.input.min();
+                self.input.set_value(app, value);
             }
-            _ => {}
         }
         event.consume_if_contained(self.region);
 

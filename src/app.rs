@@ -78,7 +78,7 @@ impl App {
     }
 
     pub fn enqueue_input_number_request(&mut self) -> InputId {
-        let id = self.next_input_id.next();
+        let id = self.next_input_id.get_and_increment();
         let request = IoRequest::InputNumber { id };
         self.io_requests.push_back(request);
         id
@@ -104,7 +104,7 @@ impl App {
     }
 
     pub fn set_timeout(&mut self, duration: Duration) -> TimeoutId {
-        let id = self.next_timeout_id.next();
+        let id = self.next_timeout_id.get_and_increment();
         self.pending_timeouts.push((id, duration));
         id
     }

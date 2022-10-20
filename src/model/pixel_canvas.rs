@@ -27,7 +27,7 @@ impl PixelCanvasModel {
         config: &ConfigModel,
         pixels: impl Iterator<Item = Pixel>,
     ) -> Result<()> {
-        let mut command = PixelCanvasCommand::default();
+        let mut command = PixelCanvasCommand::new();
         command.draw = pixels.collect();
         command.draw.sort_by_key(|x| x.position);
         for pixel in &mut command.draw {
@@ -300,6 +300,12 @@ pub struct PixelCanvasCommand {
     pub draw: Vec<Pixel>,
 }
 
+impl PixelCanvasCommand {
+    fn new() -> Self {
+        Self::default()
+    }
+}
+
 impl Serialize for PixelCanvasCommand {
     fn serialize<W: Write>(&self, writer: &mut W) -> Result<()> {
         self.erase.len().serialize(writer).or_fail()?;
@@ -414,7 +420,7 @@ fn deserialize_positions<R: Read>(
     let mut ys = Vec::with_capacity(size);
     for _ in 0..size {
         let delta = i16::deserialize(reader).or_fail()?;
-        y = y + delta;
+        y += delta;
         ys.push(y);
     }
 
@@ -422,7 +428,7 @@ fn deserialize_positions<R: Read>(
     let mut x = 0;
     for y in ys {
         let delta = i16::deserialize(reader).or_fail()?;
-        x = x + delta;
+        x += delta;
         positions.push(PixelPosition::from_xy(x, y));
     }
 

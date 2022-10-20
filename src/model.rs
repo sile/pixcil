@@ -32,8 +32,7 @@ impl Models {
         let frame_count = self.config.animation.enabled_frame_count();
         let frames = (0..frame_count)
             .map(|frame| {
-                let image_data = self
-                    .config
+                self.config
                     .frame
                     .get_preview_region(&self.config, frame as usize)
                     .pixels()
@@ -44,8 +43,7 @@ impl Models {
                             .unwrap_or(Rgba::new(0, 0, 0, 0));
                         [color.r, color.g, color.b, color.a].into_iter()
                     })
-                    .collect::<Vec<_>>();
-                image_data
+                    .collect::<Vec<_>>()
             })
             .collect::<Vec<_>>();
         let image_size = self.config.frame.get_base_region().size();

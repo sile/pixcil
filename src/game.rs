@@ -86,7 +86,7 @@ impl PixcilGame {
         let app = self.app.as_mut().or_fail()?;
 
         // TODO: Reduce redundant redraws
-        for region in app.take_redraw_requests() {
+        if let Some(region) = app.take_redraw_requests() {
             let mut canvas = canvas.mask_region(region);
             for window in &mut self.windows {
                 window.render(app, &mut canvas);

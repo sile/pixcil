@@ -97,7 +97,7 @@ pub enum MouseAction {
 pub struct TimeoutId(ActionId);
 
 impl TimeoutId {
-    pub fn next(&mut self) -> Self {
+    pub fn get_and_increment(&mut self) -> Self {
         let id = *self;
         self.0.increment();
         id
@@ -110,7 +110,7 @@ impl TimeoutId {
 pub struct InputId(ActionId);
 
 impl InputId {
-    pub fn next(&mut self) -> Self {
+    pub fn get_and_increment(&mut self) -> Self {
         let id = *self;
         self.0.increment();
         id
