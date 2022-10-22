@@ -97,7 +97,7 @@ impl Serialize for Zoom {
 impl Deserialize for Zoom {
     fn deserialize<R: Read>(reader: &mut R) -> Result<Self> {
         let n = u8::deserialize(reader).map(Self).or_fail()?;
-        Ok(clip(Self::MIN, n, Self::MAX))
+        Ok(n.clamp(Self::MIN, Self::MAX))
     }
 }
 
@@ -113,8 +113,8 @@ impl Camera {
     }
 
     pub fn r#move(&mut self, delta: Position) {
-        self.0.x = clip(Self::MIN.0.x, self.0.x + delta.x, Self::MAX.0.x);
-        self.0.y = clip(Self::MIN.0.y, self.0.y + delta.y, Self::MAX.0.y);
+        self.0.x = (self.0.x + delta.x).clamp(Self::MIN.0.x, Self::MAX.0.x);
+        self.0.y = (self.0.y + delta.y).clamp(Self::MIN.0.y, Self::MAX.0.y);
     }
 
     pub fn frame_center(self, app: &App, frame: usize, layer: usize) -> Position {
@@ -145,7 +145,7 @@ impl Camera {
             let screen_center = app.screen_size().to_region().center();
             let position = PixelPosition::from_screen_position(app, screen_center);
             let index = (position.y - base_frame_position.y) / frame_height as i16;
-            clip(0, index, layer_count as i16 - 1) as usize
+            index.clamp(0, layer_count as i16 - 1) as usize
         }
     }
 
@@ -160,7 +160,7 @@ impl Camera {
             let screen_center = app.screen_size().to_region().center();
             let position = PixelPosition::from_screen_position(app, screen_center);
             let index = (position.x - base_frame_position.x) / frame_width as i16;
-            clip(0, index, frame_count as i16 - 1) as usize
+            index.clamp(0, frame_count as i16 - 1) as usize
         }
     }
 }
@@ -186,8 +186,8 @@ impl Serialize for Camera {
 impl Deserialize for Camera {
     fn deserialize<R: Read>(reader: &mut R) -> Result<Self> {
         let p = Position::deserialize(reader).or_fail()?;
-        let x = clip(Self::MIN.0.x, p.x, Self::MAX.0.x);
-        let y = clip(Self::MIN.0.y, p.y, Self::MAX.0.y);
+        let x = p.x.clamp(Self::MIN.0.x, Self::MAX.0.x);
+        let y = p.y.clamp(Self::MIN.0.y, Self::MAX.0.y);
         Ok(Self(Position::from_xy(x, y)))
     }
 }
@@ -204,8 +204,8 @@ impl MinimumPixelSize {
     }
 
     pub fn set(&mut self, size: PixelSize) {
-        self.0.width = clip(Self::MIN.0.width, size.width, Self::MAX.0.width);
-        self.0.height = clip(Self::MIN.0.height, size.height, Self::MAX.0.height);
+        self.0.width = size.width.clamp(Self::MIN.0.width, Self::MAX.0.width);
+        self.0.height = size.height.clamp(Self::MIN.0.height, Self::MAX.0.height);
     }
 
     pub fn normalize(self, mut position: PixelPosition) -> PixelPosition {
@@ -263,14 +263,10 @@ impl Serialize for MinimumPixelSize {
 impl Deserialize for MinimumPixelSize {
     fn deserialize<R: Read>(reader: &mut R) -> Result<Self> {
         let mut size = PixelSize::deserialize(reader).or_fail()?;
-        size.width = clip(Self::MIN.0.width, size.width, Self::MAX.0.width);
-        size.height = clip(Self::MIN.0.height, size.height, Self::MAX.0.height);
+        size.width = size.width.clamp(Self::MIN.0.width, Self::MAX.0.width);
+        size.height = size.height.clamp(Self::MIN.0.height, Self::MAX.0.height);
         Ok(Self(size))
     }
-}
-
-fn clip<T: Ord>(min: T, value: T, max: T) -> T {
-    std::cmp::min(std::cmp::max(min, value), max)
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -473,7 +469,7 @@ impl Layer {
     }
 
     pub fn set_count(&mut self, n: u16) {
-        self.count = clip(Self::MIN, n, Self::MAX);
+        self.count = n.clamp(Self::MIN, Self::MAX);
     }
 
     pub fn for_each_lower_layer_pixel<F>(
@@ -648,7 +644,7 @@ impl Animation {
     }
 
     pub fn set_fps(&mut self, fps: u8) {
-        self.fps = clip(Self::MIN_FPS, fps, Self::MAX_FPS);
+        self.fps = fps.clamp(Self::MIN_FPS, Self::MAX_FPS);
     }
 
     pub const fn frame_count(self) -> u16 {
@@ -664,7 +660,7 @@ impl Animation {
     }
 
     pub fn set_frame_count(&mut self, n: u16) {
-        self.frame_count = clip(Self::MIN_FRAME_COUNT, n, Self::MAX_FRAME_COUNT);
+        self.frame_count = n.clamp(Self::MIN_FRAME_COUNT, Self::MAX_FRAME_COUNT);
     }
 
     pub fn frame_interval(self) -> Duration {

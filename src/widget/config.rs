@@ -141,9 +141,7 @@ impl Widget for ConfigWidget {
         app.models_mut()
             .config
             .minimum_pixel_size
-            .set(PixelSize::square(
-                self.minimum_pixel_size.body().value() as u16
-            ));
+            .set(PixelSize::square(self.minimum_pixel_size.body().value()));
 
         self.max_undos.handle_event(app, event).or_fail()?;
         app.models_mut()
