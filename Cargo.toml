@@ -30,5 +30,6 @@ serde_json = "1"
 
 [workspace]
 members = [
-    "windows"
+    "windows",
+    "android",
 ]
