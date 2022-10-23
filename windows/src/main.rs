@@ -93,12 +93,11 @@ fn handle_input_number(
         let template = InputTextDialog::new();
         let ret = DialogBoxIndirectParamA(
             None,
-            std::mem::transmute(&template),
+            &template as *const InputTextDialog as *const DLGTEMPLATE,
             system.window().hwnd(),
             Some(input_text_dialog_proc),
             None,
         );
-        std::mem::drop(template);
 
         if ret < 0 {
             return Err(Failure::new(format!(
