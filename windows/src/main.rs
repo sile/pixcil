@@ -72,7 +72,10 @@ fn handle_io_request(
             handle_load_workspace(system, game, workspace_name).or_fail()?;
         }
         pixcil::io::IoRequest::ImportImage => {
-            handle_import_image(system, game).or_fail()?;
+            if let Err(e) = handle_import_image(system, game).or_fail() {
+                // TODO: Show error dialog
+                eprintln!("{e}");
+            }
         }
         pixcil::io::IoRequest::InputNumber { id } => {
             handle_input_number(system, game, id).or_fail()?;
