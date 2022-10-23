@@ -1,6 +1,7 @@
 use crate::{
     app::App,
-    event::{Event, InputId},
+    event::Event,
+    io::InputNumber,
     model::Models,
     window::{main::MainWindow, Window},
 };
@@ -137,12 +138,7 @@ impl<S: System> Game<S> for PixcilGame {
     fn command(&mut self, system: &mut S, name: &str, data: &[u8]) -> Result<()> {
         match name {
             "notifyInputNumber" => {
-                #[derive(serde::Deserialize)]
-                struct Data {
-                    id: InputId,
-                    number: String,
-                }
-                let data: Data = serde_json::from_slice(data).or_fail()?;
+                let data: InputNumber = serde_json::from_slice(data).or_fail()?;
                 let event = Event::Input {
                     id: data.id,
                     text: data.number,

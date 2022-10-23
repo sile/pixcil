@@ -8,3 +8,9 @@ pub enum IoRequest {
     ImportImage,
     InputNumber { id: InputId },
 }
+
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
+pub struct InputNumber {
+    pub id: InputId,
+    pub number: String,
+}

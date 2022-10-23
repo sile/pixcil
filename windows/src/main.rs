@@ -1,8 +1,12 @@
+use pagurus::failure::Failure;
 use pagurus::{failure::OrFail, spatial::Size, Game, Result};
 use pagurus_windows_system::{WindowsSystem, WindowsSystemBuilder};
+use pixcil::event::InputId;
 use pixcil::game::PixcilGame;
+use pixcil::io::InputNumber;
+use std::cell::RefCell;
 use std::path::PathBuf;
-use windows::Win32::Foundation::{LPARAM, WPARAM};
+use windows::Win32::Foundation::{GetLastError, LPARAM, WPARAM};
 use windows::Win32::UI::WindowsAndMessaging::*;
 use windows::{
     core::PCWSTR,
@@ -70,13 +74,53 @@ fn handle_io_request(
         pixcil::io::IoRequest::ImportImage => {
             handle_import_image(system, game).or_fail()?;
         }
-        pixcil::io::IoRequest::InputNumber { id } => unsafe {
-            let mut template: DLGTEMPLATE = std::mem::zeroed();
-            template.style = (WS_POPUP | WS_BORDER | WS_SYSMENU | WS_CAPTION).0; // DS_MODALFRAME |
-            template.cx = 200;
-            template.cy = 100;
-            DialogBoxIndirectParamA(None, &template, None, Some(password_proc), None);
-        },
+        pixcil::io::IoRequest::InputNumber { id } => {
+            handle_input_number(system, game, id).or_fail()?;
+        }
+    }
+    Ok(())
+}
+
+fn handle_input_number(
+    system: &mut WindowsSystem,
+    game: &mut PixcilGame,
+    id: InputId,
+) -> Result<()> {
+    unsafe {
+        let template = InputTextDialog::new();
+        let ret = DialogBoxIndirectParamA(
+            None,
+            std::mem::transmute(&template),
+            system.window().hwnd(),
+            Some(input_text_dialog_proc),
+            None,
+        );
+        std::mem::drop(template);
+
+        if ret < 0 {
+            return Err(Failure::new(format!(
+                "Cannot open dialog: error_code={}",
+                GetLastError().0
+            )));
+        }
+
+        let buf = INPUT_TEXT_BUF.with(|buf| {
+            buf.borrow()
+                .iter()
+                .copied()
+                .take_while(|&b| b != 0)
+                .collect::<Vec<_>>()
+        });
+        if !buf.is_empty() {
+            if let Ok(number) = String::from_utf8(buf) {
+                game.command(
+                    system,
+                    "notifyInputNumber",
+                    &serde_json::to_vec(&InputNumber { id, number }).or_fail()?,
+                )
+                .or_fail()?;
+            }
+        }
     }
     Ok(())
 }
@@ -108,7 +152,7 @@ fn handle_save_workspace(
                 .SetFileName(PCWSTR::from_raw(name.as_ptr()))
                 .or_fail()?;
         }
-        if dialog.Show(HWND::default()).is_err() {
+        if dialog.Show(system.window().hwnd()).is_err() {
             return Ok(());
         }
 
@@ -137,6 +181,7 @@ fn handle_load_workspace(
     workspace_name: &mut Option<String>,
 ) -> Result<()> {
     let result = file_open_dialog(
+        system,
         windows::w!("Load Pixcil workspace").into(),
         windows::w!("Pixcil workspace files (*.png)").into(),
     )
@@ -153,6 +198,7 @@ fn handle_load_workspace(
 
 fn handle_import_image(system: &mut WindowsSystem, game: &mut PixcilGame) -> Result<()> {
     let result = file_open_dialog(
+        system,
         windows::w!("Load image file").into(),
         windows::w!("PNG files (*.png)").into(),
     )
@@ -164,7 +210,11 @@ fn handle_import_image(system: &mut WindowsSystem, game: &mut PixcilGame) -> Res
     Ok(())
 }
 
-fn file_open_dialog(title: PCWSTR, file_type: PCWSTR) -> Result<Option<PathBuf>> {
+fn file_open_dialog(
+    system: &WindowsSystem,
+    title: PCWSTR,
+    file_type: PCWSTR,
+) -> Result<Option<PathBuf>> {
     unsafe {
         let dialog: IFileOpenDialog =
             CoCreateInstance(&FileOpenDialog, None, CLSCTX_INPROC_SERVER).or_fail()?;
@@ -175,7 +225,7 @@ fn file_open_dialog(title: PCWSTR, file_type: PCWSTR) -> Result<Option<PathBuf>>
             }])
             .or_fail()?;
         dialog.SetTitle(title).or_fail()?;
-        if dialog.Show(HWND::default()).is_err() {
+        if dialog.Show(system.window().hwnd()).is_err() {
             return Ok(None);
         }
 
@@ -185,119 +235,184 @@ fn file_open_dialog(title: PCWSTR, file_type: PCWSTR) -> Result<Option<PathBuf>>
     }
 }
 
-unsafe extern "system" fn password_proc(
+#[repr(C)]
+struct Dialog {
+    template: DLGTEMPLATE,
+    menu_resource: u16,
+    window_class: u16,
+    title: [u16; 15],
+}
+
+#[repr(C, align(4))]
+struct InputTextDialog {
+    dialog: Dialog,
+    text_box: TextBox,
+    ok_button: OkButton,
+    cancel_button: CancelButton,
+}
+
+impl InputTextDialog {
+    fn new() -> Self {
+        let size = Size::from_wh(88, 36);
+
+        let template = DLGTEMPLATE {
+            style: (WS_POPUP | WS_BORDER | WS_DLGFRAME).0 | DS_CENTER as u32,
+            cx: size.width as i16,
+            cy: size.height as i16,
+            cdit: 3,
+            ..Default::default()
+        };
+        let dialog = Dialog {
+            template,
+            menu_resource: 0, // No menu
+            window_class: 0,  // Predefined dialog box class (by default)
+            title: [
+                'E' as u16, 'n' as u16, 't' as u16, 'e' as u16, 'r' as u16, ' ' as u16, 'a' as u16,
+                ' ' as u16, 'n' as u16, 'u' as u16, 'm' as u16, 'b' as u16, 'e' as u16, 'r' as u16,
+                0,
+            ],
+        };
+        let ok_button = OkButton::new();
+        let cancel_button = CancelButton::new();
+        let text_box = TextBox::new();
+        Self {
+            dialog,
+            ok_button,
+            cancel_button,
+            text_box,
+        }
+    }
+}
+
+#[repr(C, align(4))]
+struct OkButton {
+    item: DLGITEMTEMPLATE,
+    window_class: u16,
+    window_class_value: u16,
+    text: [u16; 3],
+    creation_data: u16,
+}
+
+impl OkButton {
+    const ID: u16 = 1;
+
+    fn new() -> Self {
+        let item = DLGITEMTEMPLATE {
+            id: Self::ID,
+            style: (WS_CHILD | WS_VISIBLE | WS_TABSTOP).0 | BS_DEFPUSHBUTTON as u32,
+            x: 5,
+            y: 20,
+            cx: 35,
+            cy: 12,
+            ..Default::default()
+        };
+        Self {
+            item,
+            window_class: 0xFFFF,
+            window_class_value: 0x0080, // Button
+            text: ['O' as u16, 'K' as u16, 0],
+            creation_data: 0,
+        }
+    }
+}
+
+#[repr(C, align(4))]
+struct CancelButton {
+    item: DLGITEMTEMPLATE,
+    window_class: u16,
+    window_class_value: u16,
+    text: [u16; 7],
+    creation_data: u16,
+}
+
+impl CancelButton {
+    const ID: u16 = 2;
+
+    fn new() -> Self {
+        let item = DLGITEMTEMPLATE {
+            id: Self::ID,
+            style: (WS_CHILD | WS_VISIBLE | WS_TABSTOP).0,
+            x: 48,
+            y: 20,
+            cx: 35,
+            cy: 12,
+            ..Default::default()
+        };
+        Self {
+            item,
+            window_class: 0xFFFF,
+            window_class_value: 0x0080, // Button
+            text: [
+                'C' as u16, 'a' as u16, 'n' as u16, 'c' as u16, 'e' as u16, 'l' as u16, 0,
+            ],
+            creation_data: 0,
+        }
+    }
+}
+
+#[repr(C, align(4))]
+struct TextBox {
+    item: DLGITEMTEMPLATE,
+    window_class: u16,
+    window_class_value: u16,
+    text: [u16; 1],
+    creation_data: u16,
+}
+
+impl TextBox {
+    const ID: u16 = 3;
+
+    fn new() -> Self {
+        let item = DLGITEMTEMPLATE {
+            id: Self::ID,
+            style: (WS_CHILD | WS_VISIBLE | WS_BORDER | WS_TABSTOP).0,
+            x: 4,
+            y: 4,
+            cx: 80,
+            cy: 12,
+            ..Default::default()
+        };
+        Self {
+            item,
+            window_class: 0xFFFF,
+            window_class_value: 0x0081, // Edit
+            text: [0],
+            creation_data: 0,
+        }
+    }
+}
+
+const TRUE: isize = 1;
+const FALSE: isize = 0;
+
+std::thread_local! {
+    static INPUT_TEXT_BUF: RefCell<[u8; 128]> = RefCell::new([0; 128]);
+}
+
+unsafe extern "system" fn input_text_dialog_proc(
     hdlg: HWND,
     message: u32,
     wparam: WPARAM,
-    lparam: LPARAM,
+    _lparam: LPARAM,
 ) -> isize {
-    match message {
-        WM_INITDIALOG => {
-            println!("init");
-        }
-        WM_COMMAND => {
-            println!("command");
-        }
-        _ => {
-            //return DefDlgProcA(hwnd, message, wparam, lparam).0;
-            println!("message: {message:?}");
-        }
+    if message != WM_COMMAND {
+        return FALSE;
     }
-    0
+
+    match wparam.0 as u16 {
+        OkButton::ID => {
+            INPUT_TEXT_BUF.with(|buf| {
+                GetDlgItemTextA(hdlg, TextBox::ID as i32, &mut *buf.borrow_mut());
+            });
+            EndDialog(hdlg, TRUE);
+            return TRUE;
+        }
+        CancelButton::ID => {
+            INPUT_TEXT_BUF.with(|buf| buf.borrow_mut()[0] = 0);
+            EndDialog(hdlg, TRUE);
+            return TRUE;
+        }
+        _ => {}
+    }
+    FALSE
 }
-
-// INT_PTR CALLBACK password_proc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
-// {
-//     TCHAR lpszPassword[16];
-//     WORD cchPassword;
-
-//     switch (message)
-//     {
-//         case WM_INITDIALOG:
-//             // Set password character to a plus sign (+)
-//             SendDlgItemMessage(hDlg,
-//                                IDE_PASSWORDEDIT,
-//                                EM_SETPASSWORDCHAR,
-//                                (WPARAM) '+',
-//                                (LPARAM) 0);
-
-//             // Set the default push button to "Cancel."
-//             SendMessage(hDlg,
-//                         DM_SETDEFID,
-//                         (WPARAM) IDCANCEL,
-//                         (LPARAM) 0);
-
-//             return TRUE;
-
-//         case WM_COMMAND:
-//             // Set the default push button to "OK" when the user enters text.
-//             if(HIWORD (wParam) == EN_CHANGE &&
-//                                 LOWORD(wParam) == IDE_PASSWORDEDIT)
-//             {
-//                 SendMessage(hDlg,
-//                             DM_SETDEFID,
-//                             (WPARAM) IDOK,
-//                             (LPARAM) 0);
-//             }
-//             switch(wParam)
-//             {
-//                 case IDOK:
-//                     // Get number of characters.
-//                     cchPassword = (WORD) SendDlgItemMessage(hDlg,
-//                                                             IDE_PASSWORDEDIT,
-//                                                             EM_LINELENGTH,
-//                                                             (WPARAM) 0,
-//                                                             (LPARAM) 0);
-//                     if (cchPassword >= 16)
-//                     {
-//                         MessageBox(hDlg,
-//                                    L"Too many characters.",
-//                                    L"Error",
-//                                    MB_OK);
-
-//                         EndDialog(hDlg, TRUE);
-//                         return FALSE;
-//                     }
-//                     else if (cchPassword == 0)
-//                     {
-//                         MessageBox(hDlg,
-//                                    L"No characters entered.",
-//                                    L"Error",
-//                                    MB_OK);
-
-//                         EndDialog(hDlg, TRUE);
-//                         return FALSE;
-//                     }
-
-//                     // Put the number of characters into first word of buffer.
-//                     *((LPWORD)lpszPassword) = cchPassword;
-
-//                     // Get the characters.
-//                     SendDlgItemMessage(hDlg,
-//                                        IDE_PASSWORDEDIT,
-//                                        EM_GETLINE,
-//                                        (WPARAM) 0,       // line 0
-//                                        (LPARAM) lpszPassword);
-
-//                     // Null-terminate the string.
-//                     lpszPassword[cchPassword] = 0;
-
-//                     MessageBox(hDlg,
-//                                lpszPassword,
-//                                L"Did it work?",
-//                                MB_OK);
-
-//                     // Call a local password-parsing function.
-//                     ParsePassword(lpszPassword);
-
-//                     EndDialog(hDlg, TRUE);
-//                     return TRUE;
-
-//                 case IDCANCEL:
-//                     EndDialog(hDlg, TRUE);
-//                     return TRUE;
-//             }
-//             return 0;
-//     }
-//     return FALSE;
-// }
