@@ -2,6 +2,8 @@ use pagurus::{failure::OrFail, spatial::Size, Game, Result};
 use pagurus_windows_system::{WindowsSystem, WindowsSystemBuilder};
 use pixcil::game::PixcilGame;
 use std::path::PathBuf;
+use windows::Win32::Foundation::{LPARAM, WPARAM};
+use windows::Win32::UI::WindowsAndMessaging::*;
 use windows::{
     core::PCWSTR,
     Win32::{
@@ -23,7 +25,7 @@ fn main() -> Result<()> {
 
     let mut game = PixcilGame::default();
     let mut system = WindowsSystemBuilder::new("Pixcil")
-        .window_size(Some(Size::from_wh(1200, 600)))
+        .window_size(Some(Size::from_wh(1200, 800)))
         .enable_audio(false)
         .build()
         .or_fail()?;
@@ -68,9 +70,13 @@ fn handle_io_request(
         pixcil::io::IoRequest::ImportImage => {
             handle_import_image(system, game).or_fail()?;
         }
-        pixcil::io::IoRequest::InputNumber { id } => {
-            println!("input-number: {id:?}");
-        }
+        pixcil::io::IoRequest::InputNumber { id } => unsafe {
+            let mut template: DLGTEMPLATE = std::mem::zeroed();
+            template.style = (WS_POPUP | WS_BORDER | WS_SYSMENU | WS_CAPTION).0; // DS_MODALFRAME |
+            template.cx = 200;
+            template.cy = 100;
+            DialogBoxIndirectParamA(None, &template, None, Some(password_proc), None);
+        },
     }
     Ok(())
 }
@@ -178,3 +184,120 @@ fn file_open_dialog(title: PCWSTR, file_type: PCWSTR) -> Result<Option<PathBuf>>
         Ok(Some(PathBuf::from(path.to_string().or_fail()?)))
     }
 }
+
+unsafe extern "system" fn password_proc(
+    hdlg: HWND,
+    message: u32,
+    wparam: WPARAM,
+    lparam: LPARAM,
+) -> isize {
+    match message {
+        WM_INITDIALOG => {
+            println!("init");
+        }
+        WM_COMMAND => {
+            println!("command");
+        }
+        _ => {
+            //return DefDlgProcA(hwnd, message, wparam, lparam).0;
+            println!("message: {message:?}");
+        }
+    }
+    0
+}
+
+// INT_PTR CALLBACK password_proc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+// {
+//     TCHAR lpszPassword[16];
+//     WORD cchPassword;
+
+//     switch (message)
+//     {
+//         case WM_INITDIALOG:
+//             // Set password character to a plus sign (+)
+//             SendDlgItemMessage(hDlg,
+//                                IDE_PASSWORDEDIT,
+//                                EM_SETPASSWORDCHAR,
+//                                (WPARAM) '+',
+//                                (LPARAM) 0);
+
+//             // Set the default push button to "Cancel."
+//             SendMessage(hDlg,
+//                         DM_SETDEFID,
+//                         (WPARAM) IDCANCEL,
+//                         (LPARAM) 0);
+
+//             return TRUE;
+
+//         case WM_COMMAND:
+//             // Set the default push button to "OK" when the user enters text.
+//             if(HIWORD (wParam) == EN_CHANGE &&
+//                                 LOWORD(wParam) == IDE_PASSWORDEDIT)
+//             {
+//                 SendMessage(hDlg,
+//                             DM_SETDEFID,
+//                             (WPARAM) IDOK,
+//                             (LPARAM) 0);
+//             }
+//             switch(wParam)
+//             {
+//                 case IDOK:
+//                     // Get number of characters.
+//                     cchPassword = (WORD) SendDlgItemMessage(hDlg,
+//                                                             IDE_PASSWORDEDIT,
+//                                                             EM_LINELENGTH,
+//                                                             (WPARAM) 0,
+//                                                             (LPARAM) 0);
+//                     if (cchPassword >= 16)
+//                     {
+//                         MessageBox(hDlg,
+//                                    L"Too many characters.",
+//                                    L"Error",
+//                                    MB_OK);
+
+//                         EndDialog(hDlg, TRUE);
+//                         return FALSE;
+//                     }
+//                     else if (cchPassword == 0)
+//                     {
+//                         MessageBox(hDlg,
+//                                    L"No characters entered.",
+//                                    L"Error",
+//                                    MB_OK);
+
+//                         EndDialog(hDlg, TRUE);
+//                         return FALSE;
+//                     }
+
+//                     // Put the number of characters into first word of buffer.
+//                     *((LPWORD)lpszPassword) = cchPassword;
+
+//                     // Get the characters.
+//                     SendDlgItemMessage(hDlg,
+//                                        IDE_PASSWORDEDIT,
+//                                        EM_GETLINE,
+//                                        (WPARAM) 0,       // line 0
+//                                        (LPARAM) lpszPassword);
+
+//                     // Null-terminate the string.
+//                     lpszPassword[cchPassword] = 0;
+
+//                     MessageBox(hDlg,
+//                                lpszPassword,
+//                                L"Did it work?",
+//                                MB_OK);
+
+//                     // Call a local password-parsing function.
+//                     ParsePassword(lpszPassword);
+
+//                     EndDialog(hDlg, TRUE);
+//                     return TRUE;
+
+//                 case IDCANCEL:
+//                     EndDialog(hDlg, TRUE);
+//                     return TRUE;
+//             }
+//             return 0;
+//     }
+//     return FALSE;
+// }

@@ -19,4 +19,5 @@ features = [
     "Win32_Foundation",
     "Win32_UI_Shell",
     "Win32_UI_Shell_Common",
+    "Win32_UI_WindowsAndMessaging",
 ]
