@@ -25,6 +25,8 @@ Features
 How to build
 ------------
 
+### Web
+
 You can use [Cargo](https://doc.rust-lang.org/cargo/) to build Pixcil.
 
 ```console
@@ -38,6 +40,14 @@ $ ls target/wasm32-unknown-unknown/release/pixcil.wasm
 $ cd web/
 $ start-your-favorite-http-server
 ```
+
+### Windows
+
+```console
+$ cargo run --release -p pixcil_windows
+```
+
+### Other platforms
 
 Pixcil is created using [Pagurus](https://github.com/sile/pagurus).
 So other Pagurus supported runtimes can be used to run (with some restrictions):
