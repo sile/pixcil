@@ -4,6 +4,7 @@ main
 core
 ----
 
+- [CHANGE] Limit maximum FPS to 120 to eliminate too many redraws
 - [UPDATE] Update pagurus version to v0.4.0
 
 windows

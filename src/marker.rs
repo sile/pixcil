@@ -119,6 +119,7 @@ pub struct MarkerHandler {
     last_event: Option<(PixelPosition, MouseAction)>,
     last_marked: HashSet<PixelPosition>,
     updated: bool,
+    prev_redraw_count: u64,
 }
 
 impl MarkerHandler {
@@ -161,7 +162,10 @@ impl MarkerHandler {
     }
 
     pub fn handle_event(&mut self, app: &mut App, event: &mut Event) -> Result<()> {
-        self.updated = false;
+        if self.prev_redraw_count != app.redraw_count() {
+            self.updated = false;
+            self.prev_redraw_count = app.redraw_count();
+        }
 
         let (pixel_position, action) = match event {
             Event::Mouse { consumed: true, .. } => {

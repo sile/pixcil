@@ -1,9 +1,7 @@
-use std::time::Duration;
-
 use super::{VariableSizeWidget, Widget};
 use crate::{
     app::App,
-    event::{Event, MouseAction, TimeoutId},
+    event::{Event, MouseAction},
 };
 use pagurus::{
     spatial::{Position, Region},
@@ -16,7 +14,6 @@ pub struct MoveCameraWidget {
     region: Region,
     cursor: Option<Position>,
     start: Option<Position>,
-    in_redraw_interval: Option<TimeoutId>,
 }
 
 impl MoveCameraWidget {
@@ -25,7 +22,6 @@ impl MoveCameraWidget {
             region: app.screen_size().to_region(),
             cursor: None,
             start: None,
-            in_redraw_interval: None,
         }
     }
 }
@@ -66,18 +62,11 @@ impl Widget for MoveCameraWidget {
                 let start = self.start.expect("unreachable");
                 let end = *position;
                 app.models_mut().config.camera.r#move(start - end);
-                if self.in_redraw_interval.is_none() {
-                    let fps = 60;
-                    self.in_redraw_interval = Some(app.set_timeout(Duration::from_secs(1) / fps));
-                }
+                app.request_redraw(self.region);
                 self.start = Some(end);
             }
             Event::Mouse { .. } => {
                 self.start = None;
-            }
-            Event::Timeout(id) if self.in_redraw_interval == Some(*id) => {
-                app.request_redraw(self.region);
-                self.in_redraw_interval = None;
             }
             _ => {}
         }
@@ -89,7 +78,7 @@ impl Widget for MoveCameraWidget {
             } else {
                 self.cursor = Some(position);
             }
-            if self.cursor != old && self.in_redraw_interval.is_none() {
+            if self.cursor != old {
                 let sprite_size = app.assets().hand.open.size();
                 for &position in old.iter().chain(self.cursor.iter()) {
                     app.request_redraw(Region::new(

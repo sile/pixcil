@@ -6,13 +6,19 @@ use crate::{
     window::{main::MainWindow, Window},
 };
 use pagurus::{
-    event::Event as PagurusEvent, event::WindowEvent as PagurusWindowEvent, failure::OrFail,
-    video::VideoFrame, Game, Result, System,
+    event::WindowEvent as PagurusWindowEvent,
+    event::{Event as PagurusEvent, TimeoutEvent},
+    failure::OrFail,
+    video::VideoFrame,
+    ActionId, Game, Result, System,
 };
 use pagurus_game_std::{image::Canvas, logger::Logger, png::decode_sprite};
+use std::time::Duration;
 
 #[cfg(feature = "wasm")]
 pagurus_game_std::export_wasm_functions!(PixcilGame);
+
+const MAX_FPS: u8 = 120;
 
 #[derive(Default)]
 pub struct PixcilGame {
@@ -20,6 +26,7 @@ pub struct PixcilGame {
     video_frame: VideoFrame,
     windows: Vec<Box<dyn Window>>,
     app: Option<App>,
+    render_timeout: Option<ActionId>,
 }
 
 impl PixcilGame {
@@ -28,11 +35,14 @@ impl PixcilGame {
         system: &mut S,
         event: PagurusEvent,
     ) -> Result<bool> {
-        let app = self.app.as_mut().or_fail()?;
-
         match event {
             PagurusEvent::Terminating => return Ok(false),
+            PagurusEvent::Timeout(TimeoutEvent { id }) if Some(id) == self.render_timeout => {
+                self.render_timeout = None;
+                self.render(system).or_fail()?;
+            }
             PagurusEvent::Window(PagurusWindowEvent::RedrawNeeded { size }) => {
+                let app = self.app.as_mut().or_fail()?;
                 app.request_redraw(size.to_region());
                 if size != app.screen_size() {
                     self.video_frame = VideoFrame::new(system.video_frame_spec(size));
@@ -45,6 +55,7 @@ impl PixcilGame {
             _ => {}
         };
 
+        let app = self.app.as_mut().or_fail()?;
         let event = Event::from_pagurus_event(app, event);
         self.handle_pixcil_event(system, event).or_fail()?;
 
@@ -78,7 +89,10 @@ impl PixcilGame {
         app.set_pending_timeouts(system);
 
         // TODO: Handle FPS (avoid too many renderings during a short term)
-        self.render(system).or_fail()?;
+        if app.is_redraw_needed() && self.render_timeout.is_none() {
+            self.render_timeout =
+                Some(system.clock_set_timeout(Duration::from_millis(1000 / u64::from(MAX_FPS))));
+        }
         Ok(())
     }
 
@@ -86,7 +100,6 @@ impl PixcilGame {
         let mut canvas = Canvas::new(&mut self.video_frame);
         let app = self.app.as_mut().or_fail()?;
 
-        // TODO: Reduce redundant redraws
         if let Some(region) = app.take_redraw_requests() {
             let mut canvas = canvas.mask_region(region);
             for window in &mut self.windows {

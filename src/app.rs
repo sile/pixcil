@@ -27,6 +27,7 @@ pub struct App {
     pending_timeouts: Vec<(TimeoutId, Duration)>,
     timeouts: HashMap<ActionId, TimeoutId>,
     next_input_id: InputId,
+    redraw_count: u64,
 }
 
 impl App {
@@ -42,6 +43,7 @@ impl App {
             pending_timeouts: Vec::new(),
             timeouts: HashMap::new(),
             next_input_id: InputId::default(),
+            redraw_count: 0,
         })
     }
 
@@ -73,8 +75,17 @@ impl App {
         if self.redraw_region.is_empty() {
             None
         } else {
+            self.redraw_count += 1;
             Some(std::mem::take(&mut self.redraw_region))
         }
+    }
+
+    pub fn is_redraw_needed(&self) -> bool {
+        !self.redraw_region.is_empty()
+    }
+
+    pub fn redraw_count(&self) -> u64 {
+        self.redraw_count
     }
 
     pub fn enqueue_input_number_request(&mut self) -> InputId {
