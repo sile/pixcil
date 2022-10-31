@@ -10,6 +10,7 @@ publish = false
 crate-type = ["lib", "cdylib"]
 
 [dependencies]
+jni = "0.20"
 ndk-glue = "0.7"
 pagurus = "0.4"
 pagurus_android_system = "0.4"
