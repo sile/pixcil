@@ -18,9 +18,11 @@ pixcil = { version = "0.2", path = "../", default-features = false }
 
 [package.metadata.android]
 apk_name = "pixcil"
+resources = "resources"
 
 [package.metadata.android.sdk]
 min_sdk_version = 26
 
 [package.metadata.android.application]
 label = "Pixcil"
+icon = "@mipmap/ic_launcher"
