@@ -3,9 +3,23 @@
     <meta charset="utf-8">
     <link rel="icon" type="image/png" href="favicon.png" sizes="48x48" />
     <title>Pixcil</title>
+    <style>
+      body {
+          margin: 0px;
+          padding: 0px;
+          position: relative;
+      }
+      #canvas-area {
+          height: 100%;
+          width: 100%;
+          position: fixed;
+      }
+    </style>
   </head>
-  <body style="background-color:rgb(122,191,74)" >
-    <canvas id="canvas" style="background-color:black; padding:0; margin:auto; display:block"></canvas>
+  <body style="background-color:black" >
+    <div id="canvas-area">
+      <canvas id="canvas" style="background-color:black"></canvas>
+    </div>
     <script src="https://cdn.jsdelivr.net/npm/pagurus@0.3.1/dist/pagurus.min.js"></script>
     <script>
       var system = undefined;
@@ -13,8 +27,9 @@
 
       {
           const initialCanvas = document.getElementById("canvas");
-          initialCanvas.height = document.body.clientHeight * 0.98;
-          initialCanvas.width = document.body.clientWidth * 0.98;
+          const canvasArea = document.getElementById("canvas-area");
+          initialCanvas.height = canvasArea.clientHeight;
+          initialCanvas.width = canvasArea.clientWidth;
       }
 
       function saveWorkspace(name) {
@@ -95,8 +110,9 @@
           system = await Pagurus.System.create(game.memory, canvas);
 
           const resizeCanvas = () => {
-              canvas.height = document.body.clientHeight * 0.98;
-              canvas.width = document.body.clientWidth * 0.98;
+              const canvasArea = document.getElementById("canvas-area");
+              canvas.height = canvasArea.clientHeight;
+              canvas.width = canvasArea.clientWidth;
               system.notifyRedrawNeeded();
           }
           resizeCanvas();
