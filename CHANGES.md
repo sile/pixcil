@@ -10,6 +10,7 @@ core
 web
 ---
 
+- [Add] use service worker to support offline mode
 - [UPDATE] Remove green margin around the canvas
 
 windows
