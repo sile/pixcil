@@ -100,7 +100,7 @@ impl Hsv {
                 b *= 1.0 - s * f;
             }
             n => {
-                debug_assert!(n == 0 || n == 6, "n: {}", n);
+                debug_assert!(n == 0 || n == 6, "n: {n}");
                 g *= 1.0 - s * (1.0 - f);
                 b *= 1.0 - s;
             }
