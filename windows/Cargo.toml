@@ -1,6 +1,6 @@
 [package]
 name = "pixcil_windows"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2021"
 publish = false
 
@@ -9,7 +9,7 @@ publish = false
 [dependencies]
 pagurus = "0.5"
 pagurus_windows_system = "0.5"
-pixcil = { version = "0.2", path = "../", default-features = false }
+pixcil = { version = "0.3", path = "../", default-features = false }
 serde_json = "1"
 
 [build-dependencies]
