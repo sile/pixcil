@@ -72,7 +72,7 @@ impl ToolKind {
             IconId::Lasso => Ok(Self::Select),
             IconId::Pick => Ok(Self::Pick),
             IconId::Move => Ok(Self::Move),
-            _ => Err(Failure::unreachable()),
+            _ => orfail::unreachable!(),
         }
     }
 }

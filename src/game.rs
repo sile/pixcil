@@ -142,9 +142,7 @@ impl<S: System> Game<S> for PixcilGame {
                 let data = app.models().to_png(app).or_fail()?;
                 Ok(data)
             }
-            _ => Err(pagurus::failure::Failure::new(format!(
-                "unknown query: {name:?}"
-            ))),
+            _ => Err(pagurus::failure::Failure::new().message(format!("unknown query: {name:?}"))),
         }
     }
 
@@ -176,9 +174,9 @@ impl<S: System> Game<S> for PixcilGame {
                 app.request_redraw(app.screen_size().to_region());
                 Ok(())
             }
-            _ => Err(pagurus::failure::Failure::new(format!(
-                "unknown command: {name:?}"
-            ))),
+            _ => {
+                Err(pagurus::failure::Failure::new().message(format!("unknown command: {name:?}")))
+            }
         }
     }
 }

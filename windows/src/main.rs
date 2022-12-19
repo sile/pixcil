@@ -72,7 +72,7 @@ fn handle_io_request(
             handle_load_workspace(system, game, workspace_name).or_fail()?;
         }
         pixcil::io::IoRequest::ImportImage => {
-            if let Err(e) = handle_import_image(system, game).or_fail() {
+            if let Err(e) = handle_import_image(system, game).or_fail() as Result<_> {
                 // TODO: Show error dialog
                 eprintln!("{e}");
             }
@@ -100,7 +100,7 @@ fn handle_input_number(
         );
 
         if ret < 0 {
-            return Err(Failure::new(format!(
+            return Err(Failure::new().message(format!(
                 "Cannot open dialog: error_code={}",
                 GetLastError().0
             )));

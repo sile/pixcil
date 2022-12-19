@@ -214,7 +214,7 @@ impl std::str::FromStr for Text {
                     'Y' => Alphabet::Y,
                     'Z' => Alphabet::Z,
                     ' ' => Alphabet::Space,
-                    _ => return Err(Failure::new(format!("unknown alphabet: {c:?}"))),
+                    _ => return Err(Failure::new().message(format!("unknown alphabet: {c:?}"))),
                 })
             })
             .collect::<Result<_>>()

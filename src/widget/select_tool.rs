@@ -123,6 +123,6 @@ fn icon_to_tool(icon: IconId) -> Result<SelectTool> {
     match icon {
         IconId::Select => Ok(SelectTool::Rectangle),
         IconId::Lasso => Ok(SelectTool::Lasso),
-        _ => Err(Failure::unreachable()),
+        _ => orfail::unreachable!(),
     }
 }

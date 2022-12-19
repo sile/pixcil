@@ -109,6 +109,6 @@ fn icon_to_tool(icon: IconId) -> Result<DrawTool> {
         IconId::PenRectangle => Ok(DrawTool::PenRectangle),
         IconId::PenCircle => Ok(DrawTool::PenCircle),
         IconId::Bucket => Ok(DrawTool::Bucket),
-        _ => Err(Failure::unreachable()),
+        _ => orfail::unreachable!(),
     }
 }

@@ -22,8 +22,9 @@ wasm = ["pagurus_game_std/wasm"]
 byteorder = "1.4.3"
 libflate = "1.2.0"
 log = "0.4.17"
-pagurus = "0.4"
-pagurus_game_std = { version = "0.4", default-features = false }
+orfail = "0.1"
+pagurus = "0.5"
+pagurus_game_std = { version = "0.5", default-features = false }
 png = "0.17"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
