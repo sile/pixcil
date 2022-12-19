@@ -10,7 +10,7 @@ core
 - [UPDATE] Support to import gray scale PNG files
 - [FIX] Fix a bug that the program crashes when an HSV color slider reaches the max value and then the up button is pressed
 - [CHANGE] Limit maximum FPS to 120 to eliminate too many redraws
-- [UPDATE] Update pagurus version to v0.4.0
+- [UPDATE] Update pagurus version to v0.5.0
 
 web
 ---
