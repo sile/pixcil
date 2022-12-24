@@ -46,14 +46,3 @@ $ start-your-favorite-http-server
 ```console
 $ cargo run --release -p pixcil_windows
 ```
-
-### Other platforms
-
-Pixcil is created using [Pagurus](https://github.com/sile/pagurus).
-So other Pagurus supported runtimes can be used to run (with some restrictions):
-```console
-// Run Pixcil using SDL runtime.
-$ git clone https://github.com/sile/pagurus.git
-$ cd pagurus
-$ cargo run --release -p sdl_runtime -- /path/to/pixcil.wasm
-```
