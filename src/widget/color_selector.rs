@@ -9,7 +9,7 @@ use pagurus::{
     spatial::{Position, Region, Size},
     Result,
 };
-use pagurus::{image::Rgba, image::Canvas};
+use pagurus::{image::Canvas, image::Rgba};
 
 const COLOR_PREVIEW_HEIGHT: u32 = 64;
 const MARGIN: u32 = 16;

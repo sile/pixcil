@@ -1,11 +1,11 @@
 use super::{button::ButtonWidget, FixedSizeWidget, Widget};
 use crate::{app::App, event::Event};
+use pagurus::image::Canvas;
 use pagurus::{
     failure::OrFail,
     spatial::{Position, Region, Size},
     Result,
 };
-use pagurus::image::Canvas;
 
 const MARGIN: u32 = 0;
 

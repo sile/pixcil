@@ -3,8 +3,8 @@ use super::{
     Widget,
 };
 use crate::{app::App, event::Event};
-use pagurus::{failure::OrFail, spatial::Region, Result};
 use pagurus::image::Canvas;
+use pagurus::{failure::OrFail, spatial::Region, Result};
 
 const MARGIN: u32 = 16;
 

@@ -6,11 +6,11 @@ use crate::{
     event::{Event, InputId, MouseAction},
     region_ext::RegionExt,
 };
+use pagurus::image::Canvas;
 use pagurus::{
     spatial::{Contains, Position, Region, Size},
     Result,
 };
-use pagurus::image::Canvas;
 
 #[derive(Debug)]
 pub struct NumberBoxWidget {

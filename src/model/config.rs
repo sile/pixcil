@@ -3,8 +3,8 @@ use crate::{
     pixel::{PixelPosition, PixelRegion, PixelSize},
     serialize::{Deserialize, Serialize},
 };
-use pagurus::{failure::OrFail, spatial::Position, Result};
 use pagurus::image::Rgba;
+use pagurus::{failure::OrFail, spatial::Position, Result};
 use std::{
     io::{Read, Write},
     time::Duration,

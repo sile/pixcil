@@ -5,11 +5,11 @@ use crate::{
     canvas_ext::CanvasExt,
     event::{Event, MouseAction, TimeoutId},
 };
+use pagurus::image::{Canvas, Sprite};
 use pagurus::{
     spatial::{Contains, Position, Region, Size},
     Result,
 };
-use pagurus::image::{Canvas, Sprite};
 use std::time::Duration;
 
 const DISABLED_ALPHA: u8 = 100;

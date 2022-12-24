@@ -9,12 +9,12 @@ use crate::{
     pixel::PixelSize,
     region_ext::RegionExt,
 };
+use pagurus::image::Canvas;
 use pagurus::{
     failure::OrFail,
     spatial::{Position, Region, Size},
     Result,
 };
-use pagurus::image::Canvas;
 
 const MARGIN: u32 = 8;
 const GROUP_MARGIN: u32 = 24;

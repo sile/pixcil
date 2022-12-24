@@ -8,12 +8,12 @@ use crate::{
     model::tool::ToolKind,
     window::{draw_tool::DrawToolWindow, move_tool::MoveToolWindow, select_tool::SelectToolWindow},
 };
+use pagurus::image::Canvas;
 use pagurus::{
     failure::OrFail,
     spatial::{Position, Region, Size},
     Result,
 };
-use pagurus::image::Canvas;
 
 const MARGIN: u32 = 8;
 

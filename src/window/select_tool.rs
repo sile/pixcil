@@ -1,7 +1,7 @@
 use super::{widget::WidgetWindow, Window};
 use crate::{app::App, event::Event, widget::select_tool::SelectToolWidget};
-use pagurus::{failure::OrFail, spatial::Region, Result};
 use pagurus::image::Canvas;
+use pagurus::{failure::OrFail, spatial::Region, Result};
 
 #[derive(Debug)]
 pub struct SelectToolWindow(WidgetWindow<SelectToolWidget>);

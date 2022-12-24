@@ -5,12 +5,12 @@ use crate::{
     event::Event,
     model::config::MinimumPixelSize,
 };
+use pagurus::image::Canvas;
 use pagurus::{
     failure::OrFail,
     spatial::{Position, Region, Size},
     Result,
 };
-use pagurus::image::Canvas;
 
 const MARGIN: u32 = 8;
 

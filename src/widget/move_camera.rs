@@ -3,11 +3,11 @@ use crate::{
     app::App,
     event::{Event, MouseAction},
 };
+use pagurus::image::Canvas;
 use pagurus::{
     spatial::{Position, Region},
     Result,
 };
-use pagurus::image::Canvas;
 
 #[derive(Debug)]
 pub struct MoveCameraWidget {

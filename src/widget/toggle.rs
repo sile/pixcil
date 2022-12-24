@@ -3,11 +3,11 @@ use crate::{
     app::App,
     event::{Event, MouseAction},
 };
+use pagurus::image::Canvas;
 use pagurus::{
     spatial::{Contains, Position, Region, Size},
     Result,
 };
-use pagurus::image::Canvas;
 
 #[derive(Debug, Default)]
 pub struct ToggleWidget {

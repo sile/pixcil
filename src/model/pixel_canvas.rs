@@ -2,8 +2,8 @@ use crate::{
     pixel::{Pixel, PixelPosition, PixelRegion},
     serialize::{Deserialize, Serialize},
 };
-use pagurus::{failure::OrFail, Result};
 use pagurus::image::Rgba;
+use pagurus::{failure::OrFail, Result};
 use std::{
     collections::{BTreeMap, BTreeSet, VecDeque},
     io::{Read, Write},
