@@ -8,6 +8,7 @@ pub mod io;
 pub mod marker;
 pub mod model;
 pub mod pixel;
+pub mod png;
 pub mod region_ext;
 pub mod serialize;
 pub mod widget;

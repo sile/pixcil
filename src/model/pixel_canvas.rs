@@ -3,7 +3,7 @@ use crate::{
     serialize::{Deserialize, Serialize},
 };
 use pagurus::{failure::OrFail, Result};
-use pagurus_game_std::color::Rgba;
+use pagurus::image::Rgba;
 use std::{
     collections::{BTreeMap, BTreeSet, VecDeque},
     io::{Read, Write},

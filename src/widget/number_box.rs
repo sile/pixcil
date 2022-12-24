@@ -10,7 +10,7 @@ use pagurus::{
     spatial::{Contains, Position, Region, Size},
     Result,
 };
-use pagurus_game_std::image::Canvas;
+use pagurus::image::Canvas;
 
 #[derive(Debug)]
 pub struct NumberBoxWidget {

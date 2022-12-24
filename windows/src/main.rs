@@ -30,7 +30,6 @@ fn main() -> Result<()> {
     let mut game = PixcilGame::default();
     let mut system = WindowsSystemBuilder::new("Pixcil")
         .window_size(Some(Size::from_wh(1200, 800)))
-        .enable_audio(false)
         .build()
         .or_fail()?;
     game.initialize(&mut system).or_fail()?;

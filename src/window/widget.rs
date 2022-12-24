@@ -12,7 +12,7 @@ use pagurus::{
     spatial::{Contains, Region},
     Result,
 };
-use pagurus_game_std::image::Canvas;
+use pagurus::image::Canvas;
 
 #[derive(Debug)]
 pub struct WidgetWindow<W> {

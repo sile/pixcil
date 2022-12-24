@@ -1,9 +1,6 @@
 use crate::asset::Text;
+use pagurus::image::{Canvas, Color, Sprite};
 use pagurus::spatial::{Position, Region};
-use pagurus_game_std::{
-    color::Color,
-    image::{Canvas, Sprite},
-};
 
 pub trait CanvasExt {
     fn draw_vertical_line(&mut self, start: Position, height: u32, color: Color);

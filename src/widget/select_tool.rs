@@ -9,12 +9,12 @@ use crate::{
     io::IoRequest,
     model::tool::SelectTool,
 };
+use pagurus::image::Canvas;
 use pagurus::{
     failure::{Failure, OrFail},
     spatial::{Position, Region, Size},
     Result,
 };
-use pagurus_game_std::image::Canvas;
 
 const MARGIN: u32 = 8;
 
@@ -123,6 +123,6 @@ fn icon_to_tool(icon: IconId) -> Result<SelectTool> {
     match icon {
         IconId::Select => Ok(SelectTool::Rectangle),
         IconId::Lasso => Ok(SelectTool::Lasso),
-        _ => orfail::unreachable!(),
+        _ => pagurus::unreachable!(),
     }
 }

@@ -5,7 +5,7 @@ use pagurus::{
     spatial::{Position, Region, Size},
     Result,
 };
-use pagurus_game_std::{color::Rgb, color::Rgba, image::Canvas};
+use pagurus::{image::Rgb, image::Rgba, image::Canvas};
 
 const MARGIN: u32 = 8;
 

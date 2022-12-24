@@ -14,7 +14,7 @@ use pagurus::{
     spatial::{Position, Region, Size},
     Result,
 };
-use pagurus_game_std::image::Canvas;
+use pagurus::image::Canvas;
 
 const MARGIN: u32 = 8;
 const GROUP_MARGIN: u32 = 24;

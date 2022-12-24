@@ -1,11 +1,12 @@
 use self::{config::ConfigModel, pixel_canvas::PixelCanvasModel, tool::ToolModel};
+use crate::png::decode_sprite;
 use crate::{
     app::App,
     pixel::{Pixel, PixelPosition},
     serialize::{Deserialize, Serialize},
 };
+use pagurus::image::Rgba;
 use pagurus::{failure::OrFail, Result};
-use pagurus_game_std::{color::Rgba, png::decode_sprite};
 use png::chunk::ChunkType;
 use std::io::{Read, Write};
 

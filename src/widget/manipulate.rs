@@ -6,14 +6,11 @@ use crate::{
     model::tool::ToolKind,
     pixel::{Pixel, PixelPosition, PixelRegion},
 };
+use pagurus::image::{Canvas, Rgba, Sprite};
 use pagurus::{
     failure::OrFail,
     spatial::{Position, Region},
     Result,
-};
-use pagurus_game_std::{
-    color::Rgba,
-    image::{Canvas, Sprite},
 };
 use std::collections::{HashMap, HashSet};
 

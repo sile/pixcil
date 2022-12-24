@@ -1,10 +1,10 @@
 use crate::{app::App, event::Event};
+use pagurus::image::Canvas;
 use pagurus::{
     failure::OrFail,
     spatial::{Position, Region, Size},
     Result,
 };
-use pagurus_game_std::image::Canvas;
 
 pub mod block;
 pub mod bottom_bar;

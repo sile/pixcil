@@ -1,6 +1,6 @@
 use crate::{app::App, event::Event};
 use pagurus::{spatial::Region, Result};
-use pagurus_game_std::image::Canvas;
+use pagurus::image::Canvas;
 
 pub mod color_selector;
 pub mod config;

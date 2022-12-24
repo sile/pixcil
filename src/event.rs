@@ -1,9 +1,9 @@
 use crate::app::App;
 use pagurus::event::{Event as PagurusEvent, MouseEvent};
+use pagurus::image::Sprite;
 use pagurus::input::MouseButton;
 use pagurus::spatial::{Contains, Region};
 use pagurus::{spatial::Position, ActionId};
-use pagurus_game_std::image::Sprite;
 
 #[derive(Debug)]
 pub enum Event {

@@ -16,15 +16,13 @@ crate-type = ["lib", "cdylib"]
 
 [features]
 default = ["wasm"]
-wasm = ["pagurus_game_std/wasm"]
+wasm = ["pagurus/wasm"]
 
 [dependencies]
 byteorder = "1.4.3"
 libflate = "1.2.0"
 log = "0.4.17"
-orfail = "0.1"
-pagurus = "0.5"
-pagurus_game_std = { version = "0.5", default-features = false }
+pagurus = { version = "0.6", features = ["image", "random", "serde"] }
 png = "0.17"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"

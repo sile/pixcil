@@ -8,7 +8,8 @@ use crate::{
 use pagurus::{
     failure::OrFail,
     spatial::{Region, Size},
-    ActionId, Result, System,
+    timeout::TimeoutTag,
+    Result, System,
 };
 use std::{
     collections::{HashMap, VecDeque},
@@ -25,7 +26,7 @@ pub struct App {
     redraw_region: Region,
     next_timeout_id: TimeoutId,
     pending_timeouts: Vec<(TimeoutId, Duration)>,
-    timeouts: HashMap<ActionId, TimeoutId>,
+    timeouts: HashMap<pagurus::timeout::TimeoutId, TimeoutId>,
     next_input_id: InputId,
     redraw_count: u64,
 }
@@ -120,13 +121,14 @@ impl App {
         id
     }
 
-    pub fn take_timeout_id(&mut self, action_id: ActionId) -> Option<TimeoutId> {
-        self.timeouts.remove(&action_id)
+    pub fn take_timeout_id(&mut self, id: pagurus::timeout::TimeoutId) -> Option<TimeoutId> {
+        self.timeouts.remove(&id)
     }
 
     pub fn set_pending_timeouts<S: System>(&mut self, system: &mut S) {
         for (id, durtion) in self.pending_timeouts.drain(..) {
-            self.timeouts.insert(system.clock_set_timeout(durtion), id);
+            self.timeouts
+                .insert(system.clock_set_timeout(TimeoutTag::new(0), durtion), id);
         }
     }
 }

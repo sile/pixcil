@@ -1,5 +1,3 @@
-use std::collections::HashSet;
-
 use super::{
     manipulate::ManipulateWidget, move_camera::MoveCameraWidget, VariableSizeWidget, Widget,
 };
@@ -12,11 +10,9 @@ use crate::{
     model::tool::{DrawTool, ToolKind, ToolModel},
     pixel::{Pixel, PixelPosition, PixelRegion},
 };
+use pagurus::image::{Canvas, Color, Rgba};
 use pagurus::{failure::OrFail, spatial::Region, Result};
-use pagurus_game_std::{
-    color::{Color, Rgba},
-    image::Canvas,
-};
+use std::collections::HashSet;
 
 #[derive(Debug, Default)]
 pub struct PixelCanvasWidget {

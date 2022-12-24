@@ -1,7 +1,7 @@
 use super::{widget::WidgetWindow, Window};
 use crate::{app::App, event::Event, widget::config::ConfigWidget};
 use pagurus::{failure::OrFail, spatial::Region, Result};
-use pagurus_game_std::image::Canvas;
+use pagurus::image::Canvas;
 
 #[derive(Debug)]
 pub struct ConfigWindow(WidgetWindow<ConfigWidget>);

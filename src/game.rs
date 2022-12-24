@@ -1,3 +1,4 @@
+use crate::png::decode_sprite;
 use crate::{
     app::App,
     event::Event,
@@ -5,63 +6,31 @@ use crate::{
     model::Models,
     window::{main::MainWindow, Window},
 };
+use pagurus::image::Canvas;
+use pagurus::timeout::TimeoutTag;
 use pagurus::{
     event::WindowEvent as PagurusWindowEvent,
     event::{Event as PagurusEvent, TimeoutEvent},
     failure::OrFail,
     video::VideoFrame,
-    ActionId, Game, Result, System,
+    Game, Result, System,
 };
-use pagurus_game_std::{image::Canvas, logger::Logger, png::decode_sprite};
 use std::time::Duration;
 
-#[cfg(feature = "wasm")]
-pagurus_game_std::export_wasm_functions!(PixcilGame);
+#[cfg(target_arch = "wasm32")]
+pagurus::export_wasm_functions!(PixcilGame);
 
 const MAX_FPS: u8 = 120;
 
 #[derive(Default)]
 pub struct PixcilGame {
-    logger: Logger,
     video_frame: VideoFrame,
     windows: Vec<Box<dyn Window>>,
     app: Option<App>,
-    render_timeout: Option<ActionId>,
+    render_timeout: Option<pagurus::timeout::TimeoutId>,
 }
 
 impl PixcilGame {
-    fn handle_event_without_log_flush<S: System>(
-        &mut self,
-        system: &mut S,
-        event: PagurusEvent,
-    ) -> Result<bool> {
-        match event {
-            PagurusEvent::Terminating => return Ok(false),
-            PagurusEvent::Timeout(TimeoutEvent { id }) if Some(id) == self.render_timeout => {
-                self.render_timeout = None;
-                self.render(system).or_fail()?;
-            }
-            PagurusEvent::Window(PagurusWindowEvent::RedrawNeeded { size }) => {
-                let app = self.app.as_mut().or_fail()?;
-                app.request_redraw(size.to_region());
-                if size != app.screen_size() {
-                    self.video_frame = VideoFrame::new(system.video_frame_spec(size));
-                    app.set_screen_size(size);
-                    for window in &mut self.windows {
-                        window.handle_screen_resized(app).or_fail()?;
-                    }
-                }
-            }
-            _ => {}
-        };
-
-        let app = self.app.as_mut().or_fail()?;
-        let event = Event::from_pagurus_event(app, event);
-        self.handle_pixcil_event(system, event).or_fail()?;
-
-        Ok(true)
-    }
-
     fn handle_pixcil_event<S: System>(
         &mut self,
         system: &mut S,
@@ -90,8 +59,10 @@ impl PixcilGame {
 
         // TODO: Handle FPS (avoid too many renderings during a short term)
         if app.is_redraw_needed() && self.render_timeout.is_none() {
-            self.render_timeout =
-                Some(system.clock_set_timeout(Duration::from_millis(1000 / u64::from(MAX_FPS))));
+            self.render_timeout = Some(system.clock_set_timeout(
+                TimeoutTag::new(0),
+                Duration::from_millis(1000 / u64::from(MAX_FPS)),
+            ));
         }
         Ok(())
     }
@@ -114,18 +85,38 @@ impl PixcilGame {
 }
 
 impl<S: System> Game<S> for PixcilGame {
-    fn initialize(&mut self, system: &mut S) -> Result<()> {
-        self.logger = Logger::init(log::Level::Debug).or_fail()?;
+    fn initialize(&mut self, _system: &mut S) -> Result<()> {
         self.windows.push(Box::new(MainWindow::new()));
         self.app = Some(App::new().or_fail()?);
-        self.logger.flush(system);
         Ok(())
     }
 
     fn handle_event(&mut self, system: &mut S, event: PagurusEvent) -> Result<bool> {
-        let result = self.handle_event_without_log_flush(system, event).or_fail();
-        self.logger.flush(system);
-        result
+        match event {
+            PagurusEvent::Terminating => return Ok(false),
+            PagurusEvent::Timeout(TimeoutEvent { id, .. }) if Some(id) == self.render_timeout => {
+                self.render_timeout = None;
+                self.render(system).or_fail()?;
+            }
+            PagurusEvent::Window(PagurusWindowEvent::RedrawNeeded { size }) => {
+                let app = self.app.as_mut().or_fail()?;
+                app.request_redraw(size.to_region());
+                if size != app.screen_size() {
+                    self.video_frame = VideoFrame::new(system.video_init(size));
+                    app.set_screen_size(size);
+                    for window in &mut self.windows {
+                        window.handle_screen_resized(app).or_fail()?;
+                    }
+                }
+            }
+            _ => {}
+        };
+
+        let app = self.app.as_mut().or_fail()?;
+        let event = Event::from_pagurus_event(app, event);
+        self.handle_pixcil_event(system, event).or_fail()?;
+
+        Ok(true)
     }
 
     fn query(&mut self, _system: &mut S, name: &str) -> Result<Vec<u8>> {

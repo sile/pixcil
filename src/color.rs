@@ -1,4 +1,4 @@
-use pagurus_game_std::color::{Color, Rgb, Rgba};
+use pagurus::image::{Color, Rgb, Rgba};
 
 pub const CANVAS_BACKGROUND: Color = rgb(245, 245, 245);
 pub const CANVAS_PREVIEW_MODE_BACKGROUND: Color = rgb(200, 200, 200);

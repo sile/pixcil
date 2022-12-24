@@ -1,6 +1,11 @@
 main
 ====
 
+core
+----
+
+- [CHANGE] Update pagurus to v0.6.2
+
 0.3.0
 =====
 

@@ -7,7 +7,7 @@ use pagurus::{
     spatial::{Position, Region, Size},
     Result,
 };
-use pagurus_game_std::color::Rgba;
+use pagurus::image::Rgba;
 use std::{
     io::{Read, Write},
     ops::{Add, Sub},

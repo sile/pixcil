@@ -7,7 +7,7 @@ use pagurus::{
     spatial::{Position, Region},
     Result,
 };
-use pagurus_game_std::image::Canvas;
+use pagurus::image::Canvas;
 
 #[derive(Debug)]
 pub struct MoveCameraWidget {

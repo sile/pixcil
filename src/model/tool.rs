@@ -1,6 +1,6 @@
 use crate::{asset::IconId, marker::MarkerKind};
+use pagurus::image::Rgba;
 use pagurus::{failure::Failure, Result};
-use pagurus_game_std::color::Rgba;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ToolModel {
@@ -72,7 +72,7 @@ impl ToolKind {
             IconId::Lasso => Ok(Self::Select),
             IconId::Pick => Ok(Self::Pick),
             IconId::Move => Ok(Self::Move),
-            _ => orfail::unreachable!(),
+            _ => pagurus::unreachable!(),
         }
     }
 }

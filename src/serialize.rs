@@ -1,6 +1,6 @@
 use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
+use pagurus::image::Rgba;
 use pagurus::{failure::OrFail, spatial::Position, Result};
-use pagurus_game_std::color::Rgba;
 use std::{
     collections::VecDeque,
     io::{Read, Write},

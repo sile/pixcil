@@ -4,7 +4,7 @@ use super::{
 };
 use crate::{app::App, event::Event};
 use pagurus::{failure::OrFail, spatial::Region, Result};
-use pagurus_game_std::image::Canvas;
+use pagurus::image::Canvas;
 
 const MARGIN: u32 = 16;
 

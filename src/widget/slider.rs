@@ -10,7 +10,7 @@ use pagurus::{
     spatial::{Contains, Position, Region, Size},
     Result,
 };
-use pagurus_game_std::image::Canvas;
+use pagurus::image::Canvas;
 
 const BAR_WIDTH: u32 = 360;
 const MARGIN: u32 = 8;

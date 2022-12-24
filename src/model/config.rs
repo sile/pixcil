@@ -4,7 +4,7 @@ use crate::{
     serialize::{Deserialize, Serialize},
 };
 use pagurus::{failure::OrFail, spatial::Position, Result};
-use pagurus_game_std::color::Rgba;
+use pagurus::image::Rgba;
 use std::{
     io::{Read, Write},
     time::Duration,
