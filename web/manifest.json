@@ -1,0 +1,23 @@
+{
+  "name": "Pixcil",
+  "short_name": "Pixcil",
+  "theme_color": "#2196f3",
+  "background_color": "#2196f3",
+  "display": "fullscreen",
+  "scope": "/",
+  "start_url": "/index.html",
+  "icons": [
+    {
+      "src": "favicon.png",
+      "sizes": "48x48"
+    },
+    {
+      "src": "apple-touch-icon.png",
+      "sizes": "144x144"
+    },
+    {
+      "src": "android-touch-icon.png",
+      "sizes": "192x192"
+    }
+  ]
+}

@@ -7,6 +7,11 @@ core
 - [FIX] Don't reset "FRAME PREVIEW" setting when opening settings dialog
 - [CHANGE] Update pagurus to v0.6.2
 
+web
+---
+
+- [UPDATE] Add PWA support
+
 0.3.0
 =====
 
