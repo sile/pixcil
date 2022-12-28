@@ -4,8 +4,8 @@
   "theme_color": "#2196f3",
   "background_color": "#2196f3",
   "display": "minimal-ui",
-  "scope": "/pixcil/",
-  "start_url": "/pixcil/index.html",
+  "scope": "./",
+  "start_url": "./index.html",
   "icons": [
     {
       "src": "favicon.png",
