@@ -29,6 +29,7 @@ jobs:
           mkdir _site/
           cp target/wasm32-unknown-unknown/release/pixcil.wasm _site/
           cp web/index.html _site/
+          cp web/manifest.json _site/
           cp web/*.png _site/
           sed -e "s/CACHE_NAME = .*;/CACHE_NAME = 'pixcil-$(git show --format='%h' --no-patch)';/" web/service-worker.js > _site/service-worker.js
       - name: Upload .wasm file
