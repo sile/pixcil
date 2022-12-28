@@ -1,9 +1,4 @@
-use pagurus::{
-    failure::{Failure, OrFail},
-    image::Sprite,
-    spatial::Size,
-    Result,
-};
+use pagurus::{failure::OrFail, image::Sprite, spatial::Size, Result};
 
 pub fn decode_sprite(png: &[u8]) -> Result<Sprite> {
     let decoder = png::Decoder::new(png);
@@ -23,9 +18,15 @@ pub fn decode_sprite(png: &[u8]) -> Result<Sprite> {
         png::ColorType::GrayscaleAlpha => {
             Sprite::from_grayscale_alpha16_bytes(bytes, size).or_fail()
         }
-        _ => {
-            Err(Failure::new()
-                .message(format!("unsupported PNG color type: {:?}", info.color_type)))
+        png::ColorType::Indexed => {
+            let palette = reader.info().palette.as_ref().or_fail()?;
+            let mut rgb_bytes = Vec::with_capacity(size.len());
+            for i in bytes.iter().copied().map(|i| usize::from(i)) {
+                rgb_bytes.push(palette[i * 3]);
+                rgb_bytes.push(palette[i * 3 + 1]);
+                rgb_bytes.push(palette[i * 3 + 2]);
+            }
+            Sprite::from_rgb24_bytes(&rgb_bytes, size).or_fail()
         }
     }
 }

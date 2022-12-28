@@ -4,6 +4,7 @@ main
 core
 ----
 
+- [UPDATE] Support loading PNG files using palette mode
 - [FIX] Don't reset "FRAME PREVIEW" setting when opening settings dialog
 - [CHANGE] Update pagurus to v0.6.2
 
