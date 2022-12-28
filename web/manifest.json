@@ -1,7 +1,7 @@
 {
   "name": "Pixcil",
   "short_name": "Pixcil",
-  "theme_color": "#2196f3",
+  "theme_color": "#f5f5f5",
   "background_color": "#2196f3",
   "display": "minimal-ui",
   "scope": "./",
