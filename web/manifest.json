@@ -5,7 +5,7 @@
   "background_color": "#2196f3",
   "display": "fullscreen",
   "scope": "/",
-  "start_url": "/index.html",
+  "start_url": "/pixcil/index.html",
   "icons": [
     {
       "src": "favicon.png",
