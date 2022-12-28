@@ -46,6 +46,7 @@ impl ConfigWidget {
     pub fn new(app: &App) -> Self {
         let max_undos = app.models().config.max_undos.get();
         let frame_size = app.models().config.frame.get_base_region().size();
+        let frame_preview = app.models().config.frame_preview.get();
         let layer = app.models().config.layer;
         let animation = app.models().config.animation;
         Self {
@@ -72,7 +73,7 @@ impl ConfigWidget {
             ),
             frame_preview: BlockWidget::new(
                 "FRAME PREVIEW".parse().expect("unreachable"),
-                ToggleWidget::default(), // TOOD: use saved value
+                ToggleWidget::new(frame_preview),
             ),
 
             // Layer
