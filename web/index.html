@@ -42,7 +42,15 @@
       function saveWorkspace(name) {
           const data = game.query(system, "workspacePng");
           const blob = new Blob([data], {type: 'image/png'});
-
+          /* TODO: Support Web Share API (remove metadata?)
+          const file = new File([data], "image.png", { type: "image/png", });
+          navigator.share({
+              title: "title",
+              text: "text",
+              //url: URL.createObjectURL(blob)
+              files: [file]
+              });
+          */
           const element = document.createElement("a");
           element.download = name + ".png";
           element.href = URL.createObjectURL(blob);
