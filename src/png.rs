@@ -21,7 +21,7 @@ pub fn decode_sprite(png: &[u8]) -> Result<Sprite> {
         png::ColorType::Indexed => {
             let palette = reader.info().palette.as_ref().or_fail()?;
             let mut rgb_bytes = Vec::with_capacity(size.len());
-            for i in bytes.iter().copied().map(|i| usize::from(i)) {
+            for i in bytes.iter().copied().map(usize::from) {
                 rgb_bytes.push(palette[i * 3]);
                 rgb_bytes.push(palette[i * 3 + 1]);
                 rgb_bytes.push(palette[i * 3 + 2]);
