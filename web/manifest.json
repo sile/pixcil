@@ -3,8 +3,8 @@
   "short_name": "Pixcil",
   "theme_color": "#2196f3",
   "background_color": "#2196f3",
-  "display": "fullscreen",
-  "scope": "/",
+  "display": "standalone",
+  "scope": "/pixcil/",
   "start_url": "/pixcil/index.html",
   "icons": [
     {
