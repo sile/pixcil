@@ -5,8 +5,11 @@ Pixcil
 [![Actions Status](https://github.com/sile/pixcil/workflows/CI/badge.svg)](https://github.com/sile/pixcil/actions)
 ![License](https://img.shields.io/crates/l/pixcil)
 
-Simple pixel art editor with (almost) infinite canvas
-([online editor](https://reduls.itch.io/pixcil)).
+Simple pixel art editor with (almost) infinite canvas.
+
+Online editors:
+- [itch.io](https://reduls.itch.io/pixcil)
+- [GitHub Pages](https://sile.github.io/pixcil)(PWA)
 
 ![Pixcil image](web/pixcil.png)
 
