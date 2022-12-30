@@ -1,0 +1,39 @@
+{
+  "name": "pixcil",
+  "version": "0.3.0",
+  "author": "Takeru Ohta",
+  "description": "Pixel art editor",
+  "license": "(MIT OR Apache-2.0)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sile/pixcil.git"
+  },
+  "bugs": {
+    "url": "https://github.com/sile/pixcil/issues"
+  },
+  "homepage": "https://github.com/sile/pixcil#readme",
+  "main": "dist/pixcil.js",
+  "module": "dist/pixcil.mjs",
+  "types": "dist/pixcil.ts",
+  "type": "module",
+  "scripts": {
+    "build": "rollup -c ./rollup.config.mjs --bundleConfigAsCjs && tsc --emitDeclarationOnly",
+    "lint": "eslint --ext .ts ./src",
+    "fmt": "prettier --write src"
+  },
+  "files": [
+    "dist"
+  ],
+  "devDependencies": {
+    "@rollup/plugin-typescript": "^9.0.0",
+    "@typescript-eslint/eslint-plugin": "^5.28.0",
+    "@typescript-eslint/parser": "^5.28.0",
+    "eslint": "^8.17.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-prettier": "^4.0.0",
+    "pagurus": "^0.6.1",
+    "prettier": "^2.7.0",
+    "rollup": "^3.0.0",
+    "typescript": "^4.7.3"
+  }
+}
