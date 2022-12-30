@@ -25,13 +25,15 @@
     "dist"
   ],
   "devDependencies": {
+    "@rollup/plugin-commonjs": "^24.0.0",
+    "@rollup/plugin-node-resolve": "^15.0.1",
     "@rollup/plugin-typescript": "^9.0.0",
     "@typescript-eslint/eslint-plugin": "^5.28.0",
     "@typescript-eslint/parser": "^5.28.0",
     "eslint": "^8.17.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^4.0.0",
-    "pagurus": "^0.6.1",
+    "pagurus": "^0.6.2",
     "prettier": "^2.7.0",
     "rollup": "^3.0.0",
     "typescript": "^4.7.3"

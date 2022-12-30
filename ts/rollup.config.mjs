@@ -1,4 +1,6 @@
 import typescript from '@rollup/plugin-typescript';
+import commonjs from '@rollup/plugin-commonjs';
+import resolve from '@rollup/plugin-node-resolve';
 import pkg from './package.json';
 
 const banner = `/**
@@ -14,7 +16,9 @@ export default [
   {
     input: 'src/pixcil.ts',
     plugins: [
-      typescript({module: "esnext"})
+      typescript({module: "esnext"}),
+      commonjs(),
+      resolve(),
     ],
     output: {
       sourcemap: false,
@@ -27,7 +31,9 @@ export default [
   {
     input: 'src/pixcil.ts',
     plugins: [
-      typescript({module: "esnext"})
+      typescript({module: "esnext"}),
+      commonjs(),
+      resolve(),
     ],
     output: {
       sourcemap: false,
