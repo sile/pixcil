@@ -24,6 +24,7 @@ type Message = {
 type MessageData =
   | { type: "loadWorkspace"; requestId: number; body: Uint8Array }
   | { type: "update"; requestId: number; body: Uint8Array }
+  | { type: "number"; requestId: number; body: { id: number; number: string } }
   | { type: "getFileData"; requestId: number };
 
 class App {
@@ -65,6 +66,10 @@ class App {
           } catch (error) {
             this.parent.postMessage({ type: "response", requestId: msg.data.requestId, error });
           }
+          break;
+        case "number":
+          const inputJsonBytes = new TextEncoder().encode(JSON.stringify(msg.data.body));
+          this.game.command(this.system, "notifyInputNumber", inputJsonBytes);
           break;
         default:
           console.warn("unknown message");
@@ -127,6 +132,7 @@ class App {
       const requestJson = JSON.parse(new TextDecoder("utf-8").decode(requestBytes)) as RequestJson;
       switch (requestJson) {
         case "saveWorkspace":
+          // TODO: disable save command
           this.saveWorkspace();
           break;
         case "loadWorkspace":
@@ -138,11 +144,14 @@ class App {
         default:
           if ("inputNumber" in requestJson) {
             const inputId = requestJson.inputNumber.id;
-            const number = prompt("Please input a number");
-            if (number) {
-              const inputJsonBytes = new TextEncoder().encode(JSON.stringify({ id: inputId, number }));
-              this.game.command(this.system, "notifyInputNumber", inputJsonBytes);
-            }
+
+            this.parent.postMessage({ type: "inputNumber", inputId });
+            // TODO
+            // const number = prompt("Please input a number");
+            // if (number) {
+            //   const inputJsonBytes = new TextEncoder().encode(JSON.stringify({ id: inputId, number }));
+            //   this.game.command(this.system, "notifyInputNumber", inputJsonBytes);
+            // }
           }
       }
     }

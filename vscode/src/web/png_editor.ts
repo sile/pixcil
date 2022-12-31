@@ -353,7 +353,7 @@ export class PngEditorProvider
     webviewPanel.webview.html = this.getHtmlForWebview(webviewPanel.webview);
 
     webviewPanel.webview.onDidReceiveMessage((e) =>
-      this.onMessage(document, e)
+      this.onMessage(webviewPanel, document, e)
     );
 
     webviewPanel.webview.onDidReceiveMessage((e) => {
@@ -364,10 +364,33 @@ export class PngEditorProvider
   }
 
   // TODO: s/any/Message/
-  private onMessage(document: PngDocument, message: any) {
+  private onMessage(
+    webviewPanel: vscode.WebviewPanel,
+    document: PngDocument,
+    message: any
+  ) {
     switch (message.type) {
       case "makeDirty":
         document.makeDirty();
+        break;
+      case "inputNumber":
+        vscode.window
+          .showInputBox({
+            title: "foo",
+            prompt: "Please input a number",
+            validateInput: (param) => {
+              var regex = /\d+/;
+              return regex.test(param) ? null : "Not a number";
+            },
+          })
+          .then((value) => {
+            if (value) {
+              this.postMessage(webviewPanel, "number", {
+                id: message.inputId,
+                number: value,
+              });
+            }
+          });
         break;
       case "response": {
         // TODO: error check
