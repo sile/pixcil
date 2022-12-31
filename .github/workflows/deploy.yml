@@ -28,6 +28,7 @@ jobs:
         with:
           node-version: '18'
           cache: npm
+          cache-dependency-path: ts/package-lock.json
       - run: cd ts/ && npm install && npm run build
       - name: Prepare static files
         run: |
