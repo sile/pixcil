@@ -11,6 +11,7 @@ core
 web
 ---
 
+- [UPDATE] Factor out common logic as `pixcil` NPM library
 - [UPDATE] Add PWA support
 
 0.3.0

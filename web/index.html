@@ -23,154 +23,18 @@
     <div id="canvas-area">
       <canvas id="canvas" style="background-color:#f5f5f5"></canvas>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/pagurus@0.6.1/dist/pagurus.min.js"></script>
+    <script src="./pixcil.js"></script>
     <script>
       if('serviceWorker' in navigator) {
           navigator.serviceWorker.register('./service-worker.js');
       };
 
-      var system = undefined;
-      var game = undefined;
-
-      {
-          const initialCanvas = document.getElementById("canvas");
-          const canvasArea = document.getElementById("canvas-area");
-          initialCanvas.height = canvasArea.clientHeight;
-          initialCanvas.width = canvasArea.clientWidth;
-      }
-
-      function saveWorkspace(name) {
-          const data = game.query(system, "workspacePng");
-          const blob = new Blob([data], {type: 'image/png'});
-          /* TODO: Support Web Share API (remove metadata?)
-          const file = new File([data], "image.png", { type: "image/png", });
-          navigator.share({
-              title: "title",
-              text: "text",
-              //url: URL.createObjectURL(blob)
-              files: [file]
-              });
-          */
-          const element = document.createElement("a");
-          element.download = name + ".png";
-          element.href = URL.createObjectURL(blob);
-
-          element.click();
-      }
-
-      function loadWorkspace() {
-          const input = document.createElement("input")
-          input.setAttribute("type", "file");
-          input.setAttribute("accept", "image/png");
-          input.onchange = async () => {
-              const files = input.files;
-              if (files.length === 0) {
-                  return;
-              }
-
-              const file = files[0];
-
-              const data = new Uint8Array(await file.arrayBuffer());
-              try {
-                  game.command(system, "loadWorkspace", data);
-              } catch (e) {
-                  console.log(e);
-                  alert("Failed to load workspace file");
-              }
-          };
-          input.click();
-      }
-
-      function importImage() {
-          const input = document.createElement("input")
-          input.setAttribute("type", "file");
-          input.setAttribute("accept", "image/png");
-          input.onchange = async () => {
-              const files = input.files;
-              if (files.length === 0) {
-                  return;
-              }
-
-              const file = files[0];
-
-              const data = new Uint8Array(await file.arrayBuffer());
-              try {
-                  game.command(system, "importImage", data);
-              } catch (e) {
-                  console.log(e);
-                  alert("Failed to load PNG file");
-              }
-          };
-          input.click();
-      }
-
-      function now() {
-          return new Intl.DateTimeFormat(
-              [],
-              {
-                  year:   'numeric',
-                  month:  '2-digit',
-                  day:    '2-digit',
-                  hour:   '2-digit',
-                  minute: '2-digit',
-                  second: '2-digit',
-              }
-          ).format(new Date()).replaceAll(/[:/]/g, '').replace(' ', '_');
-      }
-
-      Pagurus.Game.load("pixcil.wasm").then(async gameObject => {
-          game = gameObject;
-
-          const canvas = document.getElementById("canvas");
-          system = await Pagurus.System.create(game.memory, { canvas });
-
-          const resizeCanvas = () => {
-              const canvasArea = document.getElementById("canvas-area");
-              canvas.height = canvasArea.clientHeight;
-              canvas.width = canvasArea.clientWidth;
-              system.notifyRedrawNeeded();
-          }
-          resizeCanvas();
-          window.addEventListener('resize', resizeCanvas);
-
-          game.initialize(system);
-          while (true) {
-              const event = await system.nextEvent();
-              if (!game.handleEvent(system, event)) {
-                  break;
-              }
-
-              const requestBytes = game.query(system, "nextIoRequest");
-              if (requestBytes.length > 0) {
-                  const requestJson = JSON.parse(new TextDecoder("utf-8").decode(requestBytes));
-                  switch (requestJson){
-                  case "saveWorkspace":
-                      const workspaceName =
-                          prompt("Please input your workspace name", "pixcil-" + now());
-                      if (workspaceName) {
-                          saveWorkspace(workspaceName);
-                      }
-                      break;
-                  case "loadWorkspace":
-                      loadWorkspace();
-                      break;
-                  case "importImage":
-                      importImage();
-                      break;
-                  default:
-                      if ("inputNumber" in requestJson) {
-                          const inputId = requestJson.inputNumber.id;
-                          const number = prompt("Please input a number");
-                          if (number) {
-                              const inputJsonBytes =
-                                    new TextEncoder().encode(JSON.stringify({id: inputId, number}));
-                              game.command(system, "notifyInputNumber", inputJsonBytes);
-                          }
-                      }
-                  }
-              }
-          }
-      });
+      const canvas = document.getElementById("canvas");
+      const canvasArea = document.getElementById("canvas-area");
+      const wasmPath = "./pixcil.wasm";
+      Pixcil.Pixcil.load({wasmPath, canvas, canvasArea})
+                   .then((pixcil) => pixcil.run())
+                   .catch((e) => console.warn(e));
     </script>
   </body>
 </html>
