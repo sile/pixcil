@@ -9,7 +9,7 @@ Simple pixel art editor with (almost) infinite canvas.
 
 Online editors:
 - [itch.io](https://reduls.itch.io/pixcil)
-- [GitHub Pages](https://sile.github.io/pixcil)(PWA)
+- [GitHub Pages](https://sile.github.io/pixcil) (PWA)
 
 ![Pixcil image](web/pixcil.png)
 
