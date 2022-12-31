@@ -16,6 +16,11 @@ use std::{
     time::Duration,
 };
 
+#[derive(Debug, Default)]
+pub struct RuntimeOptions {
+    pub disable_save_workspace_button: bool,
+}
+
 #[derive(Debug)]
 pub struct App {
     screen_size: Size,
@@ -29,6 +34,7 @@ pub struct App {
     timeouts: HashMap<pagurus::timeout::TimeoutId, TimeoutId>,
     next_input_id: InputId,
     redraw_count: u64,
+    pub runtime_options: RuntimeOptions,
 }
 
 impl App {
@@ -45,6 +51,7 @@ impl App {
             timeouts: HashMap::new(),
             next_input_id: InputId::default(),
             redraw_count: 0,
+            runtime_options: RuntimeOptions::default(),
         })
     }
 

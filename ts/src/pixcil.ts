@@ -15,6 +15,7 @@ interface Options {
   canvas: HTMLCanvasElement;
   canvasArea: HTMLDivElement;
   parent: Parent;
+  disableSaveWorkspaceButton?: boolean;
 }
 
 type Message = {
@@ -31,8 +32,6 @@ class App {
   private game: Game;
   private system: System;
   private parent: Parent;
-  private requestId = 0;
-  private responses: Map<number, Promise<object>> = new Map();
   private gameStateVersion = BigInt(0);
   private lastDirtyCheckTime = performance.now();
 
@@ -41,42 +40,49 @@ class App {
     this.system = system;
     this.parent = options.parent;
 
-    window.addEventListener("message", (msg: Message) => {
-      switch (msg.data.type) {
-        case "loadWorkspace":
-          try {
-            this.game.command(this.system, "loadWorkspace", msg.data.body);
-          } catch (error) {
-            this.parent.postMessage({ type: "response", requestId: msg.data.requestId, error });
-          }
-          break;
-        case "getFileData":
-          try {
-            const data = this.game.query(this.system, "workspacePng");
-            this.parent.postMessage({ type: "response", requestId: msg.data.requestId, body: data });
-            this.gameStateVersion = this.stateVersion();
-            this.lastDirtyCheckTime = performance.now();
-          } catch (error) {
-            this.parent.postMessage({ type: "response", requestId: msg.data.requestId, error });
-          }
-          break;
-        case "update":
-          try {
-            this.game.command(this.system, "loadWorkspace", msg.data.body);
-          } catch (error) {
-            this.parent.postMessage({ type: "response", requestId: msg.data.requestId, error });
-          }
-          break;
-        case "number":
-          const inputJsonBytes = new TextEncoder().encode(JSON.stringify(msg.data.body));
-          this.game.command(this.system, "notifyInputNumber", inputJsonBytes);
-          break;
-        default:
-          console.warn("unknown message");
-          console.warn(msg);
-      }
-    });
+    window.addEventListener("message", (msg: Message) => this.handleMessage(msg));
+
+    if (options.disableSaveWorkspaceButton) {
+      game.command(system, "disableSaveWorkspaceButton", new Uint8Array());
+    }
+
     this.parent.postMessage({ type: "ready" });
+  }
+
+  private handleMessage(msg: Message): void {
+    switch (msg.data.type) {
+      case "loadWorkspace":
+        try {
+          this.game.command(this.system, "loadWorkspace", msg.data.body);
+        } catch (error) {
+          this.parent.postMessage({ type: "response", requestId: msg.data.requestId, error });
+        }
+        break;
+      case "getFileData":
+        try {
+          const data = this.game.query(this.system, "workspacePng");
+          this.parent.postMessage({ type: "response", requestId: msg.data.requestId, body: data });
+          this.gameStateVersion = this.stateVersion();
+          this.lastDirtyCheckTime = performance.now();
+        } catch (error) {
+          this.parent.postMessage({ type: "response", requestId: msg.data.requestId, error });
+        }
+        break;
+      case "update":
+        try {
+          this.game.command(this.system, "loadWorkspace", msg.data.body);
+        } catch (error) {
+          this.parent.postMessage({ type: "response", requestId: msg.data.requestId, error });
+        }
+        break;
+      case "number":
+        const inputJsonBytes = new TextEncoder().encode(JSON.stringify(msg.data.body));
+        this.game.command(this.system, "notifyInputNumber", inputJsonBytes);
+        break;
+      default:
+        console.warn("unknown message");
+        console.warn(msg);
+    }
   }
 
   static async load(options: Options): Promise<App> {
@@ -132,7 +138,6 @@ class App {
       const requestJson = JSON.parse(new TextDecoder("utf-8").decode(requestBytes)) as RequestJson;
       switch (requestJson) {
         case "saveWorkspace":
-          // TODO: disable save command
           this.saveWorkspace();
           break;
         case "loadWorkspace":

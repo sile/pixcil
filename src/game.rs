@@ -170,6 +170,11 @@ impl<S: System> Game<S> for PixcilGame {
                 app.request_redraw(app.screen_size().to_region());
                 Ok(())
             }
+            "disableSaveWorkspaceButton" => {
+                let mut app = self.app.as_mut().or_fail()?;
+                app.runtime_options.disable_save_workspace_button = true;
+                Ok(())
+            }
             _ => {
                 Err(pagurus::failure::Failure::new().message(format!("unknown command: {name:?}")))
             }

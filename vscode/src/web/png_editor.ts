@@ -63,8 +63,8 @@ class PngDocument extends Disposable implements vscode.CustomDocument {
   private readonly _onDidChange = this._register(
     new vscode.EventEmitter<{
       readonly label: string;
-      //undo(): void;
-      //redo(): void;
+      undo(): void;
+      redo(): void;
     }>()
   );
 
@@ -109,6 +109,8 @@ class PngDocument extends Disposable implements vscode.CustomDocument {
     console.log("makeDirty");
     this._onDidChange.fire({
       label: "Dirty",
+      undo: () => {},
+      redo: () => {},
     });
   }
 
@@ -186,11 +188,12 @@ export class PngEditorProvider
       PngEditorProvider.viewType,
       new PngEditorProvider(context),
       {
-        // TODO
         // For this demo extension, we enable `retainContextWhenHidden` which keeps the
         // webview alive even when it is not visible. You should avoid using this setting
         // unless is absolutely required as it does have memory overhead.
         webviewOptions: {
+          // TODO: Remove this option
+          // https://code.visualstudio.com/api/extension-guides/webview#persistence
           retainContextWhenHidden: true,
         },
         supportsMultipleEditorsPerDocument: false,
@@ -328,7 +331,8 @@ export class PngEditorProvider
           const canvasArea = document.getElementById("canvas-area");
           const wasmPath = "${wasmUri}";
           const vscode = acquireVsCodeApi();
-          Pixcil.App.load({wasmPath, canvas, canvasArea, parent: vscode})
+          const options = {wasmPath, canvas, canvasArea, parent: vscode, disableSaveWorkspaceButton: true};
+          Pixcil.App.load(options)
                     .then(app => {
                        app.run()
                      })

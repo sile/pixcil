@@ -69,9 +69,14 @@ impl Widget for SaveLoadWidget {
 impl FixedSizeWidget for SaveLoadWidget {
     fn requiring_size(&self, app: &App) -> Size {
         let button_size = self.save.requiring_size(app);
+        let count = if app.runtime_options.disable_save_workspace_button {
+            1
+        } else {
+            2
+        };
         Size::from_wh(
-            button_size.width + MARGIN * 2,
-            button_size.height * 2 + MARGIN * 4,
+            button_size.width + MARGIN * count,
+            button_size.height * count + MARGIN * count * 2,
         )
     }
 
@@ -79,11 +84,16 @@ impl FixedSizeWidget for SaveLoadWidget {
         self.region = Region::new(position, self.requiring_size(app));
 
         let mut block = self.region;
-        block.size.height /= 2;
+        if app.runtime_options.disable_save_workspace_button {
+            self.load
+                .set_position(app, block.without_margin(MARGIN).position);
+        } else {
+            block.size.height /= 2;
 
-        self.save
-            .set_position(app, block.without_margin(MARGIN).position);
-        self.load
-            .set_position(app, block.shift_y(1).without_margin(MARGIN).position);
+            self.save
+                .set_position(app, block.without_margin(MARGIN).position);
+            self.load
+                .set_position(app, block.shift_y(1).without_margin(MARGIN).position);
+        }
     }
 }
