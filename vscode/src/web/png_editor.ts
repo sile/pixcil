@@ -137,6 +137,10 @@ class PngDocument extends Disposable implements vscode.CustomDocument {
       },
     };
   }
+
+  async save(cancellation: vscode.CancellationToken): Promise<void> {
+    await this.saveAs(this.uri, cancellation);
+  }
 }
 
 export class PngEditorProvider
@@ -376,7 +380,7 @@ export class PngEditorProvider
     document: PngDocument,
     cancellation: vscode.CancellationToken
   ): Thenable<void> {
-    throw new Error("TODO(0)");
+    return document.save(cancellation);
   }
 
   public saveCustomDocumentAs(
@@ -384,7 +388,7 @@ export class PngEditorProvider
     destination: vscode.Uri,
     cancellation: vscode.CancellationToken
   ): Thenable<void> {
-    throw new Error("TODO(1)");
+    return document.saveAs(destination, cancellation);
   }
 
   public revertCustomDocument(
