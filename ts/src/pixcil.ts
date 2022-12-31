@@ -6,22 +6,22 @@ async function installServiceWorker() {
   }
 }
 
-interface PixcilOptions {
+interface Options {
   wasmPath: string;
   canvas: HTMLCanvasElement;
   canvasArea: HTMLDivElement;
 }
 
-class Pixcil {
+class App {
   game: Game;
   system: System;
 
-  constructor(game: Game, system: System, _options: PixcilOptions) {
+  constructor(game: Game, system: System, _options: Options) {
     this.game = game;
     this.system = system;
   }
 
-  static async load(options: PixcilOptions): Promise<Pixcil> {
+  static async load(options: Options): Promise<App> {
     const canvas = options.canvas;
     const canvasArea = options.canvasArea;
     const game = await Game.load(options.wasmPath);
@@ -34,7 +34,7 @@ class Pixcil {
     onResizeCanvas();
     window.addEventListener("resize", onResizeCanvas);
     game.initialize(system);
-    return new Pixcil(game, system, options);
+    return new App(game, system, options);
   }
 
   async run(): Promise<void> {
@@ -157,4 +157,4 @@ class Pixcil {
   }
 }
 
-export { Pixcil, PixcilOptions, installServiceWorker };
+export { App as Pixcil, Options as PixcilOptions, installServiceWorker };

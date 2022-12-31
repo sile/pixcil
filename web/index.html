@@ -30,9 +30,9 @@
       const canvas = document.getElementById("canvas");
       const canvasArea = document.getElementById("canvas-area");
       const wasmPath = "./pixcil.wasm";
-      Pixcil.Pixcil.load({wasmPath, canvas, canvasArea})
-                   .then((pixcil) => pixcil.run())
-                   .catch((e) => console.warn(e));
+      Pixcil.App.load({wasmPath, canvas, canvasArea})
+                .then((app) => app.run())
+                .catch((e) => console.warn(e));
     </script>
   </body>
 </html>
