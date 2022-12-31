@@ -18,15 +18,8 @@ class PngDocument extends Disposable implements vscode.CustomDocument {
     // If we have a backup, read that. Otherwise read the resource from the workspace
     const dataFile =
       typeof backupId === "string" ? vscode.Uri.parse(backupId) : uri;
-    const fileData = await PngDocument.readFile(dataFile);
+    const fileData = await readFile(dataFile);
     return new PngDocument(uri, fileData, delegate);
-  }
-
-  private static async readFile(uri: vscode.Uri): Promise<Uint8Array> {
-    if (uri.scheme === "untitled") {
-      return new Uint8Array();
-    }
-    return new Uint8Array(await vscode.workspace.fs.readFile(uri));
   }
 
   private constructor(
@@ -50,8 +43,7 @@ class PngDocument extends Disposable implements vscode.CustomDocument {
 
   private readonly _onDidChangeDocument = this._register(
     new vscode.EventEmitter<{
-      readonly content?: Uint8Array;
-      // TODO: readonly edits: readonly PngEdit[];
+      readonly content: Uint8Array;
     }>()
   );
 
@@ -67,17 +59,6 @@ class PngDocument extends Disposable implements vscode.CustomDocument {
       redo(): void;
     }>()
   );
-
-  /**
-   * Called by VS Code when the user calls `revert` on a document.
-   */
-  async revert(_cancellation: vscode.CancellationToken): Promise<void> {
-    const diskContent = await PngDocument.readFile(this.uri);
-    this._documentData = diskContent;
-    this._onDidChangeDocument.fire({
-      content: diskContent,
-    });
-  }
 
   /**
    * Fired to tell VS Code that an edit has occurred in the document.
@@ -96,22 +77,10 @@ class PngDocument extends Disposable implements vscode.CustomDocument {
   public readonly onDidDispose = this._onDidDispose.event;
 
   /**
-   * Called by VS Code when there are no more references to the document.
-   *
-   * This happens when all editors for it have been closed.
+   * Called by VS Code when the user saves the document.
    */
-  dispose(): void {
-    this._onDidDispose.fire();
-    super.dispose();
-  }
-
-  makeDirty() {
-    console.log("makeDirty");
-    this._onDidChange.fire({
-      label: "Dirty",
-      undo: () => {},
-      redo: () => {},
-    });
+  async save(cancellation: vscode.CancellationToken): Promise<void> {
+    await this.saveAs(this.uri, cancellation);
   }
 
   /**
@@ -151,8 +120,33 @@ class PngDocument extends Disposable implements vscode.CustomDocument {
     };
   }
 
-  async save(cancellation: vscode.CancellationToken): Promise<void> {
-    await this.saveAs(this.uri, cancellation);
+  /**
+   * Called by VS Code when the user calls `revert` on a document.
+   */
+  async revert(_cancellation: vscode.CancellationToken): Promise<void> {
+    const diskContent = await readFile(this.uri);
+    this._documentData = diskContent;
+    this._onDidChangeDocument.fire({
+      content: diskContent,
+    });
+  }
+
+  /**
+   * Called by VS Code when there are no more references to the document.
+   *
+   * This happens when all editors for it have been closed.
+   */
+  dispose(): void {
+    this._onDidDispose.fire();
+    super.dispose();
+  }
+
+  makeUpdate() {
+    this._onDidChange.fire({
+      label: "Update",
+      undo: () => {},
+      redo: () => {},
+    });
   }
 }
 
@@ -192,7 +186,7 @@ export class PngEditorProvider
         // webview alive even when it is not visible. You should avoid using this setting
         // unless is absolutely required as it does have memory overhead.
         webviewOptions: {
-          // TODO: Remove this option
+          // TODO(sile): Remove this option
           // https://code.visualstudio.com/api/extension-guides/webview#persistence
           retainContextWhenHidden: true,
         },
@@ -207,7 +201,10 @@ export class PngEditorProvider
   private readonly webviews = new WebviewCollection();
 
   private _requestId = 1;
-  private readonly _callbacks = new Map<number, (response: any) => void>();
+  private readonly _callbacks = new Map<
+    number,
+    { resolve: (response: any) => void; reject: (error: any) => void }
+  >();
 
   private postMessageWithResponse<R = unknown>(
     panel: vscode.WebviewPanel,
@@ -215,8 +212,8 @@ export class PngEditorProvider
     body: any
   ): Promise<R> {
     const requestId = this._requestId++;
-    const p = new Promise<R>((resolve) =>
-      this._callbacks.set(requestId, resolve)
+    const p = new Promise<R>((resolve, reject) =>
+      this._callbacks.set(requestId, { resolve, reject })
     );
     panel.webview.postMessage({ type, requestId, body });
     return p;
@@ -370,7 +367,6 @@ export class PngEditorProvider
     });
   }
 
-  // TODO: s/any/Message/
   private onMessage(
     webviewPanel: vscode.WebviewPanel,
     document: PngDocument,
@@ -378,7 +374,7 @@ export class PngEditorProvider
   ) {
     switch (message.type) {
       case "notifyDirty":
-        document.makeDirty();
+        document.makeUpdate();
         break;
       case "inputNumber":
         vscode.window
@@ -399,11 +395,19 @@ export class PngEditorProvider
             }
           });
         break;
-      case "response": {
-        // TODO: error check
+      case "errorResponse": {
         const callback = this._callbacks.get(message.requestId);
-        callback?.(message.body);
-        return;
+        if (callback !== undefined) {
+          callback.reject(message.error);
+        } else {
+          vscode.window.showErrorMessage(message.error);
+        }
+        break;
+      }
+      case "response": {
+        const callback = this._callbacks.get(message.requestId);
+        callback?.resolve(message.body);
+        break;
       }
     }
   }
@@ -411,6 +415,7 @@ export class PngEditorProvider
   private readonly _onDidChangeCustomDocument = new vscode.EventEmitter<
     vscode.CustomDocumentEditEvent<PngDocument>
   >();
+
   public readonly onDidChangeCustomDocument =
     this._onDidChangeCustomDocument.event;
 
@@ -441,7 +446,6 @@ export class PngEditorProvider
     context: vscode.CustomDocumentBackupContext,
     cancellation: vscode.CancellationToken
   ): Thenable<vscode.CustomDocumentBackup> {
-    console.log("# Backup");
     return document.backup(context.destination, cancellation);
   }
 }
@@ -480,7 +484,7 @@ class WebviewCollection {
   }
 }
 
-export function getNonce() {
+function getNonce() {
   let text = "";
   const possible =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -488,4 +492,11 @@ export function getNonce() {
     text += possible.charAt(Math.floor(Math.random() * possible.length));
   }
   return text;
+}
+
+async function readFile(uri: vscode.Uri): Promise<Uint8Array> {
+  if (uri.scheme === "untitled") {
+    return new Uint8Array();
+  }
+  return new Uint8Array(await vscode.workspace.fs.readFile(uri));
 }

@@ -25,12 +25,6 @@
         ],
         "priority": "default"
       }
-    ],
-    "commands": [
-      {
-        "command": "pixcil.helloWorld",
-        "title": "Hello World"
-      }
     ]
   },
   "scripts": {
