@@ -1,5 +1,11 @@
 import { Game, System } from "pagurus";
 
+function installServiceWorker() {
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("./sw.js");
+  }
+}
+
 interface PixcilOptions {
   wasmPath: string;
   canvas: HTMLCanvasElement;
@@ -151,4 +157,4 @@ class Pixcil {
   }
 }
 
-export { Pixcil, PixcilOptions };
+export { Pixcil, PixcilOptions, installServiceWorker };

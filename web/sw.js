@@ -1,0 +1,1 @@
+../ts/dist/sw.js

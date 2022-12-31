@@ -25,9 +25,7 @@
     </div>
     <script src="./pixcil.js"></script>
     <script>
-      if('serviceWorker' in navigator) {
-          navigator.serviceWorker.register('./service-worker.js');
-      };
+      Pixcil.installServiceWorker();
 
       const canvas = document.getElementById("canvas");
       const canvasArea = document.getElementById("canvas-area");
