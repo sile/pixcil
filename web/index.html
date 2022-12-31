@@ -27,10 +27,26 @@
     <script>
       Pixcil.installServiceWorker("./sw.js");
 
+      window.addEventListener('message', (msg) => {
+          switch (msg.data.type) {
+          case "inputNumber":
+              {
+                  const number = prompt("Please input a number");
+                  if (number) {
+                      window.postMessage({
+                          type: "notifyInputNumber",
+                          body: { id: msg.data.inputId, number }
+                      });
+                  }
+              }
+              break;
+          }
+      });
+
       const canvas = document.getElementById("canvas");
       const canvasArea = document.getElementById("canvas-area");
       const wasmPath = "./pixcil.wasm";
-      Pixcil.App.load({wasmPath, canvas, canvasArea})
+      Pixcil.App.load({wasmPath, canvas, canvasArea, parent: window})
                 .then((app) => app.run())
                 .catch((e) => console.warn(e));
     </script>

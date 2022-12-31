@@ -23,10 +23,9 @@ type Message = {
 };
 
 type MessageData =
-  | { type: "loadWorkspace"; requestId: number; body: Uint8Array }
-  | { type: "update"; requestId: number; body: Uint8Array }
-  | { type: "number"; requestId: number; body: { id: number; number: string } }
-  | { type: "getFileData"; requestId: number };
+  | { type: "setWorkspace"; requestId: number; body: Uint8Array }
+  | { type: "getWorkspace"; requestId: number }
+  | { type: "notifyInputNumber"; requestId: number; body: { id: number; number: string } };
 
 class App {
   private game: Game;
@@ -50,38 +49,29 @@ class App {
   }
 
   private handleMessage(msg: Message): void {
-    switch (msg.data.type) {
-      case "loadWorkspace":
-        try {
-          this.game.command(this.system, "loadWorkspace", msg.data.body);
-        } catch (error) {
-          this.parent.postMessage({ type: "response", requestId: msg.data.requestId, error });
-        }
-        break;
-      case "getFileData":
-        try {
-          const data = this.game.query(this.system, "workspacePng");
-          this.parent.postMessage({ type: "response", requestId: msg.data.requestId, body: data });
-          this.gameStateVersion = this.stateVersion();
-          this.lastDirtyCheckTime = performance.now();
-        } catch (error) {
-          this.parent.postMessage({ type: "response", requestId: msg.data.requestId, error });
-        }
-        break;
-      case "update":
-        try {
-          this.game.command(this.system, "loadWorkspace", msg.data.body);
-        } catch (error) {
-          this.parent.postMessage({ type: "response", requestId: msg.data.requestId, error });
-        }
-        break;
-      case "number":
-        const inputJsonBytes = new TextEncoder().encode(JSON.stringify(msg.data.body));
-        this.game.command(this.system, "notifyInputNumber", inputJsonBytes);
-        break;
-      default:
-        console.warn("unknown message");
-        console.warn(msg);
+    try {
+      switch (msg.data.type) {
+        case "setWorkspace":
+          this.game.command(this.system, "setWorkspace", msg.data.body);
+          break;
+        case "getWorkspace":
+          {
+            const data = this.game.query(this.system, "workspacePng");
+            this.parent.postMessage({ type: "response", requestId: msg.data.requestId, body: data });
+            this.gameStateVersion = this.stateVersion();
+            this.lastDirtyCheckTime = performance.now();
+          }
+          break;
+        case "notifyInputNumber":
+          {
+            const inputJsonBytes = new TextEncoder().encode(JSON.stringify(msg.data.body));
+            this.game.command(this.system, "notifyInputNumber", inputJsonBytes);
+          }
+          break;
+      }
+    } catch (error) {
+      console.warn(error);
+      this.parent.postMessage({ type: "response", requestId: msg.data.requestId, error });
     }
   }
 
@@ -149,14 +139,7 @@ class App {
         default:
           if ("inputNumber" in requestJson) {
             const inputId = requestJson.inputNumber.id;
-
             this.parent.postMessage({ type: "inputNumber", inputId });
-            // TODO
-            // const number = prompt("Please input a number");
-            // if (number) {
-            //   const inputJsonBytes = new TextEncoder().encode(JSON.stringify({ id: inputId, number }));
-            //   this.game.command(this.system, "notifyInputNumber", inputJsonBytes);
-            // }
           }
       }
     }

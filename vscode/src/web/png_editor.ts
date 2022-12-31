@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 import { Disposable, disposeAll } from "./dispose";
 
 interface PngDocumentDelegate {
-  getFileData(): Promise<Uint8Array>;
+  getWorkspace(): Promise<Uint8Array>;
 }
 
 class PngDocument extends Disposable implements vscode.CustomDocument {
@@ -121,7 +121,7 @@ class PngDocument extends Disposable implements vscode.CustomDocument {
     targetResource: vscode.Uri,
     cancellation: vscode.CancellationToken
   ): Promise<void> {
-    const fileData = await this._delegate.getFileData();
+    const fileData = await this._delegate.getWorkspace();
     if (cancellation.isCancellationRequested) {
       return;
     }
@@ -231,7 +231,7 @@ export class PngEditorProvider
       uri,
       openContext.backupId,
       {
-        getFileData: async () => {
+        getWorkspace: async () => {
           const webviewsForDocument = Array.from(
             this.webviews.get(document.uri)
           );
@@ -241,7 +241,7 @@ export class PngEditorProvider
           const panel = webviewsForDocument[0];
           const response = await this.postMessageWithResponse<number[]>(
             panel,
-            "getFileData",
+            "getWorkspace",
             {}
           );
           return new Uint8Array(response);
@@ -265,7 +265,7 @@ export class PngEditorProvider
       document.onDidChangeContent((e) => {
         // Update all webviews when the document changes
         for (const webviewPanel of this.webviews.get(document.uri)) {
-          this.postMessage(webviewPanel, "update", e.content);
+          this.postMessage(webviewPanel, "setWorkspace", e.content);
         }
       })
     );
@@ -362,7 +362,7 @@ export class PngEditorProvider
 
     webviewPanel.webview.onDidReceiveMessage((e) => {
       if (e.type === "ready") {
-        this.postMessage(webviewPanel, "loadWorkspace", document.documentData);
+        this.postMessage(webviewPanel, "setWorkspace", document.documentData);
       }
     });
   }
@@ -389,7 +389,7 @@ export class PngEditorProvider
           })
           .then((value) => {
             if (value) {
-              this.postMessage(webviewPanel, "number", {
+              this.postMessage(webviewPanel, "notifyInputNumber", {
                 id: message.inputId,
                 number: value,
               });
