@@ -69,6 +69,17 @@ class PngDocument extends Disposable implements vscode.CustomDocument {
   );
 
   /**
+   * Called by VS Code when the user calls `revert` on a document.
+   */
+  async revert(_cancellation: vscode.CancellationToken): Promise<void> {
+    const diskContent = await PngDocument.readFile(this.uri);
+    this._documentData = diskContent;
+    this._onDidChangeDocument.fire({
+      content: diskContent,
+    });
+  }
+
+  /**
    * Fired to tell VS Code that an edit has occurred in the document.
    *
    * This updates the document's dirty indicator.
@@ -251,10 +262,7 @@ export class PngEditorProvider
       document.onDidChangeContent((e) => {
         // Update all webviews when the document changes
         for (const webviewPanel of this.webviews.get(document.uri)) {
-          this.postMessage(webviewPanel, "update", {
-            edits: e.edits,
-            content: e.content,
-          });
+          this.postMessage(webviewPanel, "update", e.content);
         }
       })
     );
@@ -395,7 +403,7 @@ export class PngEditorProvider
     document: PngDocument,
     cancellation: vscode.CancellationToken
   ): Thenable<void> {
-    throw new Error("TODO(2)");
+    return document.revert(cancellation);
   }
 
   public backupCustomDocument(

@@ -23,6 +23,7 @@ type Message = {
 
 type MessageData =
   | { type: "loadWorkspace"; requestId: number; body: Uint8Array }
+  | { type: "update"; requestId: number; body: Uint8Array }
   | { type: "getFileData"; requestId: number };
 
 class App {
@@ -52,6 +53,15 @@ class App {
           try {
             const data = this.game.query(this.system, "workspacePng");
             this.parent.postMessage({ type: "response", requestId: msg.data.requestId, body: data });
+            this.gameStateVersion = this.stateVersion();
+            this.lastDirtyCheckTime = performance.now();
+          } catch (error) {
+            this.parent.postMessage({ type: "response", requestId: msg.data.requestId, error });
+          }
+          break;
+        case "update":
+          try {
+            this.game.command(this.system, "loadWorkspace", msg.data.body);
           } catch (error) {
             this.parent.postMessage({ type: "response", requestId: msg.data.requestId, error });
           }
