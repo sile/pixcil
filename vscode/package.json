@@ -16,7 +16,7 @@
   "contributes": {
     "customEditors": [
       {
-        "viewType": "pixcil.pngDraw",
+        "viewType": "pixcil.png",
         "displayName": "Pixcil",
         "selector": [
           {
