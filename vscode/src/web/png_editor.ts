@@ -112,7 +112,7 @@ export class PngEditorProvider
   private static newPngFileId = 1;
   private static readonly viewType = "pixcil.png";
 
-  public static register(_context: vscode.ExtensionContext): vscode.Disposable {
+  public static register(context: vscode.ExtensionContext): vscode.Disposable {
     vscode.commands.registerCommand("pixcil.png.new", () => {
       const workspaceFolders = vscode.workspace.workspaceFolders;
       if (!workspaceFolders) {
@@ -136,7 +136,7 @@ export class PngEditorProvider
 
     return vscode.window.registerCustomEditorProvider(
       PngEditorProvider.viewType,
-      new PngEditorProvider(),
+      new PngEditorProvider(context),
       {
         // TODO
         // For this demo extension, we enable `retainContextWhenHidden` which keeps the
@@ -238,18 +238,68 @@ export class PngEditorProvider
     panel.webview.postMessage({ type, body });
   }
 
-  private getHtmlForWebview(_webview: vscode.Webview): string {
-    // const styleResetUri = webview.asWebviewUri(vscode.Uri.joinPath(
-    // 	this._context.extensionUri, 'media', 'reset.css'));
+  constructor(private readonly _context: vscode.ExtensionContext) {}
+
+  private getHtmlForWebview(webview: vscode.Webview): string {
+    const wasmUri = webview.asWebviewUri(
+      vscode.Uri.joinPath(this._context.extensionUri, "assets", "pixcil.wasm")
+    );
+    const scriptUri = webview.asWebviewUri(
+      vscode.Uri.joinPath(this._context.extensionUri, "assets", "pixcil.js")
+    );
+
+    // Use a nonce to whitelist which scripts can be run
+    const nonce = getNonce();
 
     return `
 			<!DOCTYPE html>
 			<html lang="en">
 			<head>
         <meta charset="UTF-8">
+
+				<!--
+				Use a content security policy to only allow loading images from https or from our extension directory,
+				and only allow scripts that have a specific nonce.
+-->
+<!-- TODO:
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src ${webview.cspSource} blob:; style-src ${webview.cspSource}; script-src 'nonce-${nonce}';">
+-->
+
+				<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <style>
+          body {
+              margin: 0px;
+              padding: 0px;
+              position: relative;
+          }
+          #canvas-area {
+              height: 100%;
+              width: 100%;
+              position: fixed;
+          }
+        </style>
+
+        <title>Pixcil</title>
       </head>
-      <body>
+      <body style="background-color:#f5f5f5">
 hello
+        <div id="canvas-area">
+          <canvas id="canvas" style="background-color:#f5f5f5"></canvas>
+        </div>
+<!-- TODO
+				<script nonce="${nonce}" src="${scriptUri}"></script>
+        <script nonce="${nonce}">
+-->
+        <script src="https://sile.github.io/pixcil/pixcil.js"></script>
+        <script>
+          const canvas = document.getElementById("canvas");
+          const canvasArea = document.getElementById("canvas-area");
+          const wasmPath = "https://sile.github.io/pixcil/pixcil.wasm"; //"${wasmUri}";
+          Pixcil.App.load({wasmPath, canvas, canvasArea})
+                    .then((app) => app.run())
+                    .catch((e) => console.warn(e));
+        </script>
       </body>
       </html>`;
   }
@@ -379,4 +429,14 @@ class WebviewCollection {
       this._webviews.delete(entry);
     });
   }
+}
+
+export function getNonce() {
+  let text = "";
+  const possible =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  for (let i = 0; i < 32; i++) {
+    text += possible.charAt(Math.floor(Math.random() * possible.length));
+  }
+  return text;
 }
