@@ -1,8 +1,8 @@
 import { Game, System } from "pagurus";
 
-function installServiceWorker() {
+async function installServiceWorker() {
   if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("./sw.js");
+    await navigator.serviceWorker.register("./sw.js");
   }
 }
 
