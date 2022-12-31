@@ -100,6 +100,43 @@ class PngDocument extends Disposable implements vscode.CustomDocument {
       label: "Dirty",
     });
   }
+
+  /**
+   * Called by VS Code when the user saves the document to a new location.
+   */
+  async saveAs(
+    targetResource: vscode.Uri,
+    cancellation: vscode.CancellationToken
+  ): Promise<void> {
+    const fileData = await this._delegate.getFileData();
+    if (cancellation.isCancellationRequested) {
+      return;
+    }
+    await vscode.workspace.fs.writeFile(targetResource, fileData);
+  }
+
+  /**
+   * Called by VS Code to backup the edited document.
+   *
+   * These backups are used to implement hot exit.
+   */
+  async backup(
+    destination: vscode.Uri,
+    cancellation: vscode.CancellationToken
+  ): Promise<vscode.CustomDocumentBackup> {
+    await this.saveAs(destination, cancellation);
+
+    return {
+      id: destination.toString(),
+      delete: async () => {
+        try {
+          await vscode.workspace.fs.delete(destination);
+        } catch {
+          // noop
+        }
+      },
+    };
+  }
 }
 
 export class PngEditorProvider
@@ -321,6 +358,7 @@ export class PngEditorProvider
         document.makeDirty();
         break;
       case "response": {
+        // TODO: error check
         const callback = this._callbacks.get(message.requestId);
         callback?.(message.body);
         return;
@@ -361,7 +399,8 @@ export class PngEditorProvider
     context: vscode.CustomDocumentBackupContext,
     cancellation: vscode.CancellationToken
   ): Thenable<vscode.CustomDocumentBackup> {
-    throw new Error("TODO(3)");
+    console.log("# Backup");
+    return document.backup(context.destination, cancellation);
   }
 }
 

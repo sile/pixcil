@@ -21,7 +21,9 @@ type Message = {
   data: MessageData;
 };
 
-type MessageData = { type: "loadWorkspace"; requestId: number; body: Uint8Array };
+type MessageData =
+  | { type: "loadWorkspace"; requestId: number; body: Uint8Array }
+  | { type: "getFileData"; requestId: number };
 
 class App {
   private game: Game;
@@ -30,6 +32,7 @@ class App {
   private requestId = 0;
   private responses: Map<number, Promise<object>> = new Map();
   private gameStateVersion = BigInt(0);
+  private lastDirtyCheckTime = performance.now();
 
   constructor(game: Game, system: System, options: Options) {
     this.game = game;
@@ -41,6 +44,14 @@ class App {
         case "loadWorkspace":
           try {
             this.game.command(this.system, "loadWorkspace", msg.data.body);
+          } catch (error) {
+            this.parent.postMessage({ type: "response", requestId: msg.data.requestId, error });
+          }
+          break;
+        case "getFileData":
+          try {
+            const data = this.game.query(this.system, "workspacePng");
+            this.parent.postMessage({ type: "response", requestId: msg.data.requestId, body: data });
           } catch (error) {
             this.parent.postMessage({ type: "response", requestId: msg.data.requestId, error });
           }
@@ -88,10 +99,15 @@ class App {
     if (!this.game.handleEvent(this.system, event)) {
       return false;
     }
-    const version = this.stateVersion();
-    if (version !== this.gameStateVersion) {
-      this.parent.postMessage({ type: "makeDirty" });
-      this.gameStateVersion = version;
+
+    // TODO: setTimeout(?) or if-idle
+    if (performance.now() - this.lastDirtyCheckTime > 60 * 1000) {
+      this.lastDirtyCheckTime = performance.now();
+      const version = this.stateVersion();
+      if (version !== this.gameStateVersion) {
+        this.parent.postMessage({ type: "makeDirty" });
+        this.gameStateVersion = version;
+      }
     }
 
     type RequestJson = "saveWorkspace" | "loadWorkspace" | "importImage" | { inputNumber: { id: number } };
