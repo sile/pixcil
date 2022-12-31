@@ -24,12 +24,18 @@ jobs:
         with:
           command: build
           args: --release --target=wasm32-unknown-unknown
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: npm
+      - run: cd ts/ && npm install && npm run build
       - name: Prepare static files
         run: |
           mkdir _site/
           cp target/wasm32-unknown-unknown/release/pixcil.wasm _site/
           cp web/index.html _site/
           cp web/manifest.json _site/
+          cp ts/dist/pixcil.js _site/
           cp web/*.png _site/
           sed -e "s/CACHE_NAME = .*;/CACHE_NAME = 'pixcil-$(git show --format='%h' --no-patch)';/" web/service-worker.js > _site/service-worker.js
       - name: Upload .wasm file
