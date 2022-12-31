@@ -133,6 +133,11 @@ impl<S: System> Game<S> for PixcilGame {
                 let data = app.models().to_png(app).or_fail()?;
                 Ok(data)
             }
+            "stateVersion" => {
+                let app = self.app.as_ref().or_fail()?;
+                let version = app.models().pixel_canvas.state_version();
+                Ok(version.to_be_bytes().to_vec())
+            }
             _ => Err(pagurus::failure::Failure::new().message(format!("unknown query: {name:?}"))),
         }
     }

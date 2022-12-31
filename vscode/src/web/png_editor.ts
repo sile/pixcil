@@ -5,12 +5,6 @@ interface PngDocumentDelegate {
   getFileData(): Promise<Uint8Array>;
 }
 
-// TODO: delete
-interface PngEdit {
-  readonly color: string;
-  readonly stroke: ReadonlyArray<[number, number]>;
-}
-
 class PngDocument extends Disposable implements vscode.CustomDocument {
   private readonly _uri: vscode.Uri;
   private readonly _delegate: PngDocumentDelegate;
@@ -57,7 +51,7 @@ class PngDocument extends Disposable implements vscode.CustomDocument {
   private readonly _onDidChangeDocument = this._register(
     new vscode.EventEmitter<{
       readonly content?: Uint8Array;
-      readonly edits: readonly PngEdit[];
+      // TODO: readonly edits: readonly PngEdit[];
     }>()
   );
 
@@ -69,8 +63,8 @@ class PngDocument extends Disposable implements vscode.CustomDocument {
   private readonly _onDidChange = this._register(
     new vscode.EventEmitter<{
       readonly label: string;
-      undo(): void;
-      redo(): void;
+      //undo(): void;
+      //redo(): void;
     }>()
   );
 
@@ -90,20 +84,22 @@ class PngDocument extends Disposable implements vscode.CustomDocument {
    */
   public readonly onDidDispose = this._onDidDispose.event;
 
-  // TODO
-  // private readonly _onDidDispose = this._register(
-  //   new vscode.EventEmitter<void>()
-  // );
+  /**
+   * Called by VS Code when there are no more references to the document.
+   *
+   * This happens when all editors for it have been closed.
+   */
+  dispose(): void {
+    this._onDidDispose.fire();
+    super.dispose();
+  }
 
-  // /**
-  //  * Called by VS Code when there are no more references to the document.
-  //  *
-  //  * This happens when all editors for it have been closed.
-  //  */
-  // dispose(): void {
-  //   this._onDidDispose.fire();
-  //   super.dispose();
-  // }
+  makeDirty() {
+    console.log("makeDirty");
+    this._onDidChange.fire({
+      label: "Dirty",
+    });
+  }
 }
 
 export class PngEditorProvider
@@ -311,7 +307,6 @@ export class PngEditorProvider
       this.onMessage(document, e)
     );
 
-    // Wait for the webview to be properly ready before we init
     webviewPanel.webview.onDidReceiveMessage((e) => {
       if (e.type === "ready") {
         this.postMessage(webviewPanel, "loadWorkspace", document.documentData);
@@ -319,13 +314,12 @@ export class PngEditorProvider
     });
   }
 
-  private onMessage(_document: PngDocument, message: any) {
+  // TODO: s/any/Message/
+  private onMessage(document: PngDocument, message: any) {
     switch (message.type) {
-      case "stroke":
-        // TODO
-        // document.makeEdit(message as PngEdit);
-        return;
-
+      case "makeDirty":
+        document.makeDirty();
+        break;
       case "response": {
         const callback = this._callbacks.get(message.requestId);
         callback?.(message.body);
@@ -344,7 +338,7 @@ export class PngEditorProvider
     document: PngDocument,
     cancellation: vscode.CancellationToken
   ): Thenable<void> {
-    throw new Error("TODO");
+    throw new Error("TODO(0)");
   }
 
   public saveCustomDocumentAs(
@@ -352,14 +346,14 @@ export class PngEditorProvider
     destination: vscode.Uri,
     cancellation: vscode.CancellationToken
   ): Thenable<void> {
-    throw new Error("TODO");
+    throw new Error("TODO(1)");
   }
 
   public revertCustomDocument(
     document: PngDocument,
     cancellation: vscode.CancellationToken
   ): Thenable<void> {
-    throw new Error("TODO");
+    throw new Error("TODO(2)");
   }
 
   public backupCustomDocument(
@@ -367,7 +361,7 @@ export class PngEditorProvider
     context: vscode.CustomDocumentBackupContext,
     cancellation: vscode.CancellationToken
   ): Thenable<vscode.CustomDocumentBackup> {
-    throw new Error("TODO");
+    throw new Error("TODO(3)");
   }
 }
 

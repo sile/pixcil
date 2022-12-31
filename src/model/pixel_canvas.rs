@@ -19,9 +19,14 @@ pub struct PixelCanvasModel {
 
     // The following fields are not serialized / deserialized
     dirty_positions: BTreeSet<PixelPosition>,
+    state_version: i64,
 }
 
 impl PixelCanvasModel {
+    pub fn state_version(&self) -> i64 {
+        self.state_version
+    }
+
     pub fn draw_pixels(
         &mut self,
         config: &ConfigModel,
@@ -222,6 +227,7 @@ impl PixelCanvasModel {
             }
             self.command_log_tail = i;
         }
+        self.state_version -= 1;
         Ok(())
     }
 
@@ -244,6 +250,7 @@ impl PixelCanvasModel {
             }
             self.command_log_tail += 1;
         }
+        self.state_version += 1;
         Ok(())
     }
 
@@ -290,6 +297,7 @@ impl Deserialize for PixelCanvasModel {
             command_log_tail: Deserialize::deserialize(&mut reader).or_fail()?,
             pixels: Deserialize::deserialize(&mut reader).or_fail()?,
             dirty_positions: Default::default(),
+            state_version: 0,
         })
     }
 }

@@ -29,6 +29,7 @@ class App {
   private parent: Parent;
   private requestId = 0;
   private responses: Map<number, Promise<object>> = new Map();
+  private gameStateVersion = BigInt(0);
 
   constructor(game: Game, system: System, options: Options) {
     this.game = game;
@@ -77,10 +78,20 @@ class App {
     }
   }
 
+  private stateVersion(): bigint {
+    return new DataView(this.game.query(this.system, "stateVersion").buffer).getBigInt64(0, false);
+  }
+
   private async runOnce(): Promise<boolean> {
     const event = await this.system.nextEvent();
+
     if (!this.game.handleEvent(this.system, event)) {
       return false;
+    }
+    const version = this.stateVersion();
+    if (version !== this.gameStateVersion) {
+      this.parent.postMessage({ type: "makeDirty" });
+      this.gameStateVersion = version;
     }
 
     type RequestJson = "saveWorkspace" | "loadWorkspace" | "importImage" | { inputNumber: { id: number } };
