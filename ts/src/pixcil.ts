@@ -16,6 +16,7 @@ interface Options {
   canvasArea: HTMLDivElement;
   parent: Parent;
   disableSaveWorkspaceButton?: boolean;
+  enableDirtyNotification?: boolean;
 }
 
 type Message = {
@@ -32,12 +33,16 @@ class App {
   private system: System;
   private parent: Parent;
   private gameStateVersion = BigInt(0);
-  private lastDirtyCheckTime = performance.now();
+  private dirtyNotificationEnabled: boolean;
+  private isDirty = false;
+  private dirtyNotificationTimeout?: number;
+  private idle = false;
 
   constructor(game: Game, system: System, options: Options) {
     this.game = game;
     this.system = system;
     this.parent = options.parent;
+    this.dirtyNotificationEnabled = options.enableDirtyNotification === true;
 
     window.addEventListener("message", (msg: Message) => this.handleMessage(msg));
 
@@ -52,14 +57,18 @@ class App {
     try {
       switch (msg.data.type) {
         case "setWorkspace":
-          this.game.command(this.system, "setWorkspace", msg.data.body);
+          this.game.command(this.system, "loadWorkspace", msg.data.body);
           break;
         case "getWorkspace":
           {
             const data = this.game.query(this.system, "workspacePng");
             this.parent.postMessage({ type: "response", requestId: msg.data.requestId, body: data });
+            this.isDirty = false;
+            if (this.dirtyNotificationTimeout !== undefined) {
+              clearTimeout(this.dirtyNotificationTimeout);
+              this.dirtyNotificationTimeout = undefined;
+            }
             this.gameStateVersion = this.stateVersion();
-            this.lastDirtyCheckTime = performance.now();
           }
           break;
         case "notifyInputNumber":
@@ -71,7 +80,7 @@ class App {
       }
     } catch (error) {
       console.warn(error);
-      this.parent.postMessage({ type: "response", requestId: msg.data.requestId, error });
+      this.parent.postMessage({ type: "errorResponse", requestId: msg.data.requestId, error });
     }
   }
 
@@ -104,6 +113,36 @@ class App {
     return new DataView(this.game.query(this.system, "stateVersion").buffer).getBigInt64(0, false);
   }
 
+  private handleDirtyState(): void {
+    this.idle = false;
+    if (this.isDirty) {
+      return;
+    }
+
+    const version = this.stateVersion();
+    if (version === this.gameStateVersion) {
+      return;
+    }
+
+    this.idle = true;
+    this.notifyDirtyIfNeed();
+  }
+
+  private notifyDirtyIfNeed(): void {
+    if (this.idle) {
+      const version = this.stateVersion();
+      if (version !== this.gameStateVersion) {
+        this.gameStateVersion = version;
+        this.parent.postMessage({ type: "notifyDirty" });
+      }
+    }
+
+    this.idle = true;
+    this.dirtyNotificationTimeout = setTimeout(() => {
+      this.notifyDirtyIfNeed();
+    }, 1000);
+  }
+
   private async runOnce(): Promise<boolean> {
     const event = await this.system.nextEvent();
 
@@ -111,14 +150,8 @@ class App {
       return false;
     }
 
-    // TODO: setTimeout(?) or if-idle
-    if (performance.now() - this.lastDirtyCheckTime > 60 * 1000) {
-      this.lastDirtyCheckTime = performance.now();
-      const version = this.stateVersion();
-      if (version !== this.gameStateVersion) {
-        this.parent.postMessage({ type: "makeDirty" });
-        this.gameStateVersion = version;
-      }
+    if (this.dirtyNotificationEnabled) {
+      this.handleDirtyState();
     }
 
     type RequestJson = "saveWorkspace" | "loadWorkspace" | "importImage" | { inputNumber: { id: number } };
@@ -177,7 +210,7 @@ class App {
       try {
         this.game.command(this.system, "importImage", data);
       } catch (e) {
-        console.log(e);
+        console.warn(e);
         alert("Failed to load PNG file");
       }
     };

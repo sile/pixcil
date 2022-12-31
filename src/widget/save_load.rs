@@ -75,7 +75,7 @@ impl FixedSizeWidget for SaveLoadWidget {
             2
         };
         Size::from_wh(
-            button_size.width + MARGIN * count,
+            button_size.width + MARGIN * 2,
             button_size.height * count + MARGIN * count * 2,
         )
     }

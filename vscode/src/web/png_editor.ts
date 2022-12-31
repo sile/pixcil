@@ -331,7 +331,10 @@ export class PngEditorProvider
           const canvasArea = document.getElementById("canvas-area");
           const wasmPath = "${wasmUri}";
           const vscode = acquireVsCodeApi();
-          const options = {wasmPath, canvas, canvasArea, parent: vscode, disableSaveWorkspaceButton: true};
+          const options = {
+            wasmPath, canvas, canvasArea, parent: vscode, disableSaveWorkspaceButton: true,
+            enableDirtyNotification: true,
+          };
           Pixcil.App.load(options)
                     .then(app => {
                        app.run()
@@ -374,7 +377,7 @@ export class PngEditorProvider
     message: any
   ) {
     switch (message.type) {
-      case "makeDirty":
+      case "notifyDirty":
         document.makeDirty();
         break;
       case "inputNumber":
