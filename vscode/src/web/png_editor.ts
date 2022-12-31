@@ -282,9 +282,12 @@ export class PngEditorProvider
           const canvas = document.getElementById("canvas");
           const canvasArea = document.getElementById("canvas-area");
           const wasmPath = "${wasmUri}";
-          Pixcil.App.load({wasmPath, canvas, canvasArea})
-                    .then((app) => app.run())
-                    .catch((e) => console.warn(e));
+          const vscode = acquireVsCodeApi();
+          Pixcil.App.load({wasmPath, canvas, canvasArea, parent: vscode})
+                    .then(app => {
+                       app.run()
+                     })
+                    .catch(e => console.warn(e));
         </script>
       </body>
       </html>`;
@@ -311,21 +314,7 @@ export class PngEditorProvider
     // Wait for the webview to be properly ready before we init
     webviewPanel.webview.onDidReceiveMessage((e) => {
       if (e.type === "ready") {
-        if (document.uri.scheme === "untitled") {
-          this.postMessage(webviewPanel, "init", {
-            untitled: true,
-            editable: true,
-          });
-        } else {
-          const editable = vscode.workspace.fs.isWritableFileSystem(
-            document.uri.scheme
-          );
-
-          this.postMessage(webviewPanel, "init", {
-            value: document.documentData,
-            editable,
-          });
-        }
+        this.postMessage(webviewPanel, "loadWorkspace", document.documentData);
       }
     });
   }

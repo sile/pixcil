@@ -6,19 +6,50 @@ async function installServiceWorker(serviceWorkerPath: string) {
   }
 }
 
+interface Parent {
+  postMessage(message: object): void;
+}
+
 interface Options {
   wasmPath: string;
   canvas: HTMLCanvasElement;
   canvasArea: HTMLDivElement;
+  parent: Parent;
 }
 
-class App {
-  game: Game;
-  system: System;
+type Message = {
+  data: MessageData;
+};
 
-  constructor(game: Game, system: System, _options: Options) {
+type MessageData = { type: "loadWorkspace"; requestId: number; body: Uint8Array };
+
+class App {
+  private game: Game;
+  private system: System;
+  private parent: Parent;
+  private requestId = 0;
+  private responses: Map<number, Promise<object>> = new Map();
+
+  constructor(game: Game, system: System, options: Options) {
     this.game = game;
     this.system = system;
+    this.parent = options.parent;
+
+    window.addEventListener("message", (msg: Message) => {
+      switch (msg.data.type) {
+        case "loadWorkspace":
+          try {
+            this.game.command(this.system, "loadWorkspace", msg.data.body);
+          } catch (error) {
+            this.parent.postMessage({ type: "response", requestId: msg.data.requestId, error });
+          }
+          break;
+        default:
+          console.warn("unknown message");
+          console.warn(msg);
+      }
+    });
+    this.parent.postMessage({ type: "ready" });
   }
 
   static async load(options: Options): Promise<App> {
@@ -34,6 +65,7 @@ class App {
     onResizeCanvas();
     window.addEventListener("resize", onResizeCanvas);
     game.initialize(system);
+
     return new App(game, system, options);
   }
 
@@ -157,4 +189,4 @@ class App {
   }
 }
 
-export { App, Options, installServiceWorker };
+export { App, Options, installServiceWorker, Parent };
