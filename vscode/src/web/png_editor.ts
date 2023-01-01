@@ -176,7 +176,6 @@ export class PngEditorProvider
     openContext: { backupId?: string },
     _token: vscode.CancellationToken
   ): Promise<PngDocument> {
-    console.log("hello0");
     const document: PngDocument = await PngDocument.create(
       uri,
       openContext.backupId,
@@ -199,7 +198,6 @@ export class PngEditorProvider
       }
     );
 
-    console.log("hello1");
     const listeners: vscode.Disposable[] = [];
 
     listeners.push(
@@ -226,7 +224,6 @@ export class PngEditorProvider
 
     document.onDidDispose(() => disposeAll(listeners));
 
-    console.log("hello2");
     return document;
   }
 
@@ -244,12 +241,20 @@ export class PngEditorProvider
     const wasmUri = webview.asWebviewUri(
       vscode.Uri.joinPath(this._context.extensionUri, "assets", "pixcil.wasm")
     );
-    const scriptUri = webview.asWebviewUri(
+    const pixcilScriptUri = webview.asWebviewUri(
       vscode.Uri.joinPath(this._context.extensionUri, "assets", "pixcil.js")
+    );
+    const styleUri = webview.asWebviewUri(
+      vscode.Uri.joinPath(this._context.extensionUri, "assets", "style.css")
     );
 
     // Use a nonce to whitelist which scripts can be run
     const nonce = getNonce();
+
+    const connectSrc = `${wasmUri.scheme}://${wasmUri.authority}`.replace(
+      "file+",
+      "*"
+    );
 
     return `
 			<!DOCTYPE html>
@@ -261,41 +266,22 @@ export class PngEditorProvider
 				Use a content security policy to only allow loading images from https or from our extension directory,
 				and only allow scripts that have a specific nonce.
 -->
-<!-- TODO:
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src ${webview.cspSource} blob:; style-src ${webview.cspSource}; script-src 'nonce-${nonce}';">
--->
+        <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src ${webview.cspSource} blob:; style-src ${webview.cspSource}; script-src 'nonce-${nonce}' 'wasm-unsafe-eval'; connect-src ${connectSrc};">
 
 				<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-        <style>
-          body {
-              margin: 0px;
-              padding: 0px;
-              position: relative;
-          }
-          #canvas-area {
-              height: 100%;
-              width: 100%;
-              position: fixed;
-          }
-        </style>
+        <link href="${styleUri}" rel="stylesheet" />
 
         <title>Pixcil</title>
       </head>
-      <body style="background-color:#f5f5f5">
-hello
+      <body>
         <div id="canvas-area">
-          <canvas id="canvas" style="background-color:#f5f5f5"></canvas>
+          <canvas id="canvas"></canvas>
         </div>
-<!-- TODO
-				<script nonce="${nonce}" src="${scriptUri}"></script>
+				<script nonce="${nonce}" src="${pixcilScriptUri}"></script>
         <script nonce="${nonce}">
--->
-        <script src="https://sile.github.io/pixcil/pixcil.js"></script>
-        <script>
           const canvas = document.getElementById("canvas");
           const canvasArea = document.getElementById("canvas-area");
-          const wasmPath = "https://sile.github.io/pixcil/pixcil.wasm"; //"${wasmUri}";
+          const wasmPath = "${wasmUri}";
           Pixcil.App.load({wasmPath, canvas, canvasArea})
                     .then((app) => app.run())
                     .catch((e) => console.warn(e));
@@ -309,7 +295,6 @@ hello
     webviewPanel: vscode.WebviewPanel,
     _token: vscode.CancellationToken
   ): Promise<void> {
-    console.log("hello3");
     // Add the webview to our internal set of active webviews
     this.webviews.add(document.uri, webviewPanel);
 
