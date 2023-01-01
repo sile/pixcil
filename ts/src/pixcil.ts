@@ -157,4 +157,4 @@ class App {
   }
 }
 
-export { App as Pixcil, Options as PixcilOptions, installServiceWorker };
+export { App, Options, installServiceWorker };
