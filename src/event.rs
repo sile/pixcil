@@ -20,6 +20,7 @@ pub enum Event {
         position: Position,
         consumed: bool,
     },
+    Noop, // TODO: rename
 }
 
 impl Event {

@@ -205,7 +205,9 @@ impl Widget for PreviewFrameWidget {
                 app.request_redraw(self.region.union(old_region));
             }
         } else {
-            self.frame_size = Some(preview_pixel_region.size());
+            let size = preview_pixel_region.size();
+            self.frame_size = Some(size);
+            self.region.size = Size::from_wh(u32::from(size.width), u32::from(size.height));
         }
 
         let dirty_pixels = app.models().pixel_canvas.dirty_positions();

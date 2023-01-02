@@ -57,7 +57,6 @@ impl PixcilGame {
         self.windows.extend(app.take_spawned_windows());
         app.set_pending_timeouts(system);
 
-        // TODO: Handle FPS (avoid too many renderings during a short term)
         if app.is_redraw_needed() && self.render_timeout.is_none() {
             self.render_timeout = Some(system.clock_set_timeout(
                 TimeoutTag::new(0),
@@ -157,7 +156,8 @@ impl<S: System> Game<S> for PixcilGame {
                 let app = self.app.as_mut().or_fail()?;
                 *app.models_mut() = Models::from_png(data).or_fail()?;
                 app.request_redraw(app.screen_size().to_region());
-                self.handle_pixcil_event(system, None).or_fail()?;
+                self.handle_pixcil_event(system, Some(Event::Noop))
+                    .or_fail()?;
 
                 Ok(())
             }
