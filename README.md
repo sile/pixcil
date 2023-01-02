@@ -7,7 +7,7 @@ Pixcil
 
 Simple pixel art editor with (almost) infinite canvas.
 
-Online editors:
+Online editors & editor extensions:
 - [itch.io](https://reduls.itch.io/pixcil)
 - [GitHub Pages](https://sile.github.io/pixcil) (PWA)
 - [VSCode Extension](https://marketplace.visualstudio.com/items?itemName=sile.pixcil)
