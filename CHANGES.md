@@ -14,6 +14,11 @@ web
 - [UPDATE] Factor out common logic as `pixcil` NPM library
 - [UPDATE] Add PWA support
 
+vscode
+------
+
+- Initial release
+
 0.3.0
 =====
 
@@ -28,7 +33,7 @@ core
 web
 ---
 
-- [Add] use service worker to support offline mode
+- [Add] Use service worker to support offline mode
 - [UPDATE] Remove green margin around the canvas
 
 windows
