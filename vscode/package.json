@@ -2,7 +2,7 @@
   "name": "pixcil",
   "displayName": "Pixcil",
   "publisher": "Takeru Ohta",
-  "license": "(MIT OR Apache-2.0)",
+  "license": "MIT",
   "description": "Pixel art editor & PNG file viewer",
   "version": "0.0.1",
   "engines": {
