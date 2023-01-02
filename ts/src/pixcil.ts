@@ -58,6 +58,8 @@ class App {
       switch (msg.data.type) {
         case "setWorkspace":
           this.game.command(this.system, "loadWorkspace", msg.data.body);
+          this.isDirty = false;
+          this.gameStateVersion = this.stateVersion();
           break;
         case "getWorkspace":
           {
