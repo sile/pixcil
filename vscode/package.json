@@ -4,7 +4,7 @@
   "publisher": "Takeru Ohta",
   "license": "(MIT OR Apache-2.0)",
   "description": "Pixel art editor & PNG file viewer",
-  "version": "0.3.0",
+  "version": "0.0.1",
   "engines": {
     "vscode": "^1.74.0"
   },
@@ -30,6 +30,7 @@
     "theme": "light"
   },
   "sponser": "https://github.com/sponsors/sile",
+  "activationEvents": [],
   "contributes": {
     "customEditors": [
       {
