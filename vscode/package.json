@@ -29,7 +29,7 @@
     "color": "#fafcfc",
     "theme": "light"
   },
-  "sponser": "https://github.com/sponsors/sile",
+  "sponser": {"url": "https://github.com/sponsors/sile"},
   "activationEvents": [],
   "contributes": {
     "customEditors": [
