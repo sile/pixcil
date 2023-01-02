@@ -1,6 +1,8 @@
 {
   "name": "pixcil",
   "displayName": "Pixcil",
+  "publisher": "Takeru Ohta",
+  "license": "(MIT OR Apache-2.0)",
   "description": "Pixel art editor & PNG file viewer",
   "version": "0.3.0",
   "engines": {
@@ -9,10 +11,25 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": [
-    "onCommand:pixcil.helloWorld"
+  "keywords": [
+    "pixel art editor",
+    "png viewer"
   ],
   "browser": "./dist/web/extension.js",
+  "bugs": {
+    "url": "https://github.com/sile/pixcil/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sile/pixcil.git"
+  },
+  "homepage": "https://github.com/sile/pixcil/blob/main/README.md",
+  "icon": "assets/icon.png",
+  "galleryBanner": {
+    "color": "#fafcfc",
+    "theme": "light"
+  },
+  "sponser": "https://github.com/sponsors/sile",
   "contributes": {
     "customEditors": [
       {
