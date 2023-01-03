@@ -296,24 +296,13 @@ export class PngEditorProvider
     // Use a nonce to whitelist which scripts can be run
     const nonce = getNonce();
 
-    const connectSrc = `${wasmUri.scheme}://${wasmUri.authority}`.replace(
-      "file+",
-      "*"
-    );
-
     return `
 			<!DOCTYPE html>
 			<html lang="en">
 			<head>
         <meta charset="UTF-8">
-
-				<!--
-				Use a content security policy to only allow loading images from https or from our extension directory,
-				and only allow scripts that have a specific nonce.
--->
-        <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src ${webview.cspSource} blob:; style-src ${webview.cspSource}; script-src 'nonce-${nonce}' 'wasm-unsafe-eval'; connect-src ${connectSrc};">
-
-				<meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src ${webview.cspSource} blob:; style-src ${webview.cspSource}; script-src 'nonce-${nonce}' 'wasm-unsafe-eval'; connect-src ${webview.cspSource};">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link href="${styleUri}" rel="stylesheet" />
 
         <title>Pixcil</title>
@@ -322,7 +311,7 @@ export class PngEditorProvider
         <div id="canvas-area">
           <canvas id="canvas"></canvas>
         </div>
-				<script nonce="${nonce}" src="${pixcilScriptUri}"></script>
+	<script nonce="${nonce}" src="${pixcilScriptUri}"></script>
         <script nonce="${nonce}">
           const canvas = document.getElementById("canvas");
           const canvasArea = document.getElementById("canvas-area");
