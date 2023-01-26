@@ -4,6 +4,7 @@ main
 core
 ----
 
+- [UPDATE] Support small screen (auto resize)
 - [FIX] Ensure that preview size reflects loaded image size
 - [UPDATE] Support loading PNG files using palette mode
 - [FIX] Don't reset "FRAME PREVIEW" setting when opening settings dialog

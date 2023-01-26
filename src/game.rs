@@ -6,7 +6,9 @@ use crate::{
     model::Models,
     window::{main::MainWindow, Window},
 };
+use pagurus::fixed_window::FixedWindow;
 use pagurus::image::Canvas;
+use pagurus::spatial::Size;
 use pagurus::timeout::TimeoutTag;
 use pagurus::{
     event::WindowEvent as PagurusWindowEvent,
@@ -28,6 +30,7 @@ pub struct PixcilGame {
     windows: Vec<Box<dyn Window>>,
     app: Option<App>,
     render_timeout: Option<pagurus::timeout::TimeoutId>,
+    screen: FixedWindow,
 }
 
 impl PixcilGame {
@@ -91,6 +94,7 @@ impl<S: System> Game<S> for PixcilGame {
     }
 
     fn handle_event(&mut self, system: &mut S, event: PagurusEvent) -> Result<bool> {
+        let event = self.screen.handle_event(event);
         match event {
             PagurusEvent::Terminating => return Ok(false),
             PagurusEvent::Timeout(TimeoutEvent { id, .. }) if Some(id) == self.render_timeout => {
@@ -98,6 +102,19 @@ impl<S: System> Game<S> for PixcilGame {
                 self.render(system).or_fail()?;
             }
             PagurusEvent::Window(PagurusWindowEvent::RedrawNeeded { size }) => {
+                if size.width < size.height && (1..800).contains(&size.width) {
+                    self.screen =
+                        FixedWindow::new(Size::from_wh(800, 800 * size.height / size.width));
+                } else if size.height < size.width && (1..800).contains(&size.height) {
+                    self.screen =
+                        FixedWindow::new(Size::from_wh(800 * size.width / size.height, 800));
+                } else {
+                    self.screen = FixedWindow::new(size);
+                }
+                let event = PagurusEvent::Window(PagurusWindowEvent::RedrawNeeded { size });
+                self.screen.handle_event(event);
+
+                let size = self.screen.size();
                 let app = self.app.as_mut().or_fail()?;
                 app.request_redraw(size.to_region());
                 if size != app.screen_size() {
