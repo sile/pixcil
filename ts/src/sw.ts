@@ -19,12 +19,14 @@ self.addEventListener("fetch", (e) => {
   e.respondWith(
     // @ts-ignore
     caches.match(e.request).then((r) => {
+      if (r) {
+        return Promise.resolve(r);
+      }
+
       // @ts-ignore
       console.log("[Service Worker] Fetching resource: " + e.request.url);
       // @ts-ignore
-      const promise = r || fetch(e.request);
-      // @ts-ignore
-      return promise.then((response) => {
+      return fetch(e.request).then((response) => {
         return caches.open(CACHE_NAME).then((cache) => {
           // @ts-ignore
           console.log("[Service Worker] Caching new resource: " + e.request.url);
