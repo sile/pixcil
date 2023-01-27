@@ -4,6 +4,7 @@ main
 core
 ----
 
+- [FIX] Don't let preview area consume mouse events for buttons
 - [UPDATE] Support small screen (auto resize)
 - [FIX] Ensure that preview size reflects loaded image size
 - [UPDATE] Support loading PNG files using palette mode

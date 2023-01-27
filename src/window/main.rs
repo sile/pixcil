@@ -89,20 +89,20 @@ impl Window for MainWindow {
         }
 
         self.pixel_canvas.handle_event_before(app).or_fail()?;
-        self.preview.handle_event_before(app).or_fail()?;
         self.side_bar.handle_event_before(app).or_fail()?;
         self.bottom_bar.handle_event_before(app).or_fail()?;
+        self.preview.handle_event_before(app).or_fail()?;
 
         if !self.pixel_canvas.marker_handler().is_operating() {
-            self.preview.handle_event(app, event).or_fail()?;
             self.side_bar.handle_event(app, event).or_fail()?;
             self.bottom_bar.handle_event(app, event).or_fail()?;
+            self.preview.handle_event(app, event).or_fail()?;
         }
         self.pixel_canvas.handle_event(app, event).or_fail()?;
 
+        self.preview.handle_event_after(app).or_fail()?;
         self.bottom_bar.handle_event_after(app).or_fail()?;
         self.side_bar.handle_event_after(app).or_fail()?;
-        self.preview.handle_event_after(app).or_fail()?;
         self.pixel_canvas.handle_event_after(app).or_fail()?;
 
         Ok(())
