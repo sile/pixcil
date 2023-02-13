@@ -19,10 +19,24 @@ impl Mark for EllipseMarker {
             }
             MouseState::Pressing | MouseState::Clicked => {
                 if let Some(center) = self.center {
-                    let _x_radius = (position.x - center.x).abs();
-                    let _y_radius = (position.y - center.y).abs();
+                    let x_radius = (position.x - center.x).abs();
+                    let y_radius = (position.y - center.y).abs();
 
                     // TODO
+                    let x_start = center.x - x_radius;
+                    let y_start = center.y - y_radius;
+                    let x_end = center.x + x_radius;
+                    let y_end = center.y + y_radius;
+
+                    self.marked.clear();
+                    for x in x_start..=x_end {
+                        self.marked.insert(PixelPosition::from_xy(x, y_start));
+                        self.marked.insert(PixelPosition::from_xy(x, y_end));
+                    }
+                    for y in y_start..=y_end {
+                        self.marked.insert(PixelPosition::from_xy(x_start, y));
+                        self.marked.insert(PixelPosition::from_xy(x_end, y));
+                    }
 
                     if mouse == MouseState::Clicked {
                         self.center = None;

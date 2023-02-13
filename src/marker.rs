@@ -1,3 +1,7 @@
+use self::{
+    ellipse::EllipseMarker, fill::FillMarker, lasso::LassoMarker, line::LineMarker,
+    noop::NoopMarker, pick::PickMarker, rectangle::RectangleMarker, stroke::StrokeMarker,
+};
 use crate::{
     app::App,
     event::{Event, MouseAction},
@@ -5,11 +9,6 @@ use crate::{
 };
 use pagurus::Result;
 use std::collections::HashSet;
-
-use self::{
-    ellipse::EllipseMarker, fill::FillMarker, lasso::LassoMarker, line::LineMarker,
-    noop::NoopMarker, pick::PickMarker, rectangle::RectangleMarker, stroke::StrokeMarker,
-};
 
 pub mod ellipse;
 pub mod fill;

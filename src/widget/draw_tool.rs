@@ -29,8 +29,7 @@ impl DrawToolWidget {
             ButtonWidget::new(ButtonKind::Basic, IconId::PenStroke),
             ButtonWidget::new(ButtonKind::Basic, IconId::PenLine),
             ButtonWidget::new(ButtonKind::Basic, IconId::PenRectangle),
-            // TODO
-            // ButtonWidget::new(ButtonKind::Basic, IconId::PenCircle),
+            ButtonWidget::new(ButtonKind::Basic, IconId::PenCircle),
             ButtonWidget::new(ButtonKind::Basic, IconId::Bucket),
         ];
         buttons[tool_to_index(current)].set_kind(ButtonKind::BasicPressed);
@@ -97,8 +96,8 @@ fn tool_to_index(tool: DrawTool) -> usize {
         DrawTool::PenStroke => 0,
         DrawTool::PenLine => 1,
         DrawTool::PenRectangle => 2,
-        DrawTool::PenCircle => 3, // TODO
-        DrawTool::Bucket => 3,
+        DrawTool::PenCircle => 3,
+        DrawTool::Bucket => 4,
     }
 }
 
