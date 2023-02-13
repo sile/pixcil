@@ -10,7 +10,7 @@ use crate::{
 };
 use pagurus::image::Canvas;
 use pagurus::{
-    failure::{Failure, OrFail},
+    failure::OrFail,
     spatial::{Position, Region, Size},
     Result,
 };
