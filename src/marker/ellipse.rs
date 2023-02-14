@@ -18,24 +18,46 @@ impl Mark for EllipseMarker {
                 self.marked = [position].into_iter().collect();
             }
             MouseState::Pressing | MouseState::Clicked => {
+                self.marked.clear();
                 if let Some(center) = self.center {
                     let x_radius = (position.x - center.x).abs();
                     let y_radius = (position.y - center.y).abs();
 
-                    // TODO
-                    let x_start = center.x - x_radius;
-                    let y_start = center.y - y_radius;
-                    let x_end = center.x + x_radius;
-                    let y_end = center.y + y_radius;
+                    // TODO: rename
+                    let prob = |xi, yi| {
+                        let mut count = 0;
+                        for xj in 0..=10 {
+                            for yj in 0..=10 {
+                                let xv = (xi as f32 + 0.1 * xj as f32).powi(2)
+                                    / (x_radius as f32).powi(2);
+                                let yv = (yi as f32 + 0.1 * yj as f32).powi(2)
+                                    / (y_radius as f32).powi(2);
+                                if xv + yv <= 1.0 {
+                                    count += 1;
+                                }
+                            }
+                        }
+                        count as f32 / (11 * 11) as f32
+                    };
 
-                    self.marked.clear();
-                    for x in x_start..=x_end {
-                        self.marked.insert(PixelPosition::from_xy(x, y_start));
-                        self.marked.insert(PixelPosition::from_xy(x, y_end));
-                    }
-                    for y in y_start..=y_end {
-                        self.marked.insert(PixelPosition::from_xy(x_start, y));
-                        self.marked.insert(PixelPosition::from_xy(x_end, y));
+                    let x0 = center.x;
+                    let y0 = center.y;
+                    let mut xi = 0;
+                    let mut yi = y_radius - 1;
+                    while xi < x_radius && yi >= 0 {
+                        self.marked.insert(PixelPosition::from_xy(x0 + xi, y0 + yi));
+                        self.marked.insert(PixelPosition::from_xy(x0 - xi, y0 - yi));
+                        self.marked.insert(PixelPosition::from_xy(x0 + xi, y0 - yi));
+                        self.marked.insert(PixelPosition::from_xy(x0 - xi, y0 + yi));
+
+                        if prob(xi + 1, yi) >= 0.5 {
+                            xi += 1;
+                        } else if prob(xi + 1, yi - 1) >= 0.5 {
+                            xi += 1;
+                            yi -= 1;
+                        } else {
+                            yi -= 1;
+                        }
                     }
 
                     if mouse == MouseState::Clicked {
