@@ -34,12 +34,12 @@ impl Mark for EllipseMarker {
                     let center_x = x_radius + region.start.x as f32;
                     let center_y = y_radius + region.start.y as f32;
 
-                    let ratio = |xi, yi| {
+                    let ratio = |xi: f32, yi: f32| {
                         let mut count = 0;
                         for xj in 0..=10 {
                             for yj in 0..=10 {
-                                let xv = (xi as f32 + 0.1 * xj as f32).powi(2) / x_radius2;
-                                let yv = (yi as f32 + 0.1 * yj as f32).powi(2) / y_radius2;
+                                let xv = (xi + 0.1 * xj as f32).powi(2) / x_radius2;
+                                let yv = (yi + 0.1 * yj as f32).powi(2) / y_radius2;
                                 if xv + yv <= 1.0 {
                                     count += 1;
                                 }
