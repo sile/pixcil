@@ -4,6 +4,7 @@ main
 core
 ----
 
+- [UPDATE] Add ellipse drawing tool
 - [FIX] Don't let preview area consume mouse events for buttons
 - [UPDATE] Support small screen (auto resize)
 - [FIX] Ensure that preview size reflects loaded image size
