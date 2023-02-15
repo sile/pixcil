@@ -368,8 +368,7 @@ export class PngEditorProvider
       case "inputNumber":
         vscode.window
           .showInputBox({
-            title: "foo",
-            prompt: "Please input a number",
+            title: "Please input a number",
             validateInput: (param) => {
               var regex = /\d+/;
               return regex.test(param) ? null : "Not a number";
