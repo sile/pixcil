@@ -1,52 +1,38 @@
-main
-====
+# Change Log
 
-core
-----
+All notable changes to this project will be documented in this file.
 
-- [UPDATE] Add ellipse drawing tool
-- [FIX] Don't let preview area consume mouse events for buttons
-- [UPDATE] Support small screen (auto resize)
-- [FIX] Ensure that preview size reflects loaded image size
-- [UPDATE] Support loading PNG files using palette mode
-- [FIX] Don't reset "FRAME PREVIEW" setting when opening settings dialog
-- [CHANGE] Update pagurus to v0.6.2
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-web
----
+## [Unreleased]
 
-- [UPDATE] Factor out common logic as `pixcil` NPM library
-- [UPDATE] Add PWA support
+## [0.4.0] - 2023-02-18
 
-vscode
-------
+### Added
 
-- Initial release
+- Ellipse drawing tool
+- Small screen support (auto resize)
+- PWA (Progressive Web Apps) support
+- Make it possible to load PNG files using palette mode
+- VSCode extension
 
-0.3.0
-=====
+### Fixed
 
-core
-----
+- Don't let preview area consume mouse events for buttons
+- Don't reset "FRAME PREVIEW" setting when opening settings dialog
+- Ensure that preview size reflects loaded image size
+
+## [0.3.0]
 
 - [UPDATE] Support to import gray scale PNG files
 - [FIX] Fix a bug that the program crashes when an HSV color slider reaches the max value and then the up button is pressed
 - [CHANGE] Limit maximum FPS to 120 to eliminate too many redraws
-- [UPDATE] Update pagurus version to v0.5.0
-
-web
----
-
 - [Add] Use service worker to support offline mode
-- [UPDATE] Remove green margin around the canvas
+- [UPDATE] Remove green margin around the canvas (web)
+- [ADD] Windows binary
 
-windows
--------
-
-- [ADD] Initial release
-
-0.2.0
-=====
+## [0.2.0]
 
 - [UPDATE] Skip storing a pixel instance if it's alpha is zero
 - [FIX] Ensure imported image positions align with pixel size
@@ -58,7 +44,6 @@ windows
 - [FIX] Consider pixel size when copying
 - [ADD] Support flip and rotate operations
 
-0.1.0
-=====
+## [0.1.0]
 
-First release
+- Initial release
