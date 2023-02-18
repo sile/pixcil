@@ -15,8 +15,9 @@ readme = "README.md"
 crate-type = ["lib", "cdylib"]
 
 [features]
-default = ["wasm"]
+default = ["wasm", "auto-scaling"]
 wasm = ["pagurus/wasm"]
+auto-scaling = []
 
 [dependencies]
 byteorder = "1.4.3"

@@ -6,8 +6,10 @@ use crate::{
     model::Models,
     window::{main::MainWindow, Window},
 };
+#[cfg(feature = "auto-scaling")]
 use pagurus::fixed_window::FixedWindow;
 use pagurus::image::Canvas;
+#[cfg(feature = "auto-scaling")]
 use pagurus::spatial::Size;
 use pagurus::timeout::TimeoutTag;
 use pagurus::{
@@ -30,6 +32,7 @@ pub struct PixcilGame {
     windows: Vec<Box<dyn Window>>,
     app: Option<App>,
     render_timeout: Option<pagurus::timeout::TimeoutId>,
+    #[cfg(feature = "auto-scaling")]
     screen: FixedWindow,
 }
 
@@ -94,6 +97,7 @@ impl<S: System> Game<S> for PixcilGame {
     }
 
     fn handle_event(&mut self, system: &mut S, event: PagurusEvent) -> Result<bool> {
+        #[cfg(feature = "auto-scaling")]
         let event = self.screen.handle_event(event);
         match event {
             PagurusEvent::Terminating => return Ok(false),
@@ -102,18 +106,22 @@ impl<S: System> Game<S> for PixcilGame {
                 self.render(system).or_fail()?;
             }
             PagurusEvent::Window(PagurusWindowEvent::RedrawNeeded { size }) => {
-                if size.width < size.height && (1..800).contains(&size.width) {
-                    self.screen =
-                        FixedWindow::new(Size::from_wh(800, 800 * size.height / size.width));
-                } else if size.height < size.width && (1..800).contains(&size.height) {
-                    self.screen =
-                        FixedWindow::new(Size::from_wh(800 * size.width / size.height, 800));
-                } else {
-                    self.screen = FixedWindow::new(size);
+                #[cfg(feature = "auto-scaling")]
+                {
+                    if size.width < size.height && (1..800).contains(&size.width) {
+                        self.screen =
+                            FixedWindow::new(Size::from_wh(800, 800 * size.height / size.width));
+                    } else if size.height < size.width && (1..800).contains(&size.height) {
+                        self.screen =
+                            FixedWindow::new(Size::from_wh(800 * size.width / size.height, 800));
+                    } else {
+                        self.screen = FixedWindow::new(size);
+                    }
+                    let event = PagurusEvent::Window(PagurusWindowEvent::RedrawNeeded { size });
+                    self.screen.handle_event(event);
                 }
-                let event = PagurusEvent::Window(PagurusWindowEvent::RedrawNeeded { size });
-                self.screen.handle_event(event);
 
+                #[cfg(feature = "auto-scaling")]
                 let size = self.screen.size();
                 let app = self.app.as_mut().or_fail()?;
                 app.request_redraw(size.to_region());
