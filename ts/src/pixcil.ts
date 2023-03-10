@@ -88,6 +88,10 @@ class App {
 
   static async load(options: Options): Promise<App> {
     const canvas = options.canvas;
+    const canvasCtx = canvas.getContext("2d");
+    if (canvasCtx != undefined) {
+      canvasCtx.imageSmoothingEnabled = false;
+    }
     const canvasArea = options.canvasArea;
     const game = await Game.load(options.wasmPath);
     const system = await System.create(game.memory, { canvas });
