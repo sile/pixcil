@@ -3,18 +3,19 @@ use crate::{
     app::App,
     canvas_ext::CanvasExt,
     color,
-    event::Event,
+    event::{Event, MouseAction, TimeoutId},
     widget::{
         bottom_bar::BottomBarWidget, pixel_canvas::PixelCanvasWidget, preview::PreviewWidget,
         side_bar::SideBarWidget, FixedSizeWidget, VariableSizeWidget, Widget,
     },
 };
-use pagurus::image::Canvas;
+use pagurus::image::{Canvas, Color};
 use pagurus::{
     failure::OrFail,
     spatial::{Position, Region, Size},
     Result,
 };
+use std::time::Duration;
 
 #[derive(Debug, Default)]
 pub struct MainWindow {
@@ -23,6 +24,9 @@ pub struct MainWindow {
     preview: PreviewWidget,
     side_bar: SideBarWidget,
     bottom_bar: BottomBarWidget,
+    finger: bool,
+    timeout: Option<(Position, TimeoutId)>,
+    cursor: Option<Position>,
 }
 
 impl MainWindow {
@@ -55,6 +59,11 @@ impl Window for MainWindow {
             self.bottom_bar.render_if_need(app, canvas);
         }
         canvas.draw_rectangle(self.region(), color::WINDOW_BORDER);
+
+        if let Some(p) = self.cursor {
+            log::info!("cursur: {p:?}");
+            canvas.fill_rectangle(Region::new(p, Size::square(4)), Color::RED);
+        }
     }
 
     fn is_terminated(&self) -> bool {
@@ -81,6 +90,22 @@ impl Window for MainWindow {
     }
 
     fn handle_event(&mut self, app: &mut App, event: &mut Event) -> Result<()> {
+        if let Some((p, id)) = self.timeout {
+            if let Event::Timeout(id0) = *event {
+                log::info!("timeout: {id0:?}");
+                if id == id0 {
+                    // TODO: vibration
+                    self.finger = true;
+                    self.timeout = None;
+                    *event = Event::Mouse {
+                        action: MouseAction::Down,
+                        position: p,
+                        consumed: false,
+                    };
+                }
+            }
+        }
+
         if app.models().preview_mode {
             self.preview.handle_event_before(app).or_fail()?;
             self.preview.handle_event(app, event).or_fail()?;
@@ -97,6 +122,38 @@ impl Window for MainWindow {
             self.side_bar.handle_event(app, event).or_fail()?;
             self.bottom_bar.handle_event(app, event).or_fail()?;
             self.preview.handle_event(app, event).or_fail()?;
+        }
+
+        if let Event::Mouse {
+            position, action, ..
+        } = event
+        {
+            // TODO: convert to CM
+            let p = *position;
+            position.y -= 100;
+
+            if *action == MouseAction::Down {
+                if self.finger == false {
+                    *action = MouseAction::Move;
+                }
+            } else if *action == MouseAction::Up {
+                self.finger = false;
+                self.timeout = None;
+                self.cursor = None;
+            }
+            if *action != MouseAction::Up {
+                if let Some(old) = self.cursor {
+                    app.request_redraw(Region::new(old, Size::square(4)));
+                }
+                self.cursor = Some(*position);
+                app.request_redraw(Region::new(*position, Size::square(4)));
+            }
+
+            if self.finger == false && *action == MouseAction::Move {
+                let id = app.set_timeout(Duration::from_millis(1000));
+                log::info!("set timeout: {id:?}");
+                self.timeout = Some((p, id));
+            }
         }
         self.pixel_canvas.handle_event(app, event).or_fail()?;
 
