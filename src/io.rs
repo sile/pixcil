@@ -7,6 +7,7 @@ pub enum IoRequest {
     LoadWorkspace,
     ImportImage,
     InputNumber { id: InputId },
+    Vibrate,
 }
 
 #[derive(Debug, serde::Serialize, serde::Deserialize)]

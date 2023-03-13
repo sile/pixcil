@@ -6,6 +6,7 @@ use crate::{
     canvas_ext::CanvasExt,
     color,
     event::{Event, MouseAction, TimeoutId},
+    io::IoRequest,
     marker::{MarkerHandler, MarkerKind},
     model::tool::{DrawTool, ToolKind, ToolModel},
     pixel::{Pixel, PixelPosition, PixelRegion},
@@ -398,6 +399,7 @@ impl Widget for FingerDrawingWidget {
         if let Event::Timeout(id) = *event {
             if self.mouse_down_timeout.map(|x| x.1) == Some(id) {
                 if let Some(position) = self.cursor {
+                    app.enqueue_io_request(IoRequest::Vibrate);
                     // TODO: vibration
                     self.mouse_down = true;
                     self.mouse_down_timeout = None;

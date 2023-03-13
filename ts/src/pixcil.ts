@@ -160,7 +160,7 @@ class App {
       this.handleDirtyState();
     }
 
-    type RequestJson = "saveWorkspace" | "loadWorkspace" | "importImage" | { inputNumber: { id: number } };
+    type RequestJson = "saveWorkspace" | "loadWorkspace" | "importImage" | { inputNumber: { id: number } } | "vibrate";
 
     const requestBytes = this.game.query(this.system, "nextIoRequest");
     if (requestBytes.length > 0) {
@@ -174,6 +174,11 @@ class App {
           break;
         case "importImage":
           this.importImage();
+          break;
+        case "vibrate":
+          if ("vibrate" in window.navigator) {
+            window.navigator.vibrate(50);
+          }
           break;
         default:
           if ("inputNumber" in requestJson) {
