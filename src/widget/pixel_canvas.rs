@@ -34,7 +34,9 @@ pub struct PixelCanvasWidget {
 
 impl PixelCanvasWidget {
     pub fn is_operating(&self) -> bool {
-        self.marker_handler.is_operating() || self.finger.mouse_down_timeout.is_some()
+        self.marker_handler.is_operating()
+            || self.finger.mouse_down_timeout.is_some()
+            || self.manipulate.as_ref().map_or(false, |x| x.is_dragging())
     }
 
     fn render_grid(&self, app: &App, canvas: &mut Canvas) {
@@ -254,6 +256,25 @@ impl Widget for PixelCanvasWidget {
             return Ok(());
         }
 
+        // TODO: refactoring
+        if self.finger.mouse_down_timeout.is_some()
+            || (self.move_camera.is_none()
+                && self
+                    .manipulate
+                    .as_ref()
+                    .map_or(true, |x| !x.is_consumed_by_tool(event)))
+        {
+            self.finger.handle_event(app, event).or_fail()?;
+            if self.finger.mouse_down_timeout.is_some()
+                && self
+                    .manipulate
+                    .as_ref()
+                    .map_or(false, |x| x.is_consumed_by_tool(event))
+            {
+                event.consume();
+            }
+        }
+
         if let Some(w) = &mut self.manipulate {
             w.handle_event(app, event).or_fail()?;
             if w.is_terminated() {
@@ -262,10 +283,6 @@ impl Widget for PixelCanvasWidget {
             }
         } else if let Some(w) = &mut self.move_camera {
             w.handle_event(app, event).or_fail()?;
-        }
-
-        if self.move_camera.is_none() {
-            self.finger.handle_event(app, event).or_fail()?;
         }
 
         self.marker_handler.handle_event(app, event).or_fail()?;

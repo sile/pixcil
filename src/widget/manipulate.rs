@@ -9,7 +9,7 @@ use crate::{
 use pagurus::image::{Canvas, Rgba, Sprite};
 use pagurus::{
     failure::OrFail,
-    spatial::{Position, Region},
+    spatial::{Contains, Position, Region},
     Result,
 };
 use std::collections::{HashMap, HashSet};
@@ -49,6 +49,10 @@ impl ManipulateWidget {
         this.set_region(app, app.screen_size().to_region());
         app.request_redraw(this.tool.region());
         this
+    }
+
+    pub fn is_dragging(&self) -> bool {
+        matches!(self.state, State::Dragging { .. })
     }
 
     pub fn with_imported_image(app: &App, image: &Sprite) -> Self {
@@ -189,6 +193,14 @@ impl ManipulateWidget {
 
         let region = PixelRegion::from_positions(self.manipulating_pixels.keys().copied());
         app.request_redraw(region.to_screen_region(app));
+    }
+
+    pub fn is_consumed_by_tool(&self, event: &Event) -> bool {
+        if let Some(p) = event.position() {
+            !matches!(self.state, State::Dragging { .. }) && self.tool.region().contains(&p)
+        } else {
+            false
+        }
     }
 }
 
