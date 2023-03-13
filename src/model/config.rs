@@ -21,6 +21,7 @@ pub struct ConfigModel {
     pub frame_preview: FramePreview,
     pub layer: Layer,
     pub animation: Animation,
+    pub finger_mode: FingerMode,
 }
 
 impl Serialize for ConfigModel {
@@ -34,6 +35,7 @@ impl Serialize for ConfigModel {
         self.frame_preview.serialize(writer).or_fail()?;
         self.layer.serialize(writer).or_fail()?;
         self.animation.serialize(writer).or_fail()?;
+        self.finger_mode.serialize(writer).or_fail()?;
         Ok(())
     }
 }
@@ -50,6 +52,7 @@ impl Deserialize for ConfigModel {
             frame_preview: Deserialize::deserialize_or_default(reader).or_fail()?,
             layer: Deserialize::deserialize_or_default(reader).or_fail()?,
             animation: Deserialize::deserialize_or_default(reader).or_fail()?,
+            finger_mode: Deserialize::deserialize_or_default(reader).or_fail()?,
         })
     }
 }
@@ -693,6 +696,56 @@ impl Deserialize for Animation {
             enabled: Deserialize::deserialize(reader).or_fail()?,
             fps: Deserialize::deserialize(reader).or_fail()?,
             frame_count: Deserialize::deserialize(reader).or_fail()?,
+        })
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
+pub struct FingerMode {
+    enabled: bool,
+    cursor_distance: u32,
+}
+
+impl FingerMode {
+    pub const fn enabled(self) -> bool {
+        self.enabled
+    }
+
+    pub fn set_enabled(&mut self, enabled: bool) {
+        self.enabled = enabled;
+    }
+
+    pub const fn cursor_distance(self) -> u32 {
+        self.cursor_distance
+    }
+
+    pub fn set_cursor_distance(&mut self, distance: u32) {
+        self.cursor_distance = distance;
+    }
+}
+
+impl Default for FingerMode {
+    fn default() -> Self {
+        Self {
+            enabled: false,
+            cursor_distance: 150,
+        }
+    }
+}
+
+impl Serialize for FingerMode {
+    fn serialize<W: Write>(&self, writer: &mut W) -> Result<()> {
+        self.enabled.serialize(writer).or_fail()?;
+        self.cursor_distance.serialize(writer).or_fail()?;
+        Ok(())
+    }
+}
+
+impl Deserialize for FingerMode {
+    fn deserialize<R: Read>(reader: &mut R) -> Result<Self> {
+        Ok(Self {
+            enabled: Deserialize::deserialize(reader).or_fail()?,
+            cursor_distance: Deserialize::deserialize(reader).or_fail()?,
         })
     }
 }

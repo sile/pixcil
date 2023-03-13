@@ -26,6 +26,7 @@ pub struct ConfigWidget {
     // General settings
     minimum_pixel_size: BlockWidget<PixelSizeWidget>,
     max_undos: BlockWidget<NumberBoxWidget>,
+    finger_mode: BlockWidget<ToggleWidget>,
 
     // Frame settings
     frame_width: BlockWidget<NumberBoxWidget>,
@@ -49,6 +50,7 @@ impl ConfigWidget {
         let frame_preview = app.models().config.frame_preview.get();
         let layer = app.models().config.layer;
         let animation = app.models().config.animation;
+        let finger_mode = app.models().config.finger_mode.enabled();
         Self {
             region: Region::default(),
 
@@ -60,6 +62,10 @@ impl ConfigWidget {
             max_undos: BlockWidget::new(
                 "MAX UNDOS".parse().expect("unreachable"),
                 NumberBoxWidget::new(0, max_undos, u32::MAX),
+            ),
+            finger_mode: BlockWidget::new(
+                "FINGER MODE".parse().expect("unreachable"),
+                ToggleWidget::new(finger_mode),
             ),
 
             // Frame
@@ -120,6 +126,7 @@ impl Widget for ConfigWidget {
         // General
         self.minimum_pixel_size.render_if_need(app, canvas);
         self.max_undos.render_if_need(app, canvas);
+        self.finger_mode.render_if_need(app, canvas);
 
         // Frame
         self.frame_width.render_if_need(app, canvas);
@@ -149,6 +156,12 @@ impl Widget for ConfigWidget {
             .config
             .max_undos
             .set(self.max_undos.body().value());
+
+        self.finger_mode.handle_event(app, event).or_fail()?;
+        app.models_mut()
+            .config
+            .finger_mode
+            .set_enabled(self.finger_mode.body().is_on());
 
         // Frame
         let frame = app.models().config.frame;
@@ -221,6 +234,7 @@ impl Widget for ConfigWidget {
             // General
             &mut self.minimum_pixel_size,
             &mut self.max_undos,
+            &mut self.finger_mode,
             // Frame
             &mut self.frame_width,
             &mut self.frame_height,
@@ -241,6 +255,7 @@ impl FixedSizeWidget for ConfigWidget {
         // General
         let mut general_settings_size = self.minimum_pixel_size.requiring_size(app);
         general_settings_size.height += MARGIN + self.max_undos.requiring_size(app).height;
+        general_settings_size.width += MARGIN + self.finger_mode.requiring_size(app).width;
 
         // Frame
         let mut frame_settings_size = self.frame_preview.requiring_size(app);
@@ -285,9 +300,16 @@ impl FixedSizeWidget for ConfigWidget {
         region.consume_y(minimum_pixel_size_region.size.height + MARGIN);
 
         let mut max_undos_region = region;
-        max_undos_region.size.height = self.max_undos.requiring_size(app).height;
+        max_undos_region.size = self.max_undos.requiring_size(app);
+        max_undos_region.size.width = region.size.width / 2 - MARGIN;
         self.max_undos.set_region(app, max_undos_region);
-        region.consume_y(max_undos_region.size.height + GROUP_MARGIN);
+
+        let mut finger_mode_region = region;
+        finger_mode_region.position.x = max_undos_region.end().x + MARGIN as i32 * 2;
+        finger_mode_region.size = self.finger_mode.requiring_size(app);
+        finger_mode_region.size.width = region.size.width / 2 - MARGIN;
+        self.finger_mode.set_region(app, finger_mode_region);
+        region.consume_y(finger_mode_region.size.height + GROUP_MARGIN);
 
         // Frame
         let mut frame_width_region = region;

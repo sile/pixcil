@@ -406,8 +406,11 @@ impl Widget for FingerDrawingWidget {
     }
 
     fn handle_event(&mut self, app: &mut App, event: &mut Event) -> Result<()> {
-        // TODO: check option
+        if !app.models().config.finger_mode.enabled() {
+            return Ok(());
+        }
 
+        let cursor_distance = app.models().config.finger_mode.cursor_distance() as i32;
         if let Event::Timeout(id) = *event {
             if self.mouse_down_timeout.map(|x| x.1) == Some(id) {
                 if let Some(position) = self.cursor {
@@ -417,7 +420,7 @@ impl Widget for FingerDrawingWidget {
                     self.mouse_down_timeout = None;
                     *event = Event::Mouse {
                         action: MouseAction::Down,
-                        position: position.move_y(150), // TODO: option
+                        position: position.move_y(cursor_distance),
                         consumed: false,
                     };
                 }
@@ -434,8 +437,7 @@ impl Widget for FingerDrawingWidget {
             return Ok(());
         }
 
-        let position = position.move_y(-150); // TODO: option
-
+        let position = position.move_y(-cursor_distance);
         if let Some(old) = self.cursor_region() {
             app.request_redraw(old);
         }
