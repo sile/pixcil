@@ -93,7 +93,7 @@ impl Window for MainWindow {
         self.bottom_bar.handle_event_before(app).or_fail()?;
         self.preview.handle_event_before(app).or_fail()?;
 
-        if !self.pixel_canvas.marker_handler().is_operating() {
+        if !self.pixel_canvas.is_operating() {
             self.side_bar.handle_event(app, event).or_fail()?;
             self.bottom_bar.handle_event(app, event).or_fail()?;
             self.preview.handle_event(app, event).or_fail()?;

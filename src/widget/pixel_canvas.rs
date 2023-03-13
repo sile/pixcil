@@ -33,8 +33,8 @@ pub struct PixelCanvasWidget {
 }
 
 impl PixelCanvasWidget {
-    pub fn marker_handler(&self) -> &MarkerHandler {
-        &self.marker_handler
+    pub fn is_operating(&self) -> bool {
+        self.marker_handler.is_operating() || self.finger.mouse_down_timeout.is_some()
     }
 
     fn render_grid(&self, app: &App, canvas: &mut Canvas) {
@@ -264,7 +264,9 @@ impl Widget for PixelCanvasWidget {
             w.handle_event(app, event).or_fail()?;
         }
 
-        self.finger.handle_event(app, event).or_fail()?;
+        if self.move_camera.is_none() {
+            self.finger.handle_event(app, event).or_fail()?;
+        }
 
         self.marker_handler.handle_event(app, event).or_fail()?;
         if self.marker_handler.is_completed() {
@@ -300,7 +302,7 @@ impl Widget for PixelCanvasWidget {
                 }
                 ToolKind::Move => {}
                 ToolKind::Pick => {
-                    if let Some(position) = self.marker_handler().marked_pixels(app).next() {
+                    if let Some(position) = self.marker_handler.marked_pixels(app).next() {
                         if let Some(color) = app.models().pixel_canvas.get_pixel(&config, position)
                         {
                             app.models_mut().config.color.set(color);
@@ -310,7 +312,7 @@ impl Widget for PixelCanvasWidget {
                 }
             }
         } else if self.tool.tool_kind() == ToolKind::Pick {
-            if let Some(position) = self.marker_handler().marked_pixels(app).next() {
+            if let Some(position) = self.marker_handler.marked_pixels(app).next() {
                 if let Some(color) = app
                     .models()
                     .pixel_canvas
