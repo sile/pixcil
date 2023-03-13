@@ -382,16 +382,26 @@ struct FingerDrawingWidget {
     mouse_down_timeout: Option<(PixelPosition, TimeoutId)>,
 }
 
+impl FingerDrawingWidget {
+    fn cursor_region(&self) -> Option<Region> {
+        self.cursor.map(|mut p| {
+            let size = Size::square(5);
+            p.x -= (size.width / 2) as i32;
+            p.y -= (size.height / 2) as i32;
+            Region::new(p, size)
+        })
+    }
+}
+
 impl Widget for FingerDrawingWidget {
     fn region(&self) -> Region {
         Region::default()
     }
 
     fn render(&self, _app: &App, canvas: &mut Canvas) {
-        // TODO: check option
-
-        if let Some(p) = self.cursor {
-            canvas.fill_rectangle(Region::new(p, Size::square(5)), Color::RED);
+        if let Some(region) = self.cursor_region() {
+            canvas.fill_rectangle(region, Color::BLACK);
+            canvas.draw_rectangle(region, Color::WHITE);
         }
     }
 
@@ -402,7 +412,7 @@ impl Widget for FingerDrawingWidget {
             if self.mouse_down_timeout.map(|x| x.1) == Some(id) {
                 if let Some(position) = self.cursor {
                     app.enqueue_io_request(IoRequest::Vibrate);
-                    // TODO: vibration
+
                     self.mouse_down = true;
                     self.mouse_down_timeout = None;
                     *event = Event::Mouse {
@@ -426,8 +436,8 @@ impl Widget for FingerDrawingWidget {
 
         let position = position.move_y(-150); // TODO: option
 
-        if let Some(old_position) = self.cursor {
-            app.request_redraw(Region::new(old_position, Size::square(5)));
+        if let Some(old) = self.cursor_region() {
+            app.request_redraw(old);
         }
         self.cursor = Some(position);
 
@@ -445,11 +455,11 @@ impl Widget for FingerDrawingWidget {
             MouseAction::Move => {}
         }
 
-        if let Some(new_position) = self.cursor {
-            app.request_redraw(Region::new(new_position, Size::square(5)));
+        if let Some(new) = self.cursor_region() {
+            app.request_redraw(new);
 
             if !self.mouse_down {
-                let pixel_position = PixelPosition::from_screen_position(app, new_position);
+                let pixel_position = PixelPosition::from_screen_position(app, position);
                 if Some(pixel_position) != self.mouse_down_timeout.map(|x| x.0) {
                     let timeout_id = app.set_timeout(Duration::from_millis(500));
                     self.mouse_down_timeout = Some((pixel_position, timeout_id));
