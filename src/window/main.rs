@@ -61,8 +61,7 @@ impl Window for MainWindow {
         canvas.draw_rectangle(self.region(), color::WINDOW_BORDER);
 
         if let Some(p) = self.cursor {
-            log::info!("cursur: {p:?}");
-            canvas.fill_rectangle(Region::new(p, Size::square(4)), Color::RED);
+            canvas.fill_rectangle(Region::new(p, Size::square(5)), Color::RED);
         }
     }
 
@@ -90,21 +89,21 @@ impl Window for MainWindow {
     }
 
     fn handle_event(&mut self, app: &mut App, event: &mut Event) -> Result<()> {
-        if let Some((p, id)) = self.timeout {
-            if let Event::Timeout(id0) = *event {
-                log::info!("timeout: {id0:?}");
-                if id == id0 {
-                    // TODO: vibration
-                    self.finger = true;
-                    self.timeout = None;
-                    *event = Event::Mouse {
-                        action: MouseAction::Down,
-                        position: p,
-                        consumed: false,
-                    };
-                }
-            }
-        }
+        // if let Some((p, id)) = self.timeout {
+        //     if let Event::Timeout(id0) = *event {
+        //         log::info!("timeout: {id0:?}");
+        //         if id == id0 {
+        //             // TODO: vibration
+        //             self.finger = true;
+        //             self.timeout = None;
+        //             *event = Event::Mouse {
+        //                 action: MouseAction::Down,
+        //                 position: p,
+        //                 consumed: false,
+        //             };
+        //         }
+        //     }
+        // }
 
         if app.models().preview_mode {
             self.preview.handle_event_before(app).or_fail()?;
@@ -124,37 +123,37 @@ impl Window for MainWindow {
             self.preview.handle_event(app, event).or_fail()?;
         }
 
-        if let Event::Mouse {
-            position, action, ..
-        } = event
-        {
-            // TODO: convert to CM
-            let p = *position;
-            position.y -= 100;
+        // if let Event::Mouse {
+        //     position, action, ..
+        // } = event
+        // {
+        //     // TODO: convert to CM
+        //     let p = *position;
+        //     position.y -= 100;
 
-            if *action == MouseAction::Down {
-                if self.finger == false {
-                    *action = MouseAction::Move;
-                }
-            } else if *action == MouseAction::Up {
-                self.finger = false;
-                self.timeout = None;
-                self.cursor = None;
-            }
-            if *action != MouseAction::Up {
-                if let Some(old) = self.cursor {
-                    app.request_redraw(Region::new(old, Size::square(4)));
-                }
-                self.cursor = Some(*position);
-                app.request_redraw(Region::new(*position, Size::square(4)));
-            }
+        //     if *action == MouseAction::Down {
+        //         if self.finger == false {
+        //             *action = MouseAction::Move;
+        //         }
+        //     } else if *action == MouseAction::Up {
+        //         self.finger = false;
+        //         self.timeout = None;
+        //         self.cursor = None;
+        //     }
+        //     if *action != MouseAction::Up {
+        //         if let Some(old) = self.cursor {
+        //             app.request_redraw(Region::new(old, Size::square(5)));
+        //         }
+        //         self.cursor = Some(*position);
+        //         app.request_redraw(Region::new(*position, Size::square(5)));
+        //     }
 
-            if self.finger == false && *action == MouseAction::Move {
-                let id = app.set_timeout(Duration::from_millis(1000));
-                log::info!("set timeout: {id:?}");
-                self.timeout = Some((p, id));
-            }
-        }
+        //     if self.finger == false && *action == MouseAction::Move {
+        //         let id = app.set_timeout(Duration::from_millis(500));
+        //         log::info!("set timeout: {id:?}");
+        //         self.timeout = Some((p, id));
+        //     }
+        // }
         self.pixel_canvas.handle_event(app, event).or_fail()?;
 
         self.preview.handle_event_after(app).or_fail()?;

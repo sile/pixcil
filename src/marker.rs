@@ -117,8 +117,6 @@ pub struct MarkerHandler {
     mouse: MouseState,
     last_event: Option<(PixelPosition, MouseAction)>,
     last_marked: HashSet<PixelPosition>,
-    updated: bool,
-    prev_redraw_count: u64,
 }
 
 impl MarkerHandler {
@@ -141,11 +139,7 @@ impl MarkerHandler {
     }
 
     pub fn marked_pixels(&self, app: &App) -> Box<dyn '_ + Iterator<Item = PixelPosition>> {
-        if self.updated {
-            self.marker.marked_pixels(app)
-        } else {
-            Box::new(std::iter::empty())
-        }
+        self.marker.marked_pixels(app)
     }
 
     pub fn is_completed(&self) -> bool {
@@ -161,11 +155,6 @@ impl MarkerHandler {
     }
 
     pub fn handle_event(&mut self, app: &mut App, event: &mut Event) -> Result<()> {
-        if self.prev_redraw_count != app.redraw_count() {
-            self.updated = false;
-            self.prev_redraw_count = app.redraw_count();
-        }
-
         let (pixel_position, action) = match event {
             Event::Mouse { consumed: true, .. } => {
                 self.request_redraw(app, self.last_marked.iter().copied());
@@ -214,7 +203,6 @@ impl MarkerHandler {
             self.request_redraw(app, marked.symmetric_difference(&self.last_marked).copied());
         }
         self.last_marked = marked;
-        self.updated = true;
 
         Ok(())
     }
