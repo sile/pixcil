@@ -79,6 +79,9 @@ fn handle_io_request(
         pixcil::io::IoRequest::InputNumber { id } => {
             handle_input_number(system, game, id).or_fail()?;
         }
+        pixcil::io::IoRequest::Vibrate => {
+            // TODO
+        }
     }
     Ok(())
 }
