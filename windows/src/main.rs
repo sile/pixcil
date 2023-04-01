@@ -82,6 +82,9 @@ fn handle_io_request(
         pixcil::io::IoRequest::Vibrate => {
             // TODO
         }
+        pixcil::io::IoRequest::ImportImageFromClipboard => {
+            // TODO
+        }
     }
     Ok(())
 }
