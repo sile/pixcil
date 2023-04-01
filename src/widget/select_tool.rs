@@ -23,7 +23,7 @@ pub struct SelectToolWidget {
     region: Region,
     current: SelectTool,
     tools: BlockWidget<SelectBoxWidget>,
-    import: BlockWidget<ButtonWidget>,
+    import: BlockWidget<ImportWidget>,
 }
 
 impl SelectToolWidget {
@@ -43,7 +43,7 @@ impl SelectToolWidget {
             ),
             import: BlockWidget::new(
                 "IMPORT IMAGE".parse::<Text>().or_fail()?,
-                ButtonWidget::new(ButtonKind::Basic, IconId::Import),
+                ImportWidget::new(),
             ),
         })
     }
@@ -80,9 +80,6 @@ impl Widget for SelectToolWidget {
             .or_fail()?;
 
         self.import.handle_event(app, event).or_fail()?;
-        if self.import.body_mut().take_clicked(app) {
-            app.enqueue_io_request(IoRequest::ImportImage);
-        }
 
         Ok(())
     }
@@ -124,5 +121,69 @@ fn icon_to_tool(icon: IconId) -> Result<SelectTool> {
         IconId::Select => Ok(SelectTool::Rectangle),
         IconId::Lasso => Ok(SelectTool::Lasso),
         _ => pagurus::unreachable!(),
+    }
+}
+
+#[derive(Debug)]
+struct ImportWidget {
+    region: Region,
+    from_file: ButtonWidget,
+    from_clipboard: ButtonWidget,
+}
+
+impl ImportWidget {
+    pub fn new() -> Self {
+        Self {
+            region: Region::default(),
+            from_file: ButtonWidget::new(ButtonKind::Basic, IconId::Import),
+            from_clipboard: ButtonWidget::new(ButtonKind::Basic, IconId::ImportFromClipboard),
+        }
+    }
+}
+
+impl Widget for ImportWidget {
+    fn region(&self) -> Region {
+        self.region
+    }
+
+    fn render(&self, app: &App, canvas: &mut Canvas) {
+        self.from_file.render_if_need(app, canvas);
+        self.from_clipboard.render_if_need(app, canvas);
+    }
+
+    fn handle_event(&mut self, app: &mut App, event: &mut Event) -> Result<()> {
+        self.from_file.handle_event(app, event).or_fail()?;
+        if self.from_file.take_clicked(app) {
+            app.enqueue_io_request(IoRequest::ImportImage);
+        }
+
+        self.from_clipboard.handle_event(app, event).or_fail()?;
+        // TODO: handle clicked
+
+        Ok(())
+    }
+
+    fn children(&mut self) -> Vec<&mut dyn Widget> {
+        vec![&mut self.from_file, &mut self.from_clipboard]
+    }
+}
+
+impl FixedSizeWidget for ImportWidget {
+    fn requiring_size(&self, app: &App) -> Size {
+        let mut size = self.from_file.requiring_size(app);
+        size.width += MARGIN + self.from_clipboard.requiring_size(app).width;
+        size
+    }
+
+    fn set_position(&mut self, app: &App, position: Position) {
+        self.region = Region::new(position, self.requiring_size(app));
+        self.from_file.set_position(app, position);
+        self.from_clipboard.set_position(
+            app,
+            Position::from_xy(
+                position.x + self.from_file.requiring_size(app).width as i32 + MARGIN as i32,
+                position.y,
+            ),
+        );
     }
 }
