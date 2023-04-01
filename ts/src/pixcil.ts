@@ -160,7 +160,7 @@ class App {
       this.handleDirtyState();
     }
 
-    type RequestJson = "saveWorkspace" | "loadWorkspace" | "importImage" | { inputNumber: { id: number } } | "vibrate";
+    type RequestJson = "saveWorkspace" | "loadWorkspace" | "importImage" | "importImageFromClipboard" | { inputNumber: { id: number } } | "vibrate";
 
     const requestBytes = this.game.query(this.system, "nextIoRequest");
     if (requestBytes.length > 0) {
@@ -174,6 +174,9 @@ class App {
           break;
         case "importImage":
           this.importImage();
+          break;
+        case "importImageFromClipboard":
+          this.importImageFromClipboard();
           break;
         case "vibrate":
           if ("vibrate" in window.navigator) {
@@ -226,6 +229,25 @@ class App {
       }
     };
     input.click();
+  }
+
+  private async importImageFromClipboard() {
+    const clipboardItems = await navigator.clipboard.read();
+    for (const item of clipboardItems) {
+      for (const type of item.types) {
+        if (type === "image/png") {
+          const blob = await item.getType("image/png");
+          const data = new Uint8Array(await blob.arrayBuffer());
+          try {
+            this.game.command(this.system, "importImage", data);
+          } catch (e) {
+            console.warn(e);
+            alert("Failed to import PNG from clipboard");
+          }
+          return;
+        }
+      }
+    }
   }
 
   private loadWorkspace() {

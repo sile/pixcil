@@ -158,7 +158,9 @@ impl Widget for ImportWidget {
         }
 
         self.from_clipboard.handle_event(app, event).or_fail()?;
-        // TODO: handle clicked
+        if self.from_clipboard.take_clicked(app) {
+            app.enqueue_io_request(IoRequest::ImportImageFromClipboard);
+        }
 
         Ok(())
     }

@@ -9,7 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Add finger friendly drawing  mode
+- Add import-image-from-clipboard feature
+- Add finger friendly drawing mode
 
 ### Changed
 
