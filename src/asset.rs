@@ -52,6 +52,7 @@ impl Assets {
             IconId::Save => &self.icons.save,
             IconId::Load => &self.icons.load,
             IconId::Import => &self.icons.import,
+            IconId::ImportFromClipboard => &self.icons.import_from_clipboard,
             IconId::PenStroke => &self.icons.pen_stroke,
             IconId::PenLine => &self.icons.pen_line,
             IconId::PenRectangle => &self.icons.pen_rectangle,
@@ -103,6 +104,7 @@ pub enum IconId {
     Save,
     Load,
     Import,
+    ImportFromClipboard,
     PenStroke,
     PenLine,
     PenRectangle,
@@ -270,6 +272,7 @@ pub struct Icons {
     pub save: Sprite,
     pub load: Sprite,
     pub import: Sprite,
+    pub import_from_clipboard: Sprite,
     pub pen_stroke: Sprite,
     pub pen_line: Sprite,
     pub pen_rectangle: Sprite,
@@ -315,6 +318,8 @@ impl Icons {
             save: decode_sprite(include_bytes!("../assets/icon-save.png")).or_fail()?,
             load: decode_sprite(include_bytes!("../assets/icon-load.png")).or_fail()?,
             import: decode_sprite(include_bytes!("../assets/icon-import.png")).or_fail()?,
+            import_from_clipboard: decode_sprite(include_bytes!("../assets/icon-clipboard.png"))
+                .or_fail()?,
             pen_stroke: decode_sprite(include_bytes!("../assets/icon-pen-stroke.png")).or_fail()?,
             pen_line: decode_sprite(include_bytes!("../assets/icon-pen-line.png")).or_fail()?,
             pen_rectangle: decode_sprite(include_bytes!("../assets/icon-pen-rectangle.png"))
