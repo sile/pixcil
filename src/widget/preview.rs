@@ -51,8 +51,8 @@ impl Widget for PreviewWidget {
     }
 
     fn handle_event_after(&mut self, app: &mut App) -> Result<()> {
-        if self.preview_off != !app.models().config.frame_preview.show() {
-            self.preview_off = !app.models().config.frame_preview.show();
+        if self.preview_off != !app.models().config.frame_preview.get() {
+            self.preview_off = !app.models().config.frame_preview.get();
             app.request_redraw(self.region);
             return Ok(());
         }
@@ -70,9 +70,11 @@ impl Widget for PreviewWidget {
             app.request_redraw(self.region.union(old_region));
         }
         if self.requiring_size(app) != self.region.size {
+            let old_region = self.region;
             let mut position = self.region.position;
             position.x = self.region.end().x - self.requiring_size(app).width as i32;
             self.set_position(app, position);
+            app.request_redraw(self.region.union(old_region));
         }
 
         Ok(())
@@ -105,7 +107,7 @@ struct PreviewFrameWidget {
 
 impl PreviewFrameWidget {
     fn render_pixels(&self, app: &App, canvas: &mut Canvas) {
-        let scale = app.models().config.frame_preview.scale() as i32;
+        let scale = app.models().config.frame_preview_scale.get() as i32;
         let current_frame = if let Some(playing) = &self.playing {
             playing.current_frame
         } else {
@@ -137,6 +139,7 @@ impl PreviewFrameWidget {
                 (drawing_region.end().y - offset.y) as i16,
             ),
         );
+        offset.y -= i32::from(pixel_frame_start.y) * (scale - 1);
 
         let size = Size::square(scale as u32);
         for pixel in app
@@ -148,7 +151,7 @@ impl PreviewFrameWidget {
                 i32::from(pixel.position.x) * scale + offset.x,
                 i32::from(pixel.position.y) * scale + offset.y,
             );
-            canvas.draw_rectangle(Region::new(position, size), pixel.color.into());
+            canvas.fill_rectangle(Region::new(position, size), pixel.color.into());
         }
     }
 
@@ -226,7 +229,7 @@ impl Widget for PreviewFrameWidget {
             return Ok(());
         }
 
-        let scale = app.models().config.frame_preview.scale() as i16;
+        let scale = app.models().config.frame_preview_scale.get() as i16;
         let pixel_region = PixelRegion::from_positions(
             dirty_pixels
                 .iter()
@@ -252,7 +255,7 @@ impl FixedSizeWidget for PreviewFrameWidget {
     fn requiring_size(&self, app: &App) -> Size {
         let frame = app.models().config.frame.get_base_region().size();
         Size::from_wh(u32::from(frame.width), u32::from(frame.height))
-            * app.models().config.frame_preview.scale() as u32
+            * app.models().config.frame_preview_scale.get() as u32
     }
 
     fn set_position(&mut self, app: &App, position: Position) {

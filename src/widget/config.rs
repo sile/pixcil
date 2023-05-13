@@ -48,8 +48,8 @@ impl ConfigWidget {
     pub fn new(app: &App) -> Self {
         let max_undos = app.models().config.max_undos.get();
         let frame_size = app.models().config.frame.get_base_region().size();
-        let frame_preview = app.models().config.frame_preview.show();
-        let frame_preview_scale = app.models().config.frame_preview.scale();
+        let frame_preview = app.models().config.frame_preview.get();
+        let frame_preview_scale = app.models().config.frame_preview_scale.get();
         let layer = app.models().config.layer;
         let animation = app.models().config.animation;
         let finger_mode = app.models().config.finger_mode.enabled();
@@ -187,23 +187,20 @@ impl Widget for ConfigWidget {
             app.request_redraw(app.screen_size().to_region());
         }
 
-        let frame_preview = app.models().config.frame_preview;
+        // Frame Preview
         self.frame_preview.handle_event(app, event).or_fail()?;
         app.models_mut()
             .config
             .frame_preview
-            .set_show(self.frame_preview.body().is_on());
+            .set(self.frame_preview.body().is_on());
         self.frame_preview_scale
             .handle_event(app, event)
             .or_fail()?;
         app.models_mut()
             .config
-            .frame_preview
-            .set_scale(self.frame_preview_scale.body().value() as u8)
+            .frame_preview_scale
+            .set(self.frame_preview_scale.body().value() as u8)
             .or_fail()?;
-        if frame_preview != app.models().config.frame_preview {
-            app.request_redraw(app.screen_size().to_region());
-        }
 
         // Layer
         let layer = app.models_mut().config.layer;

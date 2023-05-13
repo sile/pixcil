@@ -22,6 +22,7 @@ pub struct ConfigModel {
     pub layer: Layer,
     pub animation: Animation,
     pub finger_mode: FingerMode,
+    pub frame_preview_scale: FramePreviewScale,
 }
 
 impl Serialize for ConfigModel {
@@ -36,6 +37,7 @@ impl Serialize for ConfigModel {
         self.layer.serialize(writer).or_fail()?;
         self.animation.serialize(writer).or_fail()?;
         self.finger_mode.serialize(writer).or_fail()?;
+        self.frame_preview_scale.serialize(writer).or_fail()?;
         Ok(())
     }
 }
@@ -53,6 +55,7 @@ impl Deserialize for ConfigModel {
             layer: Deserialize::deserialize_or_default(reader).or_fail()?,
             animation: Deserialize::deserialize_or_default(reader).or_fail()?,
             finger_mode: Deserialize::deserialize_or_default(reader).or_fail()?,
+            frame_preview_scale: Deserialize::deserialize_or_default(reader).or_fail()?,
         })
     }
 }
@@ -380,75 +383,67 @@ impl Deserialize for FrameRegion {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-struct FrameScale(u8);
+pub struct FramePreviewScale(u8);
 
-impl Default for FrameScale {
+impl FramePreviewScale {
+    pub const fn get(self) -> u8 {
+        self.0
+    }
+
+    pub fn set(&mut self, scale: u8) -> Result<()> {
+        (scale > 0).or_fail()?;
+        self.0 = scale;
+        Ok(())
+    }
+}
+
+impl Default for FramePreviewScale {
     fn default() -> Self {
         Self(1)
     }
 }
 
-impl Serialize for FrameScale {
+impl Serialize for FramePreviewScale {
     fn serialize<W: Write>(&self, writer: &mut W) -> Result<()> {
         self.0.serialize(writer).or_fail()
     }
 }
 
-impl Deserialize for FrameScale {
+impl Deserialize for FramePreviewScale {
     fn deserialize<R: Read>(reader: &mut R) -> Result<Self> {
         Ok(Self(u8::deserialize(reader).or_fail()?))
     }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct FramePreview {
-    show: bool,
-    scale: FrameScale,
-}
+pub struct FramePreview(bool);
 
 impl FramePreview {
-    pub const fn show(self) -> bool {
-        self.show
+    pub const fn get(self) -> bool {
+        self.0
     }
 
-    pub fn set_show(&mut self, on: bool) {
-        self.show = on;
-    }
-
-    pub const fn scale(self) -> u8 {
-        self.scale.0
-    }
-
-    pub fn set_scale(&mut self, scale: u8) -> Result<()> {
-        (scale > 0).or_fail()?;
-        self.scale.0 = scale;
-        Ok(())
+    pub fn set(&mut self, on: bool) {
+        self.0 = on;
     }
 }
 
 impl Default for FramePreview {
     fn default() -> Self {
-        Self {
-            show: true,
-            scale: FrameScale::default(),
-        }
+        Self(true)
     }
 }
 
 impl Serialize for FramePreview {
     fn serialize<W: Write>(&self, writer: &mut W) -> Result<()> {
-        self.show.serialize(writer).or_fail()?;
-        self.scale.serialize(writer).or_fail()?;
+        self.0.serialize(writer).or_fail()?;
         Ok(())
     }
 }
 
 impl Deserialize for FramePreview {
     fn deserialize<R: Read>(reader: &mut R) -> Result<Self> {
-        Ok(Self {
-            show: bool::deserialize(reader).or_fail()?,
-            scale: Deserialize::deserialize_or_default(reader).or_fail()?,
-        })
+        Ok(Self(bool::deserialize(reader).or_fail()?))
     }
 }
 

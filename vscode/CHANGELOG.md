@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## 0.0.10
+
+### Added
+
+- Add "PREVIEW SCALE" option to settings window
+- Add import-image-from-clipboard feature
+
 ## 0.0.9
 
 ### Added
