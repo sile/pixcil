@@ -51,8 +51,8 @@ impl Widget for PreviewWidget {
     }
 
     fn handle_event_after(&mut self, app: &mut App) -> Result<()> {
-        if self.preview_off != !app.models().config.frame_preview.get() {
-            self.preview_off = !app.models().config.frame_preview.get();
+        if self.preview_off != !app.models().config.frame_preview.show() {
+            self.preview_off = !app.models().config.frame_preview.show();
             app.request_redraw(self.region);
             return Ok(());
         }
@@ -69,6 +69,12 @@ impl Widget for PreviewWidget {
             self.set_position(app, self.region.position);
             app.request_redraw(self.region.union(old_region));
         }
+        if self.requiring_size(app) != self.region.size {
+            let mut position = self.region.position;
+            position.x = self.region.end().x - self.requiring_size(app).width as i32;
+            self.set_position(app, position);
+        }
+
         Ok(())
     }
 
@@ -99,6 +105,7 @@ struct PreviewFrameWidget {
 
 impl PreviewFrameWidget {
     fn render_pixels(&self, app: &App, canvas: &mut Canvas) {
+        let scale = app.models().config.frame_preview.scale() as i32;
         let current_frame = if let Some(playing) = &self.playing {
             playing.current_frame
         } else {
@@ -106,7 +113,11 @@ impl PreviewFrameWidget {
         };
 
         let preview_frame_region = self.frame_region();
-        let drawing_region = preview_frame_region.intersection(canvas.drawing_region());
+        let drawing_region = (Region::new(
+            preview_frame_region.position,
+            preview_frame_region.size / scale as u32,
+        ))
+        .intersection(canvas.drawing_region());
         let pixel_frame_start = app
             .models()
             .config
@@ -126,18 +137,18 @@ impl PreviewFrameWidget {
                 (drawing_region.end().y - offset.y) as i16,
             ),
         );
+
+        let size = Size::square(scale as u32);
         for pixel in app
             .models()
             .pixel_canvas
             .get_pixels(&app.models().config, pixel_region)
         {
-            canvas.draw_pixel(
-                Position::from_xy(
-                    i32::from(pixel.position.x) + offset.x,
-                    i32::from(pixel.position.y) + offset.y,
-                ),
-                pixel.color.into(),
+            let position = Position::from_xy(
+                i32::from(pixel.position.x) * scale + offset.x,
+                i32::from(pixel.position.y) * scale + offset.y,
             );
+            canvas.draw_rectangle(Region::new(position, size), pixel.color.into());
         }
     }
 
@@ -215,7 +226,12 @@ impl Widget for PreviewFrameWidget {
             return Ok(());
         }
 
-        let pixel_region = PixelRegion::from_positions(dirty_pixels.iter().copied());
+        let scale = app.models().config.frame_preview.scale() as i16;
+        let pixel_region = PixelRegion::from_positions(
+            dirty_pixels
+                .iter()
+                .map(|p| PixelPosition::from_xy(p.x * scale, p.y * scale)),
+        );
         let pixel_frame_start = preview_pixel_region.start;
         let preview_frame_region = self.frame_region();
         let mut drawing_region = preview_frame_region;
@@ -236,6 +252,7 @@ impl FixedSizeWidget for PreviewFrameWidget {
     fn requiring_size(&self, app: &App) -> Size {
         let frame = app.models().config.frame.get_base_region().size();
         Size::from_wh(u32::from(frame.width), u32::from(frame.height))
+            * app.models().config.frame_preview.scale() as u32
     }
 
     fn set_position(&mut self, app: &App, position: Position) {

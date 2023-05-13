@@ -32,6 +32,7 @@ pub struct ConfigWidget {
     frame_width: BlockWidget<NumberBoxWidget>,
     frame_height: BlockWidget<NumberBoxWidget>,
     frame_preview: BlockWidget<ToggleWidget>,
+    frame_preview_scale: BlockWidget<NumberBoxWidget>,
 
     // Layer settings
     layer_enable: BlockWidget<ToggleWidget>,
@@ -47,7 +48,8 @@ impl ConfigWidget {
     pub fn new(app: &App) -> Self {
         let max_undos = app.models().config.max_undos.get();
         let frame_size = app.models().config.frame.get_base_region().size();
-        let frame_preview = app.models().config.frame_preview.get();
+        let frame_preview = app.models().config.frame_preview.show();
+        let frame_preview_scale = app.models().config.frame_preview.scale();
         let layer = app.models().config.layer;
         let animation = app.models().config.animation;
         let finger_mode = app.models().config.finger_mode.enabled();
@@ -80,6 +82,10 @@ impl ConfigWidget {
             frame_preview: BlockWidget::new(
                 "FRAME PREVIEW".parse().expect("unreachable"),
                 ToggleWidget::new(frame_preview),
+            ),
+            frame_preview_scale: BlockWidget::new(
+                "PREVIEW SCALE".parse().expect("unreachable"),
+                NumberBoxWidget::new(1, frame_preview_scale as u32, 32),
             ),
 
             // Layer
@@ -132,6 +138,7 @@ impl Widget for ConfigWidget {
         self.frame_width.render_if_need(app, canvas);
         self.frame_height.render_if_need(app, canvas);
         self.frame_preview.render_if_need(app, canvas);
+        self.frame_preview_scale.render_if_need(app, canvas);
 
         // Layer
         self.layer_enable.render_if_need(app, canvas);
@@ -176,13 +183,25 @@ impl Widget for ConfigWidget {
             .config
             .frame
             .set_height(self.frame_height.body().value() as u16);
+        if frame != app.models().config.frame {
+            app.request_redraw(app.screen_size().to_region());
+        }
 
+        let frame_preview = app.models().config.frame_preview;
         self.frame_preview.handle_event(app, event).or_fail()?;
         app.models_mut()
             .config
             .frame_preview
-            .set(self.frame_preview.body().is_on());
-        if frame != app.models().config.frame {
+            .set_show(self.frame_preview.body().is_on());
+        self.frame_preview_scale
+            .handle_event(app, event)
+            .or_fail()?;
+        app.models_mut()
+            .config
+            .frame_preview
+            .set_scale(self.frame_preview_scale.body().value() as u8)
+            .or_fail()?;
+        if frame_preview != app.models().config.frame_preview {
             app.request_redraw(app.screen_size().to_region());
         }
 
@@ -239,6 +258,7 @@ impl Widget for ConfigWidget {
             &mut self.frame_width,
             &mut self.frame_height,
             &mut self.frame_preview,
+            &mut self.frame_preview_scale,
             // Layer
             &mut self.layer_enable,
             &mut self.layer_count,
@@ -258,9 +278,13 @@ impl FixedSizeWidget for ConfigWidget {
         general_settings_size.width += MARGIN + self.finger_mode.requiring_size(app).width;
 
         // Frame
-        let mut frame_settings_size = self.frame_preview.requiring_size(app);
-        frame_settings_size.width += MARGIN + self.frame_width.requiring_size(app).width;
+        let mut frame_settings_size = self.frame_width.requiring_size(app);
         frame_settings_size.width += MARGIN + self.frame_height.requiring_size(app).width;
+
+        // Frame Preview
+        let mut frame_preview_settings_size = self.frame_preview.requiring_size(app);
+        frame_preview_settings_size.width +=
+            MARGIN + self.frame_preview_scale.requiring_size(app).width;
 
         // Layer
         let mut layer_settings_size = self.layer_enable.requiring_size(app);
@@ -275,11 +299,14 @@ impl FixedSizeWidget for ConfigWidget {
             general_settings_size
                 .width
                 .max(frame_settings_size.width)
+                .max(frame_preview_settings_size.width)
                 .max(layer_settings_size.width)
                 .max(animation_settings_size.width),
             general_settings_size.height
                 + GROUP_MARGIN
                 + frame_settings_size.height
+                + GROUP_MARGIN
+                + frame_preview_settings_size.height
                 + GROUP_MARGIN
                 + layer_settings_size.height
                 + GROUP_MARGIN
@@ -320,11 +347,16 @@ impl FixedSizeWidget for ConfigWidget {
         frame_height_region.position.x = frame_width_region.end().x + MARGIN as i32;
         frame_height_region.size = self.frame_height.requiring_size(app);
         self.frame_height.set_region(app, frame_height_region);
+        region.consume_y(frame_height_region.size.height + GROUP_MARGIN);
 
+        // Frame Preview
         let mut frame_preview_region = region;
-        frame_preview_region.position.x = frame_height_region.end().x + MARGIN as i32;
         frame_preview_region.size = self.frame_preview.requiring_size(app);
         self.frame_preview.set_region(app, frame_preview_region);
+        self.frame_preview_scale.set_region(
+            app,
+            frame_preview_region.move_x((self.frame_preview.region().size.width + MARGIN) as i32),
+        );
         region.consume_y(frame_preview_region.size.height + GROUP_MARGIN);
 
         // Layer

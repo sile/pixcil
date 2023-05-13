@@ -380,33 +380,75 @@ impl Deserialize for FrameRegion {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct FramePreview(bool);
+struct FrameScale(u8);
 
-impl FramePreview {
-    pub const fn get(self) -> bool {
-        self.0
-    }
-
-    pub fn set(&mut self, on: bool) {
-        self.0 = on;
-    }
-}
-
-impl Default for FramePreview {
+impl Default for FrameScale {
     fn default() -> Self {
-        Self(true)
+        Self(1)
     }
 }
 
-impl Serialize for FramePreview {
+impl Serialize for FrameScale {
     fn serialize<W: Write>(&self, writer: &mut W) -> Result<()> {
         self.0.serialize(writer).or_fail()
     }
 }
 
+impl Deserialize for FrameScale {
+    fn deserialize<R: Read>(reader: &mut R) -> Result<Self> {
+        Ok(Self(u8::deserialize(reader).or_fail()?))
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct FramePreview {
+    show: bool,
+    scale: FrameScale,
+}
+
+impl FramePreview {
+    pub const fn show(self) -> bool {
+        self.show
+    }
+
+    pub fn set_show(&mut self, on: bool) {
+        self.show = on;
+    }
+
+    pub const fn scale(self) -> u8 {
+        self.scale.0
+    }
+
+    pub fn set_scale(&mut self, scale: u8) -> Result<()> {
+        (scale > 0).or_fail()?;
+        self.scale.0 = scale;
+        Ok(())
+    }
+}
+
+impl Default for FramePreview {
+    fn default() -> Self {
+        Self {
+            show: true,
+            scale: FrameScale::default(),
+        }
+    }
+}
+
+impl Serialize for FramePreview {
+    fn serialize<W: Write>(&self, writer: &mut W) -> Result<()> {
+        self.show.serialize(writer).or_fail()?;
+        self.scale.serialize(writer).or_fail()?;
+        Ok(())
+    }
+}
+
 impl Deserialize for FramePreview {
     fn deserialize<R: Read>(reader: &mut R) -> Result<Self> {
-        bool::deserialize(reader).map(Self).or_fail()
+        Ok(Self {
+            show: bool::deserialize(reader).or_fail()?,
+            scale: Deserialize::deserialize_or_default(reader).or_fail()?,
+        })
     }
 }
 
