@@ -138,6 +138,15 @@ impl PixelRegion {
         Self { start, end }
     }
 
+    pub fn scale(mut self, scale: u16) -> Self {
+        let scale = scale as i16;
+        self.start.x *= scale;
+        self.start.y *= scale;
+        self.end.x *= scale;
+        self.end.y *= scale;
+        self
+    }
+
     pub fn from_position_and_size(position: PixelPosition, size: PixelSize) -> Self {
         let mut end = position;
         end.x += size.width as i16;

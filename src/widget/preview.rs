@@ -230,11 +230,8 @@ impl Widget for PreviewFrameWidget {
         }
 
         let scale = app.models().config.frame_preview_scale.get() as i16;
-        let pixel_region = PixelRegion::from_positions(
-            dirty_pixels
-                .iter()
-                .map(|p| PixelPosition::from_xy(p.x * scale, p.y * scale)),
-        );
+        let pixel_region =
+            PixelRegion::from_positions(dirty_pixels.iter().copied()).scale(scale as u16);
         let pixel_frame_start = preview_pixel_region.start;
         let preview_frame_region = self.frame_region();
         let mut drawing_region = preview_frame_region;
