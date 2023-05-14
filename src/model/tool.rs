@@ -70,6 +70,7 @@ impl ToolKind {
             IconId::ScissorLasso => Ok(Self::Erase),
             IconId::Select => Ok(Self::Select),
             IconId::Lasso => Ok(Self::Select),
+            IconId::SelectBucket => Ok(Self::Select),
             IconId::Pick => Ok(Self::Pick),
             IconId::Move => Ok(Self::Move),
             _ => pagurus::unreachable!(),
@@ -140,6 +141,7 @@ pub enum SelectTool {
     #[default]
     Rectangle,
     Lasso,
+    Bucket,
 }
 
 impl SelectTool {
@@ -147,6 +149,7 @@ impl SelectTool {
         match self {
             SelectTool::Rectangle => MarkerKind::FillRectangle,
             SelectTool::Lasso => MarkerKind::Lasso,
+            SelectTool::Bucket => MarkerKind::Fill,
         }
     }
 
@@ -154,6 +157,7 @@ impl SelectTool {
         match self {
             SelectTool::Rectangle => IconId::Select,
             SelectTool::Lasso => IconId::Lasso,
+            SelectTool::Bucket => IconId::SelectBucket,
         }
     }
 }

@@ -32,6 +32,7 @@ impl SelectToolWidget {
         let mut buttons = vec![
             ButtonWidget::new(ButtonKind::Basic, IconId::Select),
             ButtonWidget::new(ButtonKind::Basic, IconId::Lasso),
+            ButtonWidget::new(ButtonKind::Basic, IconId::SelectBucket),
         ];
         buttons[tool_to_index(current)].set_kind(ButtonKind::BasicPressed);
         Ok(Self {
@@ -113,6 +114,7 @@ fn tool_to_index(tool: SelectTool) -> usize {
     match tool {
         SelectTool::Rectangle => 0,
         SelectTool::Lasso => 1,
+        SelectTool::Bucket => 2,
     }
 }
 
@@ -120,6 +122,7 @@ fn icon_to_tool(icon: IconId) -> Result<SelectTool> {
     match icon {
         IconId::Select => Ok(SelectTool::Rectangle),
         IconId::Lasso => Ok(SelectTool::Lasso),
+        IconId::SelectBucket => Ok(SelectTool::Bucket),
         _ => pagurus::unreachable!(),
     }
 }
