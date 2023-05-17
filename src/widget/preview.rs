@@ -140,6 +140,7 @@ impl PreviewFrameWidget {
             ),
         );
         offset.y -= i32::from(pixel_frame_start.y) * (scale - 1);
+        offset.x -= i32::from(pixel_frame_start.x) * (scale - 1);
 
         let size = Size::square(scale as u32);
         for pixel in app
