@@ -5,6 +5,7 @@ use self::{
 use crate::{
     app::App,
     event::{Event, MouseAction},
+    io::IoRequest,
     pixel::{PixelPosition, PixelRegion},
 };
 use pagurus::Result;
@@ -189,6 +190,7 @@ impl MarkerHandler {
             }
             MouseAction::Up if self.mouse == MouseState::Pressing => {
                 self.mouse = MouseState::Clicked;
+                app.enqueue_io_request(IoRequest::Vibrate);
             }
             _ => {
                 self.mouse = MouseState::Neutral;
