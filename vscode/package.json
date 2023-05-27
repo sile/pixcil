@@ -4,7 +4,7 @@
   "publisher": "sile",
   "license": "MIT",
   "description": "Pixel art editor & PNG file viewer",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "engines": {
     "vscode": "^1.74.0"
   },

@@ -7,11 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## Added
+## [0.0.12] - 2023-05-27
+
+### Added
 
 - Add vibration when drawing / erasing / selecting actions are completed
 
-## Fixed
+### Fixed
 
 - Fix preview bug when preview scale > 1 and frame count > 1
 
