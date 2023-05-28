@@ -17,7 +17,7 @@ interface Options {
   parent: Parent;
   disableSaveWorkspaceButton?: boolean;
   enableDirtyNotification?: boolean;
-  workspace?: Uint8Array;
+  workspacePath?: string;
 }
 
 type Message = {
@@ -49,11 +49,6 @@ class App {
 
     if (options.disableSaveWorkspaceButton) {
       game.command(system, "disableSaveWorkspaceButton", new Uint8Array());
-    }
-
-    if (options.workspace) {
-      this.game.command(this.system, "loadWorkspace", options.workspace);
-      this.gameStateVersion = this.stateVersion();
     }
 
     this.parent.postMessage({ type: "ready" });
@@ -109,6 +104,11 @@ class App {
     onResizeCanvas();
     window.addEventListener("resize", onResizeCanvas);
     game.initialize(system);
+
+    if (options.workspacePath) {
+      const workspaceData = await fetch(options.workspacePath).then((response) => response.arrayBuffer());
+      game.command(system, "loadWorkspace", new Uint8Array(workspaceData));
+    }
 
     return new App(game, system, options);
   }

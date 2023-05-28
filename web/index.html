@@ -46,9 +46,13 @@
       const canvas = document.getElementById("canvas");
       const canvasArea = document.getElementById("canvas-area");
       const wasmPath = "./pixcil.wasm";
-      Pixcil.App.load({wasmPath, canvas, canvasArea, parent: window})
+      const workspacePath = new URLSearchParams(window.location.search).get("load");
+      Pixcil.App.load({wasmPath, canvas, canvasArea, parent: window, workspacePath})
                 .then((app) => app.run())
-                .catch((e) => console.warn(e));
+                .catch((e) => {
+                    console.warn(e);
+                    alert(e);
+                });
     </script>
   </body>
 </html>
