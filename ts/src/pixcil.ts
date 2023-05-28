@@ -17,6 +17,7 @@ interface Options {
   parent: Parent;
   disableSaveWorkspaceButton?: boolean;
   enableDirtyNotification?: boolean;
+  workspace?: Uint8Array;
 }
 
 type Message = {
@@ -48,6 +49,11 @@ class App {
 
     if (options.disableSaveWorkspaceButton) {
       game.command(system, "disableSaveWorkspaceButton", new Uint8Array());
+    }
+
+    if (options.workspace) {
+      this.game.command(this.system, "loadWorkspace", options.workspace);
+      this.gameStateVersion = this.stateVersion();
     }
 
     this.parent.postMessage({ type: "ready" });
