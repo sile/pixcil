@@ -143,7 +143,7 @@ impl<S: System> Game<S> for PixcilGame {
         Ok(true)
     }
 
-    fn query(&mut self, _system: &mut S, name: &str) -> Result<Vec<u8>> {
+    fn query(&mut self, system: &mut S, name: &str) -> Result<Vec<u8>> {
         match name {
             "nextIoRequest" => {
                 if let Some(req) = self.app.as_mut().or_fail()?.dequeue_io_request() {
@@ -153,6 +153,13 @@ impl<S: System> Game<S> for PixcilGame {
                 }
             }
             "workspacePng" => {
+                self.app
+                    .as_mut()
+                    .or_fail()?
+                    .models_mut()
+                    .attrs
+                    .update_time(system);
+
                 let app = self.app.as_ref().or_fail()?;
                 let data = app.models().to_png(app).or_fail()?;
                 Ok(data)

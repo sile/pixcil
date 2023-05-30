@@ -1,6 +1,8 @@
 use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
+use pagurus::failure::Failure;
 use pagurus::image::Rgba;
 use pagurus::{failure::OrFail, spatial::Position, Result};
+use std::time::Duration;
 use std::{
     collections::VecDeque,
     io::{Read, Write},
@@ -65,10 +67,34 @@ impl Serialize for i32 {
     }
 }
 
+impl Serialize for u64 {
+    fn serialize<W: Write>(&self, writer: &mut W) -> Result<()> {
+        writer.write_u64::<BigEndian>(*self).or_fail()
+    }
+}
+
 impl Serialize for usize {
     fn serialize<W: Write>(&self, writer: &mut W) -> Result<()> {
         let n = u32::try_from(*self).or_fail()?;
         writer.write_u32::<BigEndian>(n).or_fail()
+    }
+}
+
+impl Serialize for Duration {
+    fn serialize<W: Write>(&self, writer: &mut W) -> Result<()> {
+        self.as_secs().serialize(writer).or_fail()
+    }
+}
+
+impl<T: Serialize> Serialize for Option<T> {
+    fn serialize<W: Write>(&self, writer: &mut W) -> Result<()> {
+        match self {
+            Some(value) => {
+                1u8.serialize(writer).or_fail()?;
+                value.serialize(writer).or_fail()
+            }
+            None => 0u8.serialize(writer).or_fail(),
+        }
     }
 }
 
@@ -127,10 +153,34 @@ impl Deserialize for i32 {
     }
 }
 
+impl Deserialize for u64 {
+    fn deserialize<R: Read>(reader: &mut R) -> Result<Self> {
+        reader.read_u64::<BigEndian>().or_fail()
+    }
+}
+
 impl Deserialize for usize {
     fn deserialize<R: Read>(reader: &mut R) -> Result<Self> {
         let n = reader.read_u32::<BigEndian>().or_fail()?;
         usize::try_from(n).or_fail()
+    }
+}
+
+impl Deserialize for Duration {
+    fn deserialize<R: Read>(reader: &mut R) -> Result<Self> {
+        let secs = u64::deserialize(reader).or_fail()?;
+        Ok(Duration::from_secs(secs))
+    }
+}
+
+impl<T: Deserialize> Deserialize for Option<T> {
+    fn deserialize<R: Read>(reader: &mut R) -> Result<Self> {
+        let n = u8::deserialize(reader).or_fail()?;
+        match n {
+            0 => Ok(None),
+            1 => Ok(Some(T::deserialize(reader).or_fail()?)),
+            _ => Err(Failure::new()),
+        }
     }
 }
 

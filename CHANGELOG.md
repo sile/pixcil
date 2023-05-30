@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Add created time and updated time attributes
 - Add `load` query string parameter to specify a URL of a PNG image to load (Web)
 - Add vibration when drawing / erasing / selecting actions are completed
 - Add bucket selecting tool

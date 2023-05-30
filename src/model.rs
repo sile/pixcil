@@ -1,3 +1,4 @@
+use self::attributes::AttributesModel;
 use self::{config::ConfigModel, pixel_canvas::PixelCanvasModel, tool::ToolModel};
 use crate::png::decode_sprite;
 use crate::{
@@ -10,6 +11,7 @@ use pagurus::{failure::OrFail, Result};
 use png::chunk::ChunkType;
 use std::io::{Read, Write};
 
+pub mod attributes;
 pub mod config;
 pub mod pixel_canvas;
 pub mod tool;
@@ -26,6 +28,8 @@ pub struct Models {
     // The following fields are not serialized / deserialized.
     pub tool: ToolModel,
     pub preview_mode: bool,
+
+    pub attrs: AttributesModel,
 }
 
 impl Models {
@@ -126,6 +130,7 @@ impl Serialize for Models {
         self.config.serialize(writer).or_fail()?;
 
         self.pixel_canvas.serialize(writer).or_fail()?;
+        self.attrs.serialize(writer).or_fail()?;
         Ok(())
     }
 }
@@ -150,6 +155,7 @@ impl Deserialize for Models {
         Ok(Self {
             config,
             pixel_canvas: Deserialize::deserialize(reader).or_fail()?,
+            attrs: Deserialize::deserialize_or_default(reader).or_fail()?,
             ..Default::default()
         })
     }
