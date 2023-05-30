@@ -1,3 +1,4 @@
+use super::config::{ConfigModel, FrameRegion, Layer};
 use crate::{
     pixel::{Pixel, PixelPosition, PixelRegion},
     serialize::{Deserialize, Serialize},
@@ -8,8 +9,6 @@ use std::{
     collections::{BTreeMap, BTreeSet, VecDeque},
     io::{Read, Write},
 };
-
-use super::config::{ConfigModel, FrameRegion, Layer};
 
 #[derive(Debug, Default)]
 pub struct PixelCanvasModel {

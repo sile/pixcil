@@ -1,3 +1,4 @@
+use super::attributes::AttributesModel;
 use crate::{
     app::App,
     pixel::{PixelPosition, PixelRegion, PixelSize},
@@ -23,6 +24,9 @@ pub struct ConfigModel {
     pub animation: Animation,
     pub finger_mode: FingerMode,
     pub frame_preview_scale: FramePreviewScale,
+
+    // TODO: move to a separate model in the future version
+    pub attrs: AttributesModel,
 }
 
 impl Serialize for ConfigModel {
@@ -38,6 +42,7 @@ impl Serialize for ConfigModel {
         self.animation.serialize(writer).or_fail()?;
         self.finger_mode.serialize(writer).or_fail()?;
         self.frame_preview_scale.serialize(writer).or_fail()?;
+        self.attrs.serialize(writer).or_fail()?;
         Ok(())
     }
 }
@@ -56,6 +61,7 @@ impl Deserialize for ConfigModel {
             animation: Deserialize::deserialize_or_default(reader).or_fail()?,
             finger_mode: Deserialize::deserialize_or_default(reader).or_fail()?,
             frame_preview_scale: Deserialize::deserialize_or_default(reader).or_fail()?,
+            attrs: Deserialize::deserialize_or_default(reader).or_fail()?,
         })
     }
 }

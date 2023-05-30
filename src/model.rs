@@ -1,4 +1,3 @@
-use self::attributes::AttributesModel;
 use self::{config::ConfigModel, pixel_canvas::PixelCanvasModel, tool::ToolModel};
 use crate::pixel::PixelSize;
 use crate::png::decode_sprite;
@@ -29,8 +28,6 @@ pub struct Models {
     // The following fields are not serialized / deserialized.
     pub tool: ToolModel,
     pub preview_mode: bool,
-
-    pub attrs: AttributesModel,
 }
 
 impl Models {
@@ -66,20 +63,23 @@ impl Models {
         let size = self.frame_size();
         let image_size = PixelSize::from_wh(size.width * scale as u16, size.height * scale as u16);
         let mut image_data = vec![0; image_size.width as usize * image_size.height as usize * 4];
-        for position in self
+        for (i, position) in self
             .config
             .frame
             .get_preview_region(&self.config, 0)
             .pixels()
+            .enumerate()
         {
             let color = self.pixel_canvas.get_pixel(&self.config, position);
             let Some(color) = color else { continue; };
 
-            for y in 0..scale {
-                for x in 0..scale {
-                    let i = (position.y as usize * scale + y) * image_size.width as usize * 4
-                        + (position.x as usize * scale + x) * 4;
-                    image_data[i + 0] = color.r;
+            let y_base = i / size.width as usize * scale;
+            let x_base = i % size.width as usize * scale;
+            for y_delta in 0..scale {
+                for x_delta in 0..scale {
+                    let i =
+                        (y_base + y_delta) * image_size.width as usize * 4 + (x_base + x_delta) * 4;
+                    image_data[i] = color.r;
                     image_data[i + 1] = color.g;
                     image_data[i + 2] = color.b;
                     image_data[i + 3] = color.a;
@@ -199,7 +199,6 @@ impl Serialize for Models {
         self.config.serialize(writer).or_fail()?;
 
         self.pixel_canvas.serialize(writer).or_fail()?;
-        self.attrs.serialize(writer).or_fail()?;
         Ok(())
     }
 }
@@ -224,7 +223,6 @@ impl Deserialize for Models {
         Ok(Self {
             config,
             pixel_canvas: Deserialize::deserialize(reader).or_fail()?,
-            attrs: Deserialize::deserialize_or_default(reader).or_fail()?,
             ..Default::default()
         })
     }

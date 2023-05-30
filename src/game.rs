@@ -157,6 +157,7 @@ impl<S: System> Game<S> for PixcilGame {
                     .as_mut()
                     .or_fail()?
                     .models_mut()
+                    .config
                     .attrs
                     .update_time(system);
 

@@ -179,7 +179,10 @@ impl<T: Deserialize> Deserialize for Option<T> {
         match n {
             0 => Ok(None),
             1 => Ok(Some(T::deserialize(reader).or_fail()?)),
-            _ => Err(Failure::new()),
+            _ => {
+                Err(Failure::new()
+                    .message(format!("expected 0 (Some(_)) or 1 (None), but got {n}")))
+            }
         }
     }
 }
