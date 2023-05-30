@@ -1,14 +1,15 @@
 use self::attributes::AttributesModel;
 use self::{config::ConfigModel, pixel_canvas::PixelCanvasModel, tool::ToolModel};
+use crate::pixel::PixelSize;
 use crate::png::decode_sprite;
 use crate::{
-    app::App,
     pixel::{Pixel, PixelPosition},
     serialize::{Deserialize, Serialize},
 };
 use pagurus::image::Rgba;
 use pagurus::{failure::OrFail, Result};
 use png::chunk::ChunkType;
+use std::collections::HashSet;
 use std::io::{Read, Write};
 
 pub mod attributes;
@@ -33,7 +34,75 @@ pub struct Models {
 }
 
 impl Models {
-    pub fn to_png(&self, app: &App) -> Result<Vec<u8>> {
+    pub fn frame_size(&self) -> PixelSize {
+        self.config.frame.get_base_region().size()
+    }
+
+    pub fn palette(&self) -> HashSet<Rgba> {
+        let mut palette = HashSet::new();
+        let frame_count = self.config.animation.enabled_frame_count();
+        for frame in 0..frame_count {
+            for position in self
+                .config
+                .frame
+                .get_preview_region(&self.config, frame as usize)
+                .pixels()
+            {
+                let color = self
+                    .pixel_canvas
+                    .get_pixel(&self.config, position)
+                    .unwrap_or(Rgba::new(0, 0, 0, 0));
+                if color.a > 0 {
+                    palette.insert(color);
+                }
+            }
+        }
+        palette
+    }
+
+    pub fn to_thumbnail_png(&self, scale: usize) -> Result<Vec<u8>> {
+        (scale > 0).or_fail()?;
+
+        let size = self.frame_size();
+        let image_size = PixelSize::from_wh(size.width * scale as u16, size.height * scale as u16);
+        let mut image_data = vec![0; image_size.width as usize * image_size.height as usize * 4];
+        for position in self
+            .config
+            .frame
+            .get_preview_region(&self.config, 0)
+            .pixels()
+        {
+            let color = self.pixel_canvas.get_pixel(&self.config, position);
+            let Some(color) = color else { continue; };
+
+            for y in 0..scale {
+                for x in 0..scale {
+                    let i = (position.y as usize * scale + y) * image_size.width as usize * 4
+                        + (position.x as usize * scale + x) * 4;
+                    image_data[i + 0] = color.r;
+                    image_data[i + 1] = color.g;
+                    image_data[i + 2] = color.b;
+                    image_data[i + 3] = color.a;
+                }
+            }
+        }
+
+        let mut png_data = Vec::new();
+        {
+            let mut encoder = png::Encoder::new(
+                &mut png_data,
+                u32::from(image_size.width),
+                u32::from(image_size.height),
+            );
+            encoder.set_color(png::ColorType::Rgba);
+            encoder.set_depth(png::BitDepth::Eight);
+            let mut writer = encoder.write_header().or_fail()?;
+            writer.write_image_data(&image_data).or_fail()?;
+        }
+        Ok(png_data)
+    }
+
+    pub fn to_png(&self) -> Result<Vec<u8>> {
         let frame_count = self.config.animation.enabled_frame_count();
         let frames = (0..frame_count)
             .map(|frame| {
@@ -44,7 +113,7 @@ impl Models {
                     .flat_map(|position| {
                         let color = self
                             .pixel_canvas
-                            .get_pixel(&app.models().config, position)
+                            .get_pixel(&self.config, position)
                             .unwrap_or(Rgba::new(0, 0, 0, 0));
                         [color.r, color.g, color.b, color.a].into_iter()
                     })

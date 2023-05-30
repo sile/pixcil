@@ -161,7 +161,7 @@ impl<S: System> Game<S> for PixcilGame {
                     .update_time(system);
 
                 let app = self.app.as_ref().or_fail()?;
-                let data = app.models().to_png(app).or_fail()?;
+                let data = app.models().to_png().or_fail()?;
                 Ok(data)
             }
             "stateVersion" => {
