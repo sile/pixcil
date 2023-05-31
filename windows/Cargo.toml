@@ -9,7 +9,7 @@ publish = false
 [dependencies]
 pagurus = "0.6"
 pagurus_windows_system = "0.6"
-pixcil = { version = "0.4", path = "../", default-features = false }
+pixcil = { version = "0.5", path = "../", default-features = false }
 serde_json = "1"
 
 [build-dependencies]
