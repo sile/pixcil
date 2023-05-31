@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.13] - 2023-05-31
+
+- Add created time and updated time attributes
+
 ## [0.0.12] - 2023-05-27
 
 ### Added
