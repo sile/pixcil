@@ -1,4 +1,6 @@
-const CACHE_NAME = "pixcil-__UUID__";
+const CACHE_NAME = "pixcil-";
+const CACHE_VERSION = "__UUID__";
+const CACHE_KEY = CACHE_NAME + CACHE_VERSION;
 
 // @ts-ignore
 self.addEventListener("install", (e: InstalLEvent) => {
@@ -27,7 +29,7 @@ self.addEventListener("fetch", (e) => {
       console.log("[Service Worker] Fetching resource: " + e.request.url);
       // @ts-ignore
       return fetch(e.request).then((response) => {
-        return caches.open(CACHE_NAME).then((cache) => {
+        return caches.open(CACHE_KEY).then((cache) => {
           // @ts-ignore
           console.log("[Service Worker] Caching new resource: " + e.request.url);
           // @ts-ignore
@@ -46,7 +48,7 @@ self.addEventListener("activate", (e) => {
     caches.keys().then((keyList) => {
       return Promise.all(
         keyList.map((key) => {
-          if (key !== CACHE_NAME) {
+          if (key.startsWith(CACHE_KEY) && key !== CACHE_KEY) {
             console.log("[Service Worker] Delete old cache: " + key);
             return caches.delete(key);
           }
