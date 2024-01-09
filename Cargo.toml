@@ -24,6 +24,7 @@ byteorder = "1.4.3"
 libflate = "2.0.0"
 log = "0.4.17"
 pagurus = { version = "0.6", features = ["image", "random", "serde", "fixed_window"] }
+orfail = "1.1.0"
 png = "0.17"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"

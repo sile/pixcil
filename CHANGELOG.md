@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add `orfail` crate to the dependencies
+
 ### Removed
 
 - Remove `pixcil_windows` crate to reduce maintenance costs
