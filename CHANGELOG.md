@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Removed
+
+- Remove `pixcil_windows` crate to reduce maintenance costs
+
 ### Changed
 
 - Update libflate version from v1 to v2
