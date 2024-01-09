@@ -4,8 +4,9 @@ use crate::{
     pixel::{PixelPosition, PixelRegion, PixelSize},
     serialize::{Deserialize, Serialize},
 };
+use orfail::{OrFail, Result};
 use pagurus::image::Rgba;
-use pagurus::{failure::OrFail, spatial::Position, Result};
+use pagurus::spatial::Position;
 use std::{
     io::{Read, Write},
     time::Duration,

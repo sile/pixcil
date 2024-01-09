@@ -2,12 +2,9 @@ use crate::{
     app::App,
     serialize::{Deserialize, Serialize},
 };
+use orfail::{OrFail, Result};
 use pagurus::image::Rgba;
-use pagurus::{
-    failure::OrFail,
-    spatial::{Position, Region, Size},
-    Result,
-};
+use pagurus::spatial::{Position, Region, Size};
 use std::{
     io::{Read, Write},
     ops::{Add, Sub},

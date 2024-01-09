@@ -2,12 +2,9 @@ use super::{FixedSizeWidget, VariableSizeWidget, Widget};
 use crate::{
     app::App, asset::Text, canvas_ext::CanvasExt, color, event::Event, region_ext::RegionExt,
 };
+use orfail::{OrFail, Result};
 use pagurus::image::Canvas;
-use pagurus::{
-    failure::OrFail,
-    spatial::{Region, Size},
-    Result,
-};
+use pagurus::spatial::{Region, Size};
 
 const MARGIN: u32 = 8;
 

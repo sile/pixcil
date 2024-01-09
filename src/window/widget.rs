@@ -7,12 +7,9 @@ use crate::{
     region_ext::RegionExt,
     widget::FixedSizeWidget,
 };
+use orfail::{OrFail, Result};
 use pagurus::image::Canvas;
-use pagurus::{
-    failure::OrFail,
-    spatial::{Contains, Region},
-    Result,
-};
+use pagurus::spatial::{Contains, Region};
 
 #[derive(Debug)]
 pub struct WidgetWindow<W> {

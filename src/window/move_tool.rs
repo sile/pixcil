@@ -1,7 +1,8 @@
 use super::{widget::WidgetWindow, Window};
 use crate::{app::App, event::Event, widget::move_tool::MoveToolWidget};
+use orfail::{OrFail, Result};
 use pagurus::image::Canvas;
-use pagurus::{failure::OrFail, spatial::Region, Result};
+use pagurus::spatial::Region;
 
 #[derive(Debug)]
 pub struct MoveToolWindow(WidgetWindow<MoveToolWidget>);

@@ -6,19 +6,14 @@ use crate::{
     model::Models,
     window::{main::MainWindow, Window},
 };
+use orfail::OrFail;
+use pagurus::event::TimeoutTag;
 #[cfg(feature = "auto-scaling")]
 use pagurus::fixed_window::FixedWindow;
 use pagurus::image::Canvas;
 #[cfg(feature = "auto-scaling")]
 use pagurus::spatial::Size;
-use pagurus::timeout::TimeoutTag;
-use pagurus::{
-    event::WindowEvent as PagurusWindowEvent,
-    event::{Event as PagurusEvent, TimeoutEvent},
-    failure::OrFail,
-    video::VideoFrame,
-    Game, Result, System,
-};
+use pagurus::{event::Event as PagurusEvent, video::VideoFrame, Game, Result, System};
 use std::time::Duration;
 
 #[cfg(target_arch = "wasm32")]

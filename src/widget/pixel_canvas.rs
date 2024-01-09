@@ -11,11 +11,8 @@ use crate::{
     model::tool::{DrawTool, ToolKind, ToolModel},
     pixel::{Pixel, PixelPosition, PixelRegion},
 };
-use pagurus::{
-    failure::OrFail,
-    spatial::{Region, Size},
-    Result,
-};
+use orfail::{OrFail, Result};
+use pagurus::spatial::{Region, Size};
 use pagurus::{
     image::{Canvas, Color, Rgba},
     spatial::Position,
@@ -444,7 +441,12 @@ impl Widget for FingerDrawingWidget {
             }
         }
 
-        let Event::Mouse { mut action, position, consumed } = *event else {
+        let Event::Mouse {
+            mut action,
+            position,
+            consumed,
+        } = *event
+        else {
             return Ok(());
         };
         if consumed {

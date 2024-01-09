@@ -73,7 +73,7 @@ impl ToolKind {
             IconId::SelectBucket => Ok(Self::Select),
             IconId::Pick => Ok(Self::Pick),
             IconId::Move => Ok(Self::Move),
-            _ => pagurus::unreachable!(),
+            _ => Err(orfail::Failure::new("unreachable")),
         }
     }
 }

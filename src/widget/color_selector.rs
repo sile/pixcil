@@ -4,11 +4,8 @@ use super::{
     VariableSizeWidget, Widget,
 };
 use crate::{app::App, canvas_ext::CanvasExt, color, event::Event};
-use pagurus::{
-    failure::OrFail,
-    spatial::{Position, Region, Size},
-    Result,
-};
+use orfail::{OrFail, Result};
+use pagurus::spatial::{Position, Region, Size};
 use pagurus::{image::Canvas, image::Rgba};
 
 const COLOR_PREVIEW_HEIGHT: u32 = 64;

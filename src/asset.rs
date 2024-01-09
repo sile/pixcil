@@ -1,8 +1,7 @@
 use crate::png::decode_sprite;
-use pagurus::failure::Failure;
+use orfail::{Failure, OrFail, Result};
 use pagurus::image::Sprite;
 use pagurus::spatial::{Position, Region, Size};
-use pagurus::{failure::OrFail, Result};
 
 #[derive(Debug)]
 pub struct Assets {

@@ -8,12 +8,9 @@ use crate::{
     pixel::PixelRegion,
     region_ext::RegionExt,
 };
+use orfail::{OrFail, Result};
 use pagurus::image::Canvas;
-use pagurus::{
-    failure::OrFail,
-    spatial::{Position, Region, Size},
-    Result,
-};
+use pagurus::spatial::{Position, Region, Size};
 
 const MARGIN: u32 = 8;
 

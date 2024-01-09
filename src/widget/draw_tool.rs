@@ -8,12 +8,9 @@ use crate::{
     event::Event,
     model::tool::DrawTool,
 };
+use orfail::{OrFail, Result};
 use pagurus::image::Canvas;
-use pagurus::{
-    failure::OrFail,
-    spatial::{Position, Region, Size},
-    Result,
-};
+use pagurus::spatial::{Position, Region, Size};
 
 #[derive(Debug)]
 pub struct DrawToolWidget {
@@ -108,6 +105,6 @@ fn icon_to_tool(icon: IconId) -> Result<DrawTool> {
         IconId::PenRectangle => Ok(DrawTool::PenRectangle),
         IconId::PenCircle => Ok(DrawTool::PenCircle),
         IconId::Bucket => Ok(DrawTool::Bucket),
-        _ => pagurus::unreachable!(),
+        _ => Err(orfail::Failure::new("unreachable")),
     }
 }

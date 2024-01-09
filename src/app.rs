@@ -5,10 +5,10 @@ use crate::{
     model::Models,
     window::Window,
 };
+use orfail::OrFail;
 use pagurus::{
-    failure::OrFail,
+    event::TimeoutTag,
     spatial::{Region, Size},
-    timeout::TimeoutTag,
     Result, System,
 };
 use std::{
@@ -31,7 +31,7 @@ pub struct App {
     redraw_region: Region,
     next_timeout_id: TimeoutId,
     pending_timeouts: Vec<(TimeoutId, Duration)>,
-    timeouts: HashMap<pagurus::timeout::TimeoutId, TimeoutId>,
+    timeouts: HashMap<TimeoutTag, TimeoutId>,
     next_input_id: InputId,
     pub runtime_options: RuntimeOptions,
 }
@@ -121,8 +121,8 @@ impl App {
         id
     }
 
-    pub fn take_timeout_id(&mut self, id: pagurus::timeout::TimeoutId) -> Option<TimeoutId> {
-        self.timeouts.remove(&id)
+    pub fn take_timeout_id(&mut self, tag: TimeoutTag) -> Option<TimeoutId> {
+        self.timeouts.remove(&tag)
     }
 
     pub fn set_pending_timeouts<S: System>(&mut self, system: &mut S) {

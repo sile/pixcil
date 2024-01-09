@@ -9,12 +9,9 @@ use crate::{
         side_bar::SideBarWidget, FixedSizeWidget, VariableSizeWidget, Widget,
     },
 };
+use orfail::{OrFail, Result};
 use pagurus::image::Canvas;
-use pagurus::{
-    failure::OrFail,
-    spatial::{Position, Region, Size},
-    Result,
-};
+use pagurus::spatial::{Position, Region, Size};
 
 #[derive(Debug, Default)]
 pub struct MainWindow {

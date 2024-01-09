@@ -9,11 +9,8 @@ use crate::{
     region_ext::RegionExt,
     window::{color_selector::ColorSelectorWindow, config::ConfigWindow},
 };
-use pagurus::{
-    failure::OrFail,
-    spatial::{Position, Region, Size},
-    Result,
-};
+use orfail::{OrFail, Result};
+use pagurus::spatial::{Position, Region, Size};
 use pagurus::{image::Canvas, image::Rgba};
 
 const MARGIN: u32 = 8;

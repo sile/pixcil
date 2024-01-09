@@ -1,5 +1,6 @@
 use crate::serialize::{Deserialize, Serialize};
-use pagurus::{failure::OrFail, Result, System};
+use orfail::{OrFail, Result};
+use pagurus::System;
 use std::{
     io::{Read, Write},
     time::Duration,

@@ -9,12 +9,9 @@ use crate::{
     io::IoRequest,
     model::tool::SelectTool,
 };
+use orfail::{OrFail, Result};
 use pagurus::image::Canvas;
-use pagurus::{
-    failure::OrFail,
-    spatial::{Position, Region, Size},
-    Result,
-};
+use pagurus::spatial::{Position, Region, Size};
 
 const MARGIN: u32 = 8;
 
@@ -123,7 +120,7 @@ fn icon_to_tool(icon: IconId) -> Result<SelectTool> {
         IconId::Select => Ok(SelectTool::Rectangle),
         IconId::Lasso => Ok(SelectTool::Lasso),
         IconId::SelectBucket => Ok(SelectTool::Bucket),
-        _ => pagurus::unreachable!(),
+        _ => Err(orfail::Failure::new("unreachable")),
     }
 }
 

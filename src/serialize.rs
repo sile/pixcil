@@ -1,7 +1,7 @@
 use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
-use pagurus::failure::Failure;
+use orfail::{Failure, OrFail, Result};
 use pagurus::image::Rgba;
-use pagurus::{failure::OrFail, spatial::Position, Result};
+use pagurus::spatial::Position;
 use std::time::Duration;
 use std::{
     collections::VecDeque,

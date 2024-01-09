@@ -5,8 +5,8 @@ use crate::{
     pixel::{Pixel, PixelPosition},
     serialize::{Deserialize, Serialize},
 };
+use orfail::{OrFail, Result};
 use pagurus::image::Rgba;
-use pagurus::{failure::OrFail, Result};
 use png::chunk::ChunkType;
 use std::collections::HashSet;
 use std::io::{Read, Write};
@@ -71,7 +71,9 @@ impl Models {
             .enumerate()
         {
             let color = self.pixel_canvas.get_pixel(&self.config, position);
-            let Some(color) = color else { continue; };
+            let Some(color) = color else {
+                continue;
+            };
 
             let y_base = i / size.width as usize * scale;
             let x_base = i % size.width as usize * scale;

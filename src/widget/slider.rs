@@ -5,12 +5,9 @@ use crate::{
     canvas_ext::CanvasExt,
     event::{Event, MouseAction},
 };
+use orfail::{OrFail, Result};
 use pagurus::image::Canvas;
-use pagurus::{
-    failure::OrFail,
-    spatial::{Contains, Position, Region, Size},
-    Result,
-};
+use pagurus::spatial::{Contains, Position, Region, Size};
 
 const BAR_WIDTH: u32 = 360;
 const MARGIN: u32 = 8;

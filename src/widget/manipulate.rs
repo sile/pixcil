@@ -6,12 +6,9 @@ use crate::{
     model::tool::ToolKind,
     pixel::{Pixel, PixelPosition, PixelRegion},
 };
+use orfail::{OrFail, Result};
 use pagurus::image::{Canvas, Rgba, Sprite};
-use pagurus::{
-    failure::OrFail,
-    spatial::{Contains, Position, Region},
-    Result,
-};
+use pagurus::spatial::{Contains, Position, Region};
 use std::collections::{HashMap, HashSet};
 
 #[derive(Debug)]

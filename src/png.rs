@@ -1,4 +1,5 @@
-use pagurus::{failure::OrFail, image::Sprite, spatial::Size, Result};
+use orfail::{OrFail, Result};
+use pagurus::{image::Sprite, spatial::Size};
 
 pub fn decode_sprite(png: &[u8]) -> Result<Sprite> {
     let decoder = png::Decoder::new(png);

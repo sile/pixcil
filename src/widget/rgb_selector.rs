@@ -1,10 +1,7 @@
 use super::{slider::SliderWidget, FixedSizeWidget, Widget};
 use crate::{app::App, canvas_ext::CanvasExt, event::Event};
-use pagurus::{
-    failure::OrFail,
-    spatial::{Position, Region, Size},
-    Result,
-};
+use orfail::{OrFail, Result};
+use pagurus::spatial::{Position, Region, Size};
 use pagurus::{image::Canvas, image::Rgb, image::Rgba};
 
 const MARGIN: u32 = 8;
