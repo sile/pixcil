@@ -21,7 +21,7 @@ auto-scaling = []
 
 [dependencies]
 byteorder = "1.4.3"
-libflate = "1.2.0"
+libflate = "2.0.0"
 log = "0.4.17"
 pagurus = { version = "0.6", features = ["image", "random", "serde", "fixed_window"] }
 png = "0.17"
