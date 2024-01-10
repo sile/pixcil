@@ -99,7 +99,7 @@ class App {
     const onResizeCanvas = () => {
       canvas.height = canvasArea.clientHeight;
       canvas.width = canvasArea.clientWidth;
-      system.notifyRedrawNeeded();
+      system.requestRedraw();
     };
     onResizeCanvas();
     window.addEventListener("resize", onResizeCanvas);
