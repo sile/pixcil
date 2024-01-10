@@ -3,7 +3,7 @@ use crate::{
     app::App,
     asset::{ButtonKind, IconId},
     canvas_ext::CanvasExt,
-    event::{Event, MouseAction, TimeoutId},
+    event::{Event, MouseAction},
 };
 use pagurus::image::{Canvas, Sprite};
 use pagurus::{

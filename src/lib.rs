@@ -11,5 +11,6 @@ pub mod pixel;
 pub mod png;
 pub mod region_ext;
 pub mod serialize;
+pub mod tags;
 pub mod widget;
 pub mod window;

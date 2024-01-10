@@ -1,12 +1,12 @@
 use crate::app::App;
-use pagurus::event::{Event as PagurusEvent, MouseEvent};
+use pagurus::event::{Event as PagurusEvent, MouseEvent, TimeoutTag};
 use pagurus::image::Sprite;
 use pagurus::spatial::Position;
 use pagurus::spatial::{Contains, Region};
 
 #[derive(Debug)]
 pub enum Event {
-    Timeout(TimeoutId),
+    Timeout(TimeoutTag),
     Import {
         image: Sprite,
     },
@@ -93,26 +93,15 @@ pub enum MouseAction {
     Move,
 }
 
-#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct TimeoutId(ActionId);
-
-impl TimeoutId {
-    pub fn get_and_increment(&mut self) -> Self {
-        let id = *self;
-        self.0.increment();
-        id
-    }
-}
-
 #[derive(
     Debug, Default, Clone, Copy, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize,
 )]
-pub struct InputId(ActionId);
+pub struct InputId(u64);
 
 impl InputId {
     pub fn get_and_increment(&mut self) -> Self {
         let id = *self;
-        self.0.increment();
+        self.0 += 1;
         id
     }
 }

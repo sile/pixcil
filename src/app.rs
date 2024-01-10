@@ -1,20 +1,11 @@
-use crate::{
-    asset::Assets,
-    event::{InputId, TimeoutId},
-    io::IoRequest,
-    model::Models,
-    window::Window,
-};
+use crate::{asset::Assets, event::InputId, io::IoRequest, model::Models, window::Window};
 use orfail::OrFail;
 use pagurus::{
     event::TimeoutTag,
     spatial::{Region, Size},
     Result, System,
 };
-use std::{
-    collections::{HashMap, VecDeque},
-    time::Duration,
-};
+use std::{collections::VecDeque, time::Duration};
 
 #[derive(Debug, Default)]
 pub struct RuntimeOptions {
@@ -29,9 +20,7 @@ pub struct App {
     spawned_windows: Vec<Box<dyn Window>>,
     io_requests: VecDeque<IoRequest>,
     redraw_region: Region,
-    next_timeout_id: TimeoutId,
-    pending_timeouts: Vec<(TimeoutId, Duration)>,
-    timeouts: HashMap<TimeoutTag, TimeoutId>,
+    pending_timeouts: Vec<(TimeoutTag, Duration)>,
     next_input_id: InputId,
     pub runtime_options: RuntimeOptions,
 }
@@ -45,9 +34,7 @@ impl App {
             spawned_windows: Vec::new(),
             io_requests: VecDeque::new(),
             redraw_region: Region::default(),
-            next_timeout_id: TimeoutId::default(),
             pending_timeouts: Vec::new(),
-            timeouts: HashMap::new(),
             next_input_id: InputId::default(),
             runtime_options: RuntimeOptions::default(),
         })
@@ -115,20 +102,13 @@ impl App {
         std::mem::take(&mut self.spawned_windows)
     }
 
-    pub fn set_timeout(&mut self, duration: Duration) -> TimeoutId {
-        let id = self.next_timeout_id.get_and_increment();
-        self.pending_timeouts.push((id, duration));
-        id
-    }
-
-    pub fn take_timeout_id(&mut self, tag: TimeoutTag) -> Option<TimeoutId> {
-        self.timeouts.remove(&tag)
+    pub fn set_timeout(&mut self, tag: TimeoutTag, duration: Duration) {
+        self.pending_timeouts.push((tag, duration));
     }
 
     pub fn set_pending_timeouts<S: System>(&mut self, system: &mut S) {
-        for (id, durtion) in self.pending_timeouts.drain(..) {
-            self.timeouts
-                .insert(system.clock_set_timeout(TimeoutTag::new(0), durtion), id);
+        for (tag, durtion) in self.pending_timeouts.drain(..) {
+            system.clock_set_timeout(tag, durtion);
         }
     }
 }

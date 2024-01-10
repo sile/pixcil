@@ -3,7 +3,7 @@ use crate::{
     app::App,
     canvas_ext::CanvasExt,
     color,
-    event::{Event, TimeoutId},
+    event::Event,
     pixel::{PixelPosition, PixelRegion, PixelSize},
     region_ext::RegionExt,
 };

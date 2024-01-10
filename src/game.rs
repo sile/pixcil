@@ -1,4 +1,5 @@
 use crate::png::decode_sprite;
+use crate::tags::RENDERING_TAG;
 use crate::{
     app::App,
     event::Event,
@@ -26,7 +27,7 @@ pub struct PixcilGame {
     video_frame: VideoFrame,
     windows: Vec<Box<dyn Window>>,
     app: Option<App>,
-    render_timeout: Option<pagurus::timeout::TimeoutId>,
+    waiting_rendering: bool,
     #[cfg(feature = "auto-scaling")]
     screen: FixedWindow,
 }
@@ -58,8 +59,8 @@ impl PixcilGame {
         self.windows.extend(app.take_spawned_windows());
         app.set_pending_timeouts(system);
 
-        if app.is_redraw_needed() && self.render_timeout.is_none() {
-            self.render_timeout = Some(system.clock_set_timeout(
+        if app.is_redraw_needed() && self.waiting_rendering.is_none() {
+            self.waiting_rendering = Some(system.clock_set_timeout(
                 TimeoutTag::new(0),
                 Duration::from_millis(1000 / u64::from(MAX_FPS)),
             ));
@@ -96,11 +97,11 @@ impl<S: System> Game<S> for PixcilGame {
         let event = self.screen.handle_event(event);
         match event {
             PagurusEvent::Terminating => return Ok(false),
-            PagurusEvent::Timeout(TimeoutEvent { id, .. }) if Some(id) == self.render_timeout => {
-                self.render_timeout = None;
+            PagurusEvent::Timeout(RENDERING_TAG) => {
+                self.waiting_rendering = false;
                 self.render(system).or_fail()?;
             }
-            PagurusEvent::Window(PagurusWindowEvent::RedrawNeeded { size }) => {
+            PagurusEvent::WindowResized(size) => {
                 #[cfg(feature = "auto-scaling")]
                 {
                     if size.width < size.height && (1..800).contains(&size.width) {
@@ -165,7 +166,7 @@ impl<S: System> Game<S> for PixcilGame {
                 let version = app.models().pixel_canvas.state_version();
                 Ok(version.to_be_bytes().to_vec())
             }
-            _ => Err(pagurus::failure::Failure::new().message(format!("unknown query: {name:?}"))),
+            _ => Err(orfail::Failure::new(format!("unknown query: {name:?}"))),
         }
     }
 
@@ -202,9 +203,7 @@ impl<S: System> Game<S> for PixcilGame {
                 app.runtime_options.disable_save_workspace_button = true;
                 Ok(())
             }
-            _ => {
-                Err(pagurus::failure::Failure::new().message(format!("unknown command: {name:?}")))
-            }
+            _ => Err(orfail::Failure::new(format!("unknown command: {name:?}"))),
         }
     }
 }

@@ -5,7 +5,7 @@ use crate::{
     app::App,
     canvas_ext::CanvasExt,
     color,
-    event::{Event, MouseAction, TimeoutId},
+    event::{Event, MouseAction},
     io::IoRequest,
     marker::{MarkerHandler, MarkerKind},
     model::tool::{DrawTool, ToolKind, ToolModel},
