@@ -273,20 +273,16 @@ impl Playing {
     }
 
     fn handle_event(&mut self, app: &mut App, event: &Event, preview_region: Region) -> Result<()> {
-        match event {
-            Event::Timeout(PLAYING_TAG) => {
-                let frame_interval = app.models().config.animation.frame_interval();
-                app.set_timeout(PLAYING_TAG, frame_interval);
-                self.current_frame += 1;
-                if self.current_frame
-                    >= app.models().config.animation.enabled_frame_count() as usize
-                {
-                    self.current_frame = 0;
-                }
-                app.request_redraw(preview_region);
-            }
-            _ => {}
+        let Event::Timeout(PLAYING_TAG) = event else {
+            return Ok(());
+        };
+        let frame_interval = app.models().config.animation.frame_interval();
+        app.set_timeout(PLAYING_TAG, frame_interval);
+        self.current_frame += 1;
+        if self.current_frame >= app.models().config.animation.enabled_frame_count() as usize {
+            self.current_frame = 0;
         }
+        app.request_redraw(preview_region);
         Ok(())
     }
 }
