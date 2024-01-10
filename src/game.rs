@@ -8,7 +8,6 @@ use crate::{
     window::{main::MainWindow, Window},
 };
 use orfail::OrFail;
-use pagurus::event::TimeoutTag;
 #[cfg(feature = "auto-scaling")]
 use pagurus::fixed_window::FixedWindow;
 use pagurus::image::Canvas;
@@ -59,11 +58,12 @@ impl PixcilGame {
         self.windows.extend(app.take_spawned_windows());
         app.set_pending_timeouts(system);
 
-        if app.is_redraw_needed() && self.waiting_rendering.is_none() {
-            self.waiting_rendering = Some(system.clock_set_timeout(
-                TimeoutTag::new(0),
+        if app.is_redraw_needed() && !self.waiting_rendering {
+            self.waiting_rendering = true;
+            system.clock_set_timeout(
+                RENDERING_TAG,
                 Duration::from_millis(1000 / u64::from(MAX_FPS)),
-            ));
+            );
         }
         Ok(())
     }

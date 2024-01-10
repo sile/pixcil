@@ -10,6 +10,7 @@ use crate::{
     marker::{MarkerHandler, MarkerKind},
     model::tool::{DrawTool, ToolKind, ToolModel},
     pixel::{Pixel, PixelPosition, PixelRegion},
+    tags::MOUSE_DOWN_TAG,
 };
 use orfail::{OrFail, Result};
 use pagurus::spatial::{Region, Size};
@@ -425,8 +426,8 @@ impl Widget for FingerDrawingWidget {
         }
 
         let cursor_distance = app.models().config.finger_mode.cursor_distance() as i32;
-        if let Event::Timeout(id) = *event {
-            if self.waiting_mouse_down_timeout.map(|x| x.1) == Some(id) {
+        if let Event::Timeout(MOUSE_DOWN_TAG) = *event {
+            if self.waiting_mouse_down_timeout.is_some() {
                 if let Some(position) = self.cursor {
                     app.enqueue_io_request(IoRequest::Vibrate);
 
@@ -481,9 +482,9 @@ impl Widget for FingerDrawingWidget {
 
             if !self.mouse_down {
                 let pixel_position = PixelPosition::from_screen_position(app, position);
-                if Some(pixel_position) != self.waiting_mouse_down_timeout.map(|x| x.0) {
-                    let timeout_id = app.set_timeout(Duration::from_millis(500));
-                    self.waiting_mouse_down_timeout = Some((pixel_position, timeout_id));
+                if Some(pixel_position) != self.waiting_mouse_down_timeout {
+                    app.set_timeout(MOUSE_DOWN_TAG, Duration::from_millis(500));
+                    self.waiting_mouse_down_timeout = Some(pixel_position);
                 }
             }
         }

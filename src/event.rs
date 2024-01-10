@@ -54,7 +54,7 @@ impl Event {
         matches!(self, Self::Mouse { consumed: true, .. })
     }
 
-    pub fn from_pagurus_event(app: &mut App, event: PagurusEvent) -> Option<Self> {
+    pub fn from_pagurus_event(_app: &mut App, event: PagurusEvent) -> Option<Self> {
         match event {
             PagurusEvent::Timeout(e) => Some(Self::Timeout(e)),
             PagurusEvent::Mouse(e) => match e {
@@ -73,7 +73,6 @@ impl Event {
                     position,
                     consumed: false,
                 }),
-                _ => None,
             },
             _ => None,
         }
