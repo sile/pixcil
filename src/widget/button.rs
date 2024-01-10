@@ -10,7 +10,6 @@ use pagurus::{
     spatial::{Contains, Position, Region, Size},
     Result,
 };
-use std::time::Duration;
 
 const DISABLED_ALPHA: u8 = 100;
 

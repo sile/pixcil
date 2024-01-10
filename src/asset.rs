@@ -186,7 +186,7 @@ impl Text {
 impl std::str::FromStr for Text {
     type Err = Failure;
 
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
+    fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
         s.chars()
             .map(|c| {
                 Ok(match c {
@@ -217,7 +217,7 @@ impl std::str::FromStr for Text {
                     'Y' => Alphabet::Y,
                     'Z' => Alphabet::Z,
                     ' ' => Alphabet::Space,
-                    _ => return Err(Failure::new().message(format!("unknown alphabet: {c:?}"))),
+                    _ => return Err(Failure::new(format!("unknown alphabet: {c:?}"))),
                 })
             })
             .collect::<Result<_>>()

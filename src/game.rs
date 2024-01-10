@@ -96,7 +96,6 @@ impl<S: System> Game<S> for PixcilGame {
         #[cfg(feature = "auto-scaling")]
         let event = self.screen.handle_event(event);
         match event {
-            PagurusEvent::Terminating => return Ok(false),
             PagurusEvent::Timeout(RENDERING_TAG) => {
                 self.waiting_rendering = false;
                 self.render(system).or_fail()?;
@@ -113,7 +112,7 @@ impl<S: System> Game<S> for PixcilGame {
                     } else {
                         self.screen = FixedWindow::new(size);
                     }
-                    let event = PagurusEvent::Window(PagurusWindowEvent::RedrawNeeded { size });
+                    let event = PagurusEvent::WindowResized(size);
                     self.screen.handle_event(event);
                 }
 

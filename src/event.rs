@@ -56,25 +56,19 @@ impl Event {
 
     pub fn from_pagurus_event(app: &mut App, event: PagurusEvent) -> Option<Self> {
         match event {
-            PagurusEvent::Timeout(e) => app.take_timeout_id(e.id).map(Self::Timeout),
+            PagurusEvent::Timeout(e) => Some(Self::Timeout(e)),
             PagurusEvent::Mouse(e) => match e {
                 MouseEvent::Move { position } => Some(Self::Mouse {
                     action: MouseAction::Move,
                     position,
                     consumed: false,
                 }),
-                MouseEvent::Down {
-                    position,
-                    button: MouseButton::Left,
-                } => Some(Self::Mouse {
+                MouseEvent::Down { position } => Some(Self::Mouse {
                     action: MouseAction::Down,
                     position,
                     consumed: false,
                 }),
-                MouseEvent::Up {
-                    position,
-                    button: MouseButton::Left,
-                } => Some(Self::Mouse {
+                MouseEvent::Up { position } => Some(Self::Mouse {
                     action: MouseAction::Up,
                     position,
                     consumed: false,

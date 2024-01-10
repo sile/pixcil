@@ -6,6 +6,7 @@ use crate::{
     event::Event,
     pixel::{PixelPosition, PixelRegion, PixelSize},
     region_ext::RegionExt,
+    tags::PLAYING_TAG,
 };
 use orfail::{OrFail, Result};
 use pagurus::image::Canvas;
@@ -260,7 +261,6 @@ impl FixedSizeWidget for PreviewFrameWidget {
 
 #[derive(Debug)]
 struct Playing {
-    timeout: TimeoutId,
     current_frame: usize,
 }
 
@@ -268,17 +268,15 @@ impl Playing {
     fn start(app: &mut App) -> Self {
         let current_frame = app.models().config.camera.current_frame(app);
         let frame_interval = app.models().config.animation.frame_interval();
-        Self {
-            timeout: app.set_timeout(frame_interval),
-            current_frame,
-        }
+        app.set_timeout(PLAYING_TAG, frame_interval);
+        Self { current_frame }
     }
 
     fn handle_event(&mut self, app: &mut App, event: &Event, preview_region: Region) -> Result<()> {
         match event {
-            Event::Timeout(id) if self.timeout == *id => {
+            Event::Timeout(PLAYING_TAG) => {
                 let frame_interval = app.models().config.animation.frame_interval();
-                self.timeout = app.set_timeout(frame_interval);
+                app.set_timeout(PLAYING_TAG, frame_interval);
                 self.current_frame += 1;
                 if self.current_frame
                     >= app.models().config.animation.enabled_frame_count() as usize

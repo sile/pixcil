@@ -32,7 +32,7 @@ pub struct PixelCanvasWidget {
 impl PixelCanvasWidget {
     pub fn is_operating(&self) -> bool {
         self.marker_handler.is_operating()
-            || self.finger.mouse_down_timeout.is_some()
+            || self.finger.waiting_mouse_down_timeout.is_some()
             || self.manipulate.as_ref().map_or(false, |x| x.is_dragging())
     }
 
@@ -254,7 +254,7 @@ impl Widget for PixelCanvasWidget {
         }
 
         // TODO: refactoring
-        if self.finger.mouse_down_timeout.is_some()
+        if self.finger.waiting_mouse_down_timeout.is_some()
             || (self.move_camera.is_none()
                 && self
                     .manipulate
@@ -262,7 +262,7 @@ impl Widget for PixelCanvasWidget {
                     .map_or(true, |x| !x.is_consumed_by_tool(event)))
         {
             self.finger.handle_event(app, event).or_fail()?;
-            if self.finger.mouse_down_timeout.is_some()
+            if self.finger.waiting_mouse_down_timeout.is_some()
                 && self
                     .manipulate
                     .as_ref()
@@ -393,7 +393,7 @@ impl VariableSizeWidget for PixelCanvasWidget {
 struct FingerDrawingWidget {
     cursor: Option<Position>,
     mouse_down: bool,
-    mouse_down_timeout: Option<(PixelPosition, TimeoutId)>,
+    waiting_mouse_down_timeout: Option<PixelPosition>,
 }
 
 impl FingerDrawingWidget {
@@ -426,12 +426,12 @@ impl Widget for FingerDrawingWidget {
 
         let cursor_distance = app.models().config.finger_mode.cursor_distance() as i32;
         if let Event::Timeout(id) = *event {
-            if self.mouse_down_timeout.map(|x| x.1) == Some(id) {
+            if self.waiting_mouse_down_timeout.map(|x| x.1) == Some(id) {
                 if let Some(position) = self.cursor {
                     app.enqueue_io_request(IoRequest::Vibrate);
 
                     self.mouse_down = true;
-                    self.mouse_down_timeout = None;
+                    self.waiting_mouse_down_timeout = None;
                     *event = Event::Mouse {
                         action: MouseAction::Down,
                         position: position.move_y(cursor_distance),
@@ -452,7 +452,7 @@ impl Widget for FingerDrawingWidget {
         if consumed {
             self.cursor = None;
             self.mouse_down = false;
-            self.mouse_down_timeout = None;
+            self.waiting_mouse_down_timeout = None;
             return Ok(());
         }
 
@@ -466,7 +466,7 @@ impl Widget for FingerDrawingWidget {
             MouseAction::Up => {
                 self.cursor = None;
                 self.mouse_down = false;
-                self.mouse_down_timeout = None;
+                self.waiting_mouse_down_timeout = None;
             }
             MouseAction::Down => {
                 if !self.mouse_down {
@@ -481,9 +481,9 @@ impl Widget for FingerDrawingWidget {
 
             if !self.mouse_down {
                 let pixel_position = PixelPosition::from_screen_position(app, position);
-                if Some(pixel_position) != self.mouse_down_timeout.map(|x| x.0) {
+                if Some(pixel_position) != self.waiting_mouse_down_timeout.map(|x| x.0) {
                     let timeout_id = app.set_timeout(Duration::from_millis(500));
-                    self.mouse_down_timeout = Some((pixel_position, timeout_id));
+                    self.waiting_mouse_down_timeout = Some((pixel_position, timeout_id));
                 }
             }
         }
