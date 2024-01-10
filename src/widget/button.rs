@@ -22,9 +22,6 @@ pub struct ButtonWidget {
     disabled: Option<fn(&App) -> bool>,
     number: Option<fn(&App) -> u32>,
     number_margin: u32,
-    // TODO(?): remove this feature
-    long_press: Option<LongPressState>,
-    long_press_timed_out: bool,
     prev_state: ButtonState,
     prev_disabled: bool,
     prev_number: u32,
@@ -37,8 +34,6 @@ impl ButtonWidget {
             kind,
             icon,
             state: ButtonState::default(),
-            long_press: None,
-            long_press_timed_out: false,
             disabled: None,
             number: None,
             number_margin: 0,
@@ -75,12 +70,6 @@ impl ButtonWidget {
 
     // TODO: remove
     pub fn take_clicked(&mut self, app: &mut App) -> bool {
-        if self.long_press_timed_out {
-            self.long_press_timed_out = false;
-            app.request_redraw(self.region);
-            return true;
-        }
-
         if self.state == ButtonState::Clicked {
             app.request_redraw(self.region);
             self.state = ButtonState::Focused;
@@ -88,10 +77,6 @@ impl ButtonWidget {
         } else {
             false
         }
-    }
-
-    pub fn enable_long_press(&mut self) {
-        self.long_press = Some(LongPressState::default());
     }
 
     pub fn with_disabled_callback(mut self, f: fn(&App) -> bool) -> Self {
@@ -201,12 +186,6 @@ impl Widget for ButtonWidget {
             app.request_redraw(self.region);
         }
 
-        if let Some(long_press) = &mut self.long_press {
-            if self.state != ButtonState::Pressed {
-                long_press.stop();
-            }
-        }
-
         Ok(())
     }
 
@@ -225,9 +204,6 @@ impl Widget for ButtonWidget {
                         }
                         MouseAction::Down => {
                             self.state = ButtonState::Pressed;
-                            if let Some(long_press) = &mut self.long_press {
-                                long_press.start(app);
-                            }
                         }
                         MouseAction::Up if self.state == ButtonState::Pressed => {
                             self.state = ButtonState::Clicked;
@@ -242,13 +218,6 @@ impl Widget for ButtonWidget {
             Event::Mouse { position, .. } => {
                 if !self.region.contains(position) {
                     self.state = ButtonState::Neutral;
-                }
-            }
-            Event::Timeout(id) => {
-                if let Some(long_press) = &mut self.long_press {
-                    if long_press.handle_timeout(app, *id) {
-                        self.long_press_timed_out = true;
-                    }
                 }
             }
             _ => {}
@@ -327,50 +296,5 @@ impl ButtonState {
                 ButtonState::Clicked => offset.move_y(4),
             },
         }
-    }
-}
-
-#[derive(Debug)]
-pub struct LongPressState {
-    timeout: Option<TimeoutId>,
-    duration: Duration,
-    acc_duration: Duration,
-}
-
-impl Default for LongPressState {
-    fn default() -> Self {
-        Self {
-            timeout: None,
-            duration: Duration::from_millis(800),
-            acc_duration: Duration::ZERO,
-        }
-    }
-}
-
-impl LongPressState {
-    fn start(&mut self, app: &mut App) {
-        if self.timeout.is_none() {
-            self.timeout = Some(app.set_timeout(self.duration));
-        }
-    }
-
-    fn stop(&mut self) {
-        *self = Default::default();
-    }
-
-    fn handle_timeout(&mut self, app: &mut App, id: TimeoutId) -> bool {
-        if self.timeout == Some(id) {
-            self.acc_duration += self.duration;
-
-            if self.acc_duration >= Duration::from_secs(2) {
-                self.duration /= 2;
-                self.duration = std::cmp::max(Duration::from_millis(50), self.duration);
-                self.acc_duration = Duration::ZERO;
-            }
-
-            self.timeout = Some(app.set_timeout(self.duration));
-            return true;
-        }
-        false
     }
 }

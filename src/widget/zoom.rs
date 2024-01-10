@@ -26,11 +26,9 @@ impl Default for ZoomWidget {
         let mut zoom_in = ButtonWidget::new(ButtonKind::Basic, IconId::ZoomIn);
         zoom_in.set_disabled_callback(|app| app.models().config.zoom.is_max());
         zoom_in.set_number_callback(6, |app| app.models().config.zoom.get() as u32);
-        zoom_in.enable_long_press();
 
         let mut zoom_out = ButtonWidget::new(ButtonKind::Basic, IconId::ZoomOut);
         zoom_out.set_disabled_callback(|app| app.models().config.zoom.is_min());
-        zoom_out.enable_long_press();
         Self {
             region: Default::default(),
             zoom_in,

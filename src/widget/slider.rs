@@ -29,10 +29,8 @@ impl SliderWidget {
         max: u32,
         render_bar: fn(&Self, &App, &mut Canvas),
     ) -> Self {
-        let mut left = ButtonWidget::new(ButtonKind::SliderLeft, IconId::Null);
-        let mut right = ButtonWidget::new(ButtonKind::SliderRight, IconId::Null);
-        left.enable_long_press();
-        right.enable_long_press();
+        let left = ButtonWidget::new(ButtonKind::SliderLeft, IconId::Null);
+        let right = ButtonWidget::new(ButtonKind::SliderRight, IconId::Null);
         Self {
             region: Default::default(),
             label,

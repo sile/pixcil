@@ -41,12 +41,10 @@ impl Default for UndoRedoWidget {
             let canvas = &app.models().pixel_canvas;
             (canvas.command_log().len() - canvas.command_log_tail()) as u32
         });
-        redo.enable_long_press();
 
         let mut undo = ButtonWidget::new(ButtonKind::Basic, IconId::Undo);
         undo.set_disabled_callback(|app| app.models().pixel_canvas.command_log_tail() == 0);
         undo.set_number_callback(0, |app| app.models().pixel_canvas.command_log_tail() as u32);
-        undo.enable_long_press();
         Self {
             region: Default::default(),
             undo,
