@@ -1,0 +1,11 @@
+{
+  "execute": {
+    "command": "cargo",
+    "args": [
+      "build",
+      "--release",
+      "--target",
+      "wasm32-unknown-unknown"
+    ]
+  }
+}
