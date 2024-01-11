@@ -3,7 +3,7 @@
   "short_name": "Pixcil",
   "theme_color": "#f5f5f5",
   "background_color": "#f5f5f5",
-  "display": "minimal-ui",
+  "display": "standalone",
   "scope": "./",
   "start_url": "./index.html",
   "icons": [
