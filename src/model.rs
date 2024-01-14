@@ -57,53 +57,6 @@ impl Models {
         palette
     }
 
-    pub fn to_thumbnail_png(&self, scale: usize) -> Result<Vec<u8>> {
-        (scale > 0).or_fail()?;
-
-        let size = self.frame_size();
-        let image_size = PixelSize::from_wh(size.width * scale as u16, size.height * scale as u16);
-        let mut image_data = vec![0; image_size.width as usize * image_size.height as usize * 4];
-        for (i, position) in self
-            .config
-            .frame
-            .get_preview_region(&self.config, 0)
-            .pixels()
-            .enumerate()
-        {
-            let color = self.pixel_canvas.get_pixel(&self.config, position);
-            let Some(color) = color else {
-                continue;
-            };
-
-            let y_base = i / size.width as usize * scale;
-            let x_base = i % size.width as usize * scale;
-            for y_delta in 0..scale {
-                for x_delta in 0..scale {
-                    let i =
-                        (y_base + y_delta) * image_size.width as usize * 4 + (x_base + x_delta) * 4;
-                    image_data[i] = color.r;
-                    image_data[i + 1] = color.g;
-                    image_data[i + 2] = color.b;
-                    image_data[i + 3] = color.a;
-                }
-            }
-        }
-
-        let mut png_data = Vec::new();
-        {
-            let mut encoder = png::Encoder::new(
-                &mut png_data,
-                u32::from(image_size.width),
-                u32::from(image_size.height),
-            );
-            encoder.set_color(png::ColorType::Rgba);
-            encoder.set_depth(png::BitDepth::Eight);
-            let mut writer = encoder.write_header().or_fail()?;
-            writer.write_image_data(&image_data).or_fail()?;
-        }
-        Ok(png_data)
-    }
-
     pub fn to_png(&self) -> Result<Vec<u8>> {
         let frame_count = self.config.animation.enabled_frame_count();
         let frames = (0..frame_count)
