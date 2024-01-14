@@ -11,7 +11,7 @@ self.addEventListener("install", (e: InstalLEvent) => {
 
 self.addEventListener("fetch", (e) => {
   // @ts-ignore
-  if (!e.request.url.startsWith("https://")) {
+  if (!e.request.url.startsWith("https://sile.github.io/pixcil/")) {
     // @ts-ignore
     e.respondWith(fetch(e.request));
     return;
