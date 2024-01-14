@@ -95,7 +95,7 @@ class App {
     }
     const canvasArea = options.canvasArea;
     const game = await Game.load(options.wasmPath);
-    const system = await System.create(game.memory, { canvas });
+    const system = System.create(game.memory, { canvas });
     const onResizeCanvas = () => {
       canvas.height = canvasArea.clientHeight;
       canvas.width = canvasArea.clientWidth;
@@ -106,7 +106,7 @@ class App {
     game.initialize(system);
 
     if (options.workspacePath) {
-      const workspaceData = await fetch(options.workspacePath).then((response) => response.arrayBuffer());
+      const workspaceData = await fetch(options.workspacePath, { cache: "no-store" }).then((response) => response.arrayBuffer());
       game.command(system, "loadWorkspace", new Uint8Array(workspaceData));
     }
 
@@ -182,7 +182,7 @@ class App {
           this.importImage();
           break;
         case "importImageFromClipboard":
-          this.importImageFromClipboard();
+          await this.importImageFromClipboard();
           break;
         case "vibrate":
           if ("vibrate" in window.navigator) {
