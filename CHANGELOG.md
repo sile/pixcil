@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Don't cache fetched workspace files
+
 ### Added
 
 - Add `orfail` crate to the dependencies
