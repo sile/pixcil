@@ -5,20 +5,15 @@ use crate::{
     app::App,
     canvas_ext::CanvasExt,
     color,
-    event::{Event, MouseAction},
-    io::IoRequest,
+    event::Event,
     marker::{MarkerHandler, MarkerKind},
     model::tool::{DrawTool, ToolKind, ToolModel},
     pixel::{Pixel, PixelPosition, PixelRegion},
-    tags::MOUSE_DOWN_TAG,
 };
 use orfail::{OrFail, Result};
-use pagurus::spatial::{Region, Size};
-use pagurus::{
-    image::{Canvas, Color, Rgba},
-    spatial::Position,
-};
-use std::{collections::HashSet, time::Duration};
+use pagurus::image::{Canvas, Color, Rgba};
+use pagurus::spatial::Region;
+use std::collections::HashSet;
 
 #[derive(Debug, Default)]
 pub struct PixelCanvasWidget {
@@ -27,13 +22,11 @@ pub struct PixelCanvasWidget {
     tool: ToolModel,
     manipulate: Option<ManipulateWidget>,
     move_camera: Option<MoveCameraWidget>,
-    finger: FingerDrawingWidget,
 }
 
 impl PixelCanvasWidget {
     pub fn is_operating(&self) -> bool {
         self.marker_handler.is_operating()
-            || self.finger.waiting_mouse_down_timeout.is_some()
             || self.manipulate.as_ref().map_or(false, |x| x.is_dragging())
     }
 
@@ -244,33 +237,12 @@ impl Widget for PixelCanvasWidget {
         } else if let Some(w) = &self.move_camera {
             w.render(app, canvas);
         }
-
-        self.finger.render(app, canvas);
     }
 
     fn handle_event(&mut self, app: &mut App, event: &mut Event) -> Result<()> {
         if let Event::Import { image } = event {
             self.manipulate = Some(ManipulateWidget::with_imported_image(app, image));
             return Ok(());
-        }
-
-        // TODO: refactoring
-        if self.finger.waiting_mouse_down_timeout.is_some()
-            || (self.move_camera.is_none()
-                && self
-                    .manipulate
-                    .as_ref()
-                    .map_or(true, |x| !x.is_consumed_by_tool(event)))
-        {
-            self.finger.handle_event(app, event).or_fail()?;
-            if self.finger.waiting_mouse_down_timeout.is_some()
-                && self
-                    .manipulate
-                    .as_ref()
-                    .map_or(false, |x| x.is_consumed_by_tool(event))
-            {
-                event.consume();
-            }
         }
 
         if let Some(w) = &mut self.manipulate {
@@ -387,118 +359,5 @@ impl VariableSizeWidget for PixelCanvasWidget {
         } else if let Some(w) = &mut self.move_camera {
             w.set_region(app, region);
         }
-    }
-}
-
-#[derive(Debug, Default)]
-struct FingerDrawingWidget {
-    cursor: Option<Position>,
-    mouse_down: bool,
-    waiting_mouse_down_timeout: Option<PixelPosition>,
-}
-
-impl FingerDrawingWidget {
-    fn cursor_region(&self) -> Option<Region> {
-        self.cursor.map(|mut p| {
-            let size = Size::square(5);
-            p.x -= (size.width / 2) as i32;
-            p.y -= (size.height / 2) as i32;
-            Region::new(p, size)
-        })
-    }
-}
-
-impl Widget for FingerDrawingWidget {
-    fn region(&self) -> Region {
-        Region::default()
-    }
-
-    fn render(&self, _app: &App, canvas: &mut Canvas) {
-        if let Some(region) = self.cursor_region() {
-            canvas.fill_rectangle(region, Color::BLACK);
-            canvas.draw_rectangle(region, Color::WHITE);
-        }
-    }
-
-    fn handle_event(&mut self, app: &mut App, event: &mut Event) -> Result<()> {
-        if !app.models().config.finger_mode.enabled() {
-            return Ok(());
-        }
-
-        let cursor_distance = app.models().config.finger_mode.cursor_distance() as i32;
-        if let Event::Timeout(MOUSE_DOWN_TAG) = *event {
-            if self.waiting_mouse_down_timeout.is_some() {
-                if let Some(position) = self.cursor {
-                    app.enqueue_io_request(IoRequest::Vibrate);
-
-                    self.mouse_down = true;
-                    self.waiting_mouse_down_timeout = None;
-                    *event = Event::Mouse {
-                        action: MouseAction::Down,
-                        position: position.move_y(cursor_distance),
-                        consumed: false,
-                    };
-                }
-            }
-        }
-
-        let Event::Mouse {
-            mut action,
-            position,
-            consumed,
-        } = *event
-        else {
-            return Ok(());
-        };
-        if consumed {
-            self.cursor = None;
-            self.mouse_down = false;
-            self.waiting_mouse_down_timeout = None;
-            return Ok(());
-        }
-
-        let position = position.move_y(-cursor_distance);
-        if let Some(old) = self.cursor_region() {
-            app.request_redraw(old);
-        }
-        self.cursor = Some(position);
-
-        match action {
-            MouseAction::Up => {
-                self.cursor = None;
-                self.mouse_down = false;
-                self.waiting_mouse_down_timeout = None;
-            }
-            MouseAction::Down => {
-                if !self.mouse_down {
-                    action = MouseAction::Move;
-                }
-            }
-            MouseAction::Move => {}
-        }
-
-        if let Some(new) = self.cursor_region() {
-            app.request_redraw(new);
-
-            if !self.mouse_down {
-                let pixel_position = PixelPosition::from_screen_position(app, position);
-                if Some(pixel_position) != self.waiting_mouse_down_timeout {
-                    app.set_timeout(MOUSE_DOWN_TAG, Duration::from_millis(500));
-                    self.waiting_mouse_down_timeout = Some(pixel_position);
-                }
-            }
-        }
-
-        *event = Event::Mouse {
-            action,
-            position,
-            consumed,
-        };
-
-        Ok(())
-    }
-
-    fn children(&mut self) -> Vec<&mut dyn Widget> {
-        Vec::new()
     }
 }

@@ -744,6 +744,7 @@ impl Deserialize for Animation {
     }
 }
 
+// TODO: Remove this struct in the future version
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct FingerMode {
     enabled: bool,
