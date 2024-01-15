@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Change default pixel size to 1
 - Change PWA display mode from "minimal-ui" to "standalone"
 - Update pagurus version from v0.6 to v0.7
 - Update libflate version from v1 to v2
