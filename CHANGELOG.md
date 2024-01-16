@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fix a bug that a non-move drawing could increase undo counter to the maximum value
 - Don't cache fetched workspace files
 
 ### Added

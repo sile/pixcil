@@ -256,7 +256,7 @@ impl Widget for PixelCanvasWidget {
         }
 
         self.marker_handler.handle_event(app, event).or_fail()?;
-        if self.marker_handler.is_completed() {
+        if self.marker_handler.take_completed() {
             let config = app.models().config.clone();
             match self.tool.tool_kind() {
                 ToolKind::Draw => {

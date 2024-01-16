@@ -147,6 +147,15 @@ impl MarkerHandler {
         self.mouse == MouseState::Clicked
     }
 
+    pub fn take_completed(&mut self) -> bool {
+        if self.is_completed() {
+            self.mouse = MouseState::Neutral;
+            true
+        } else {
+            false
+        }
+    }
+
     pub fn is_operating(&self) -> bool {
         self.mouse == MouseState::Pressing
     }
