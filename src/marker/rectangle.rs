@@ -30,7 +30,7 @@ impl Mark for RectangleMarker {
                 self.start = None;
                 self.marked = [position].into_iter().collect();
             }
-            MouseState::Pressing | MouseState::Clicked => {
+            MouseState::Pressing | MouseState::Clicked | MouseState::ClickConsumed => {
                 if let Some(start) = self.start {
                     let end = PixelPosition::from_xy(
                         start.x.max(position.x) + 1,

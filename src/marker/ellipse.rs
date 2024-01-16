@@ -20,7 +20,7 @@ impl Mark for EllipseMarker {
                 self.start = None;
                 self.marked = [position].into_iter().collect();
             }
-            MouseState::Pressing | MouseState::Clicked => {
+            MouseState::Pressing | MouseState::Clicked | MouseState::ClickConsumed => {
                 self.marked.clear();
                 if let Some(start) = self.start {
                     let mut region = PixelRegion::from_positions([start, position].into_iter());

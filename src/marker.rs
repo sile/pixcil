@@ -26,6 +26,7 @@ pub enum MouseState {
     Neutral,
     Pressing,
     Clicked,
+    ClickConsumed,
 }
 
 pub trait Mark: Default {
@@ -149,7 +150,7 @@ impl MarkerHandler {
 
     pub fn take_completed(&mut self) -> bool {
         if self.is_completed() {
-            self.mouse = MouseState::Neutral;
+            self.mouse = MouseState::ClickConsumed;
             true
         } else {
             false

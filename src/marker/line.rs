@@ -28,7 +28,7 @@ impl Mark for LineMarker {
                     self.marked = [position].into_iter().collect()
                 }
             }
-            MouseState::Clicked => {
+            MouseState::Clicked | MouseState::ClickConsumed => {
                 if let Some(start) = self.start {
                     self.marked = PixelLine::new(start, position).pixels().collect();
                     self.start = None;
