@@ -128,7 +128,6 @@ fn icon_to_tool(icon: IconId) -> Result<SelectTool> {
 struct ImportWidget {
     region: Region,
     from_file: ButtonWidget,
-    from_clipboard: ButtonWidget,
 }
 
 impl ImportWidget {
@@ -136,7 +135,6 @@ impl ImportWidget {
         Self {
             region: Region::default(),
             from_file: ButtonWidget::new(ButtonKind::Basic, IconId::Import),
-            from_clipboard: ButtonWidget::new(ButtonKind::Basic, IconId::ImportFromClipboard),
         }
     }
 }
@@ -148,7 +146,6 @@ impl Widget for ImportWidget {
 
     fn render(&self, app: &App, canvas: &mut Canvas) {
         self.from_file.render_if_need(app, canvas);
-        self.from_clipboard.render_if_need(app, canvas);
     }
 
     fn handle_event(&mut self, app: &mut App, event: &mut Event) -> Result<()> {
@@ -156,36 +153,21 @@ impl Widget for ImportWidget {
         if self.from_file.take_clicked(app) {
             app.enqueue_io_request(IoRequest::ImportImage);
         }
-
-        self.from_clipboard.handle_event(app, event).or_fail()?;
-        if self.from_clipboard.take_clicked(app) {
-            app.enqueue_io_request(IoRequest::ImportImageFromClipboard);
-        }
-
         Ok(())
     }
 
     fn children(&mut self) -> Vec<&mut dyn Widget> {
-        vec![&mut self.from_file, &mut self.from_clipboard]
+        vec![&mut self.from_file]
     }
 }
 
 impl FixedSizeWidget for ImportWidget {
     fn requiring_size(&self, app: &App) -> Size {
-        let mut size = self.from_file.requiring_size(app);
-        size.width += MARGIN + self.from_clipboard.requiring_size(app).width;
-        size
+        self.from_file.requiring_size(app)
     }
 
     fn set_position(&mut self, app: &App, position: Position) {
         self.region = Region::new(position, self.requiring_size(app));
         self.from_file.set_position(app, position);
-        self.from_clipboard.set_position(
-            app,
-            Position::from_xy(
-                position.x + self.from_file.requiring_size(app).width as i32 + MARGIN as i32,
-                position.y,
-            ),
-        );
     }
 }

@@ -6,7 +6,6 @@ pub enum IoRequest {
     SaveWorkspace,
     LoadWorkspace,
     ImportImage,
-    ImportImageFromClipboard,
     InputNumber { id: InputId },
     Vibrate,
 }
