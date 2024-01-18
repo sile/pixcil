@@ -280,8 +280,11 @@ impl PixelCanvasModel {
 impl Serialize for PixelCanvasModel {
     fn serialize<W: Write>(&self, writer: &mut W) -> Result<()> {
         let mut writer = libflate::deflate::Encoder::new(writer);
-        self.command_log.serialize(&mut writer).or_fail()?;
-        self.command_log_tail.serialize(&mut writer).or_fail()?;
+
+        // Don't serializing the command log
+        0usize.serialize(&mut writer).or_fail()?;
+        0usize.serialize(&mut writer).or_fail()?;
+
         self.pixels.serialize(&mut writer).or_fail()?;
         writer.finish().into_result().or_fail()?;
         Ok(())

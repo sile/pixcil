@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Don't save undo buffer in the image file
 - Change default pixel size to 1
 - Change PWA display mode from "minimal-ui" to "standalone"
 - Update pagurus version from v0.6 to v0.7
