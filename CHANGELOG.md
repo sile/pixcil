@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+- Remove max undos setting
 - Remove import-from-clipboard feature
 - Remove finger mode
 - Remove button long press feature

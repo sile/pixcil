@@ -22,7 +22,6 @@ pub struct ConfigWidget {
 
     // General settings
     minimum_pixel_size: BlockWidget<PixelSizeWidget>,
-    max_undos: BlockWidget<NumberBoxWidget>,
 
     // Frame settings
     frame_width: BlockWidget<NumberBoxWidget>,
@@ -42,7 +41,6 @@ pub struct ConfigWidget {
 
 impl ConfigWidget {
     pub fn new(app: &App) -> Self {
-        let max_undos = app.models().config.max_undos.get();
         let frame_size = app.models().config.frame.get_base_region().size();
         let frame_preview = app.models().config.frame_preview.get();
         let frame_preview_scale = app.models().config.frame_preview_scale.get();
@@ -55,10 +53,6 @@ impl ConfigWidget {
             minimum_pixel_size: BlockWidget::new(
                 "PIXEL SIZE".parse().expect("unreachable"),
                 PixelSizeWidget::new(app),
-            ),
-            max_undos: BlockWidget::new(
-                "MAX UNDOS".parse().expect("unreachable"),
-                NumberBoxWidget::new(0, max_undos, u32::MAX),
             ),
 
             // Frame
@@ -122,7 +116,6 @@ impl Widget for ConfigWidget {
     fn render(&self, app: &App, canvas: &mut Canvas) {
         // General
         self.minimum_pixel_size.render_if_need(app, canvas);
-        self.max_undos.render_if_need(app, canvas);
 
         // Frame
         self.frame_width.render_if_need(app, canvas);
@@ -147,12 +140,6 @@ impl Widget for ConfigWidget {
             .config
             .minimum_pixel_size
             .set(PixelSize::square(self.minimum_pixel_size.body().value()));
-
-        self.max_undos.handle_event(app, event).or_fail()?;
-        app.models_mut()
-            .config
-            .max_undos
-            .set(self.max_undos.body().value());
 
         // Frame
         let frame = app.models().config.frame;
@@ -233,7 +220,6 @@ impl Widget for ConfigWidget {
         vec![
             // General
             &mut self.minimum_pixel_size,
-            &mut self.max_undos,
             // Frame
             &mut self.frame_width,
             &mut self.frame_height,
@@ -253,8 +239,7 @@ impl Widget for ConfigWidget {
 impl FixedSizeWidget for ConfigWidget {
     fn requiring_size(&self, app: &App) -> Size {
         // General
-        let mut general_settings_size = self.minimum_pixel_size.requiring_size(app);
-        general_settings_size.height += MARGIN + self.max_undos.requiring_size(app).height;
+        let general_settings_size = self.minimum_pixel_size.requiring_size(app);
 
         // Frame
         let mut frame_settings_size = self.frame_width.requiring_size(app);
@@ -304,11 +289,6 @@ impl FixedSizeWidget for ConfigWidget {
         self.minimum_pixel_size
             .set_region(app, minimum_pixel_size_region);
         region.consume_y(minimum_pixel_size_region.size.height + MARGIN);
-
-        let mut max_undos_region = region;
-        max_undos_region.size = self.max_undos.requiring_size(app);
-        self.max_undos.set_region(app, max_undos_region);
-        region.consume_y(max_undos_region.size.height + GROUP_MARGIN);
 
         // Frame
         let mut frame_width_region = region;

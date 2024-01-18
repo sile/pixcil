@@ -13,6 +13,7 @@ use pagurus::image::Canvas;
 use pagurus::spatial::{Position, Region, Size};
 
 const MARGIN: u32 = 8;
+const MAX_UNDO: usize = 100;
 
 #[derive(Debug)]
 pub struct UndoRedoWidget {
@@ -91,7 +92,7 @@ impl Widget for UndoRedoWidget {
     }
 
     fn handle_event_after(&mut self, app: &mut App) -> Result<()> {
-        let max_undo = app.models().config.max_undos.get() as usize;
+        let max_undo = MAX_UNDO;
         while app.models().pixel_canvas.command_log_tail() > max_undo {
             app.models_mut().pixel_canvas.forget_oldest_command();
         }

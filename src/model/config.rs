@@ -17,6 +17,7 @@ pub struct ConfigModel {
     pub zoom: Zoom,
     pub camera: Camera,
     pub minimum_pixel_size: MinimumPixelSize,
+    // TODO: remove this field in the future version
     pub max_undos: MaxUndos,
     pub color: DrawingColor,
     pub frame: FrameRegion,
@@ -26,7 +27,7 @@ pub struct ConfigModel {
     pub finger_mode: FingerMode,
     pub frame_preview_scale: FramePreviewScale,
 
-    // TODO: move to a separate model in the future version
+    // TODO: remove this field in the future version
     pub attrs: AttributesModel,
 }
 
@@ -456,16 +457,6 @@ impl Deserialize for FramePreview {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct MaxUndos(u32);
-
-impl MaxUndos {
-    pub const fn get(self) -> u32 {
-        self.0
-    }
-
-    pub fn set(&mut self, n: u32) {
-        self.0 = n;
-    }
-}
 
 impl Default for MaxUndos {
     fn default() -> Self {
