@@ -211,7 +211,7 @@ pub struct MinimumPixelSize(PixelSize);
 
 impl MinimumPixelSize {
     pub const MIN: Self = Self(PixelSize::square(1));
-    pub const MAX: Self = Self(PixelSize::square(1000));
+    pub const MAX: Self = Self(PixelSize::square(999));
 
     pub const fn get(self) -> PixelSize {
         self.0

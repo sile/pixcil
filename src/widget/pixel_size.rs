@@ -1,9 +1,9 @@
-use super::{button::ButtonWidget, number_box::NumberBoxWidget, FixedSizeWidget, Widget};
+use super::{button::ButtonWidget, size_box::SizeBoxWidget, FixedSizeWidget, Widget};
 use crate::{
     app::App,
     asset::{ButtonKind, IconId},
     event::Event,
-    model::config::MinimumPixelSize,
+    pixel::PixelSize,
 };
 use orfail::{OrFail, Result};
 use pagurus::image::Canvas;
@@ -14,7 +14,7 @@ const MARGIN: u32 = 8;
 #[derive(Debug)]
 pub struct PixelSizeWidget {
     region: Region,
-    pixel_size: NumberBoxWidget,
+    pixel_size: SizeBoxWidget,
     halve: ButtonWidget,
     double: ButtonWidget,
 }
@@ -24,18 +24,14 @@ impl PixelSizeWidget {
         let pixel_size = app.models().config.minimum_pixel_size.get();
         Self {
             region: Region::default(),
-            pixel_size: NumberBoxWidget::new(
-                MinimumPixelSize::MIN.get().width as u32,
-                pixel_size.width as u32,
-                MinimumPixelSize::MAX.get().width as u32,
-            ),
+            pixel_size: SizeBoxWidget::new(pixel_size),
             halve: ButtonWidget::new(ButtonKind::Middle, IconId::Halve),
             double: ButtonWidget::new(ButtonKind::Middle, IconId::Double),
         }
     }
 
-    pub fn value(&self) -> u16 {
-        self.pixel_size.value() as u16
+    pub fn value(&self) -> PixelSize {
+        self.pixel_size.value()
     }
 }
 

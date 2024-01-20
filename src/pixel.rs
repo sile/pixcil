@@ -299,6 +299,7 @@ impl Deserialize for PixelRegion {
 
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct PixelSize {
+    // TODO: Make private
     pub width: u16,
     pub height: u16,
 }
@@ -314,6 +315,13 @@ impl PixelSize {
 
     pub fn is_square(self) -> bool {
         self.width == self.height
+    }
+
+    fn clamp(self) -> Self {
+        Self {
+            width: self.width.clamp(1, 999),
+            height: self.height.clamp(1, 999),
+        }
     }
 }
 
@@ -345,8 +353,23 @@ impl std::str::FromStr for PixelSize {
         let mut parts = s.splitn(2, ['x', 'X']);
         let width = parts.next().or_fail()?.parse::<u16>().or_fail()?;
         let height = parts.next().or_fail()?.parse::<u16>().or_fail()?;
-        (width < 1000 && height < 1000).or_fail()?;
-        Ok(Self::from_wh(width, height))
+        Ok(Self::from_wh(width, height).clamp())
+    }
+}
+
+impl std::ops::Mul<u16> for PixelSize {
+    type Output = Self;
+
+    fn mul(self, rhs: u16) -> Self::Output {
+        Self::from_wh(self.width * rhs, self.height * rhs).clamp()
+    }
+}
+
+impl std::ops::Div<u16> for PixelSize {
+    type Output = Self;
+
+    fn div(self, rhs: u16) -> Self::Output {
+        Self::from_wh(self.width / rhs, self.height / rhs).clamp()
     }
 }
 

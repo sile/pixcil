@@ -6,7 +6,6 @@ use crate::{
     app::App,
     event::Event,
     model::config::{Animation, Layer},
-    pixel::PixelSize,
     region_ext::RegionExt,
 };
 use orfail::{OrFail, Result};
@@ -139,7 +138,7 @@ impl Widget for ConfigWidget {
         app.models_mut()
             .config
             .minimum_pixel_size
-            .set(PixelSize::square(self.minimum_pixel_size.body().value()));
+            .set(self.minimum_pixel_size.body().value());
 
         // Frame
         let frame = app.models().config.frame;

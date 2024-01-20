@@ -58,7 +58,7 @@ impl Widget for SizeBoxWidget {
 
         canvas
             .offset(self.region.position)
-            .draw_sprite(&app.assets().number_box);
+            .draw_sprite(&app.assets().size_box);
 
         let mut number_position = self.region.position;
         number_position.x = self.region.end().x - 20;
