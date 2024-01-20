@@ -83,6 +83,13 @@ impl App {
         id
     }
 
+    pub fn enqueue_input_size_request(&mut self) -> InputId {
+        let id = self.next_input_id.get_and_increment();
+        let request = IoRequest::InputSize { id };
+        self.io_requests.push_back(request);
+        id
+    }
+
     pub fn enqueue_io_request(&mut self, request: IoRequest) {
         self.io_requests.push_back(request);
     }

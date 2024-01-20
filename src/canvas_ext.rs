@@ -8,8 +8,8 @@ pub trait CanvasExt {
     fn draw_rectangle(&mut self, rectangle: Region, color: Color);
     fn fill_rectangle(&mut self, rectangle: Region, color: Color);
     fn draw_sprite_with_alpha(&mut self, sprite: &Sprite, alpha: u8);
-    fn draw_text(&mut self, text: &Text, sprites: &[Sprite; 27]);
-    fn draw_number(&mut self, position: Position, number: u32, digits: &[Sprite; 10]);
+    fn draw_text(&mut self, text: &Text, sprites: &[Sprite; 27]) -> Position;
+    fn draw_number(&mut self, position: Position, number: u32, digits: &[Sprite; 10]) -> Position;
 }
 
 impl<'a> CanvasExt for Canvas<'a> {
@@ -63,16 +63,22 @@ impl<'a> CanvasExt for Canvas<'a> {
         }
     }
 
-    fn draw_text(&mut self, text: &Text, sprites: &[Sprite; 27]) {
+    fn draw_text(&mut self, text: &Text, sprites: &[Sprite; 27]) -> Position {
         let mut offset = Position::ORIGIN;
         for &x in text.get() {
             let i = x as usize;
             self.offset(offset).draw_sprite(&sprites[i]);
             offset.x += (sprites[i].size().width + text.margin()) as i32;
         }
+        offset
     }
 
-    fn draw_number(&mut self, position: Position, mut number: u32, digits: &[Sprite; 10]) {
+    fn draw_number(
+        &mut self,
+        position: Position,
+        mut number: u32,
+        digits: &[Sprite; 10],
+    ) -> Position {
         let mut offset = position;
         let margin = 2;
         loop {
@@ -85,5 +91,6 @@ impl<'a> CanvasExt for Canvas<'a> {
                 break;
             }
         }
+        offset
     }
 }

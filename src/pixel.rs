@@ -311,6 +311,10 @@ impl PixelSize {
     pub const fn square(size: u16) -> Self {
         Self::from_wh(size, size)
     }
+
+    pub fn is_square(self) -> bool {
+        self.width == self.height
+    }
 }
 
 impl Serialize for PixelSize {
@@ -327,6 +331,22 @@ impl Deserialize for PixelSize {
             width: u16::deserialize(reader).or_fail()?,
             height: u16::deserialize(reader).or_fail()?,
         })
+    }
+}
+
+impl std::str::FromStr for PixelSize {
+    type Err = orfail::Failure;
+
+    fn from_str(s: &str) -> Result<Self> {
+        if let Ok(size) = s.parse::<u16>() {
+            return Ok(Self::square(size));
+        }
+
+        let mut parts = s.splitn(2, ['x', 'X']);
+        let width = parts.next().or_fail()?.parse::<u16>().or_fail()?;
+        let height = parts.next().or_fail()?.parse::<u16>().or_fail()?;
+        (width < 1000 && height < 1000).or_fail()?;
+        Ok(Self::from_wh(width, height))
     }
 }
 

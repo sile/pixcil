@@ -7,6 +7,7 @@ pub enum IoRequest {
     LoadWorkspace,
     ImportImage,
     InputNumber { id: InputId },
+    InputSize { id: InputId },
     Vibrate,
 }
 

@@ -24,6 +24,7 @@ pub mod save_load;
 pub mod select_box;
 pub mod select_tool;
 pub mod side_bar;
+pub mod size_box;
 pub mod slider;
 pub mod toggle;
 pub mod tool_box;

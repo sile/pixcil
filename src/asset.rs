@@ -11,6 +11,7 @@ pub struct Assets {
     pub digits_10x14: [Sprite; 10],
     pub alphabet_10x14: [Sprite; 27],
     pub number_box: Sprite,
+    pub size_box: Sprite,
     pub slider_cursor: Sprite,
     pub right_arrow: Sprite,
     pub hand: Hand,
@@ -27,6 +28,10 @@ impl Assets {
             number_box: decode_sprite(include_bytes!("../assets/number-box.png"))
                 .or_fail()?
                 .clip(Size::from_wh(64, 32).to_region())
+                .or_fail()?,
+            size_box: decode_sprite(include_bytes!("../assets/size-box.png"))
+                .or_fail()?
+                .clip(Size::from_wh(100, 32).to_region())
                 .or_fail()?,
             slider_cursor: decode_sprite(include_bytes!("../assets/slider-cursor.png"))
                 .or_fail()?,
