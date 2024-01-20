@@ -27,6 +27,7 @@ type Message = {
 type MessageData =
   | { type: "setWorkspace"; requestId: number; body: Uint8Array }
   | { type: "getWorkspace"; requestId: number }
+  | { type: "notifyInputSize"; requestId: number; body: { id: number; size: string } }
   | { type: "notifyInputNumber"; requestId: number; body: { id: number; number: string } };
 
 class App {
@@ -78,6 +79,12 @@ class App {
           {
             const inputJsonBytes = new TextEncoder().encode(JSON.stringify(msg.data.body));
             this.game.command(this.system, "notifyInputNumber", inputJsonBytes);
+          }
+          break;
+        case "notifyInputSize":
+          {
+            const inputJsonBytes = new TextEncoder().encode(JSON.stringify(msg.data.body));
+            this.game.command(this.system, "notifyInputSize", inputJsonBytes);
           }
           break;
       }
@@ -166,7 +173,12 @@ class App {
       this.handleDirtyState();
     }
 
-    type RequestJson = "saveWorkspace" | "loadWorkspace" | "importImage" | { inputNumber: { id: number } } | "vibrate";
+      type RequestJson = "saveWorkspace"
+          | "loadWorkspace"
+          | "importImage"
+          | { inputNumber: { id: number } }
+          | { inputSize: { id: number } }
+          | "vibrate";
 
     const requestBytes = this.game.query(this.system, "nextIoRequest");
     if (requestBytes.length > 0) {
@@ -190,6 +202,9 @@ class App {
           if ("inputNumber" in requestJson) {
             const inputId = requestJson.inputNumber.id;
             this.parent.postMessage({ type: "inputNumber", inputId });
+          } else if ("inputSize" in requestJson) {
+            const inputId = requestJson.inputSize.id;
+            this.parent.postMessage({ type: "inputSize", inputId });
           }
       }
     }

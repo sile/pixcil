@@ -12,7 +12,7 @@ pub enum IoRequest {
 }
 
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
-pub struct InputNumber {
+pub struct Input {
     pub id: InputId,
     pub number: String,
 }

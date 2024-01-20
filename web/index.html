@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
   <head>
     <meta charset="utf-8">
@@ -35,6 +36,17 @@
                   if (number) {
                       window.postMessage({
                           type: "notifyInputNumber",
+                          body: { id: msg.data.inputId, number }
+                      });
+                  }
+              }
+              break;
+          case "inputSize":
+              {
+                  const number = prompt("Please input a {size} or {width}x{height}")
+                  if (number) {
+                      window.postMessage({
+                          type: "notifyInputSize",
                           body: { id: msg.data.inputId, number }
                       });
                   }

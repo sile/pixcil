@@ -3,7 +3,7 @@ use crate::tags::RENDERING_TAG;
 use crate::{
     app::App,
     event::Event,
-    io::InputNumber,
+    io::Input,
     model::Models,
     window::{main::MainWindow, Window},
 };
@@ -171,8 +171,8 @@ impl<S: System> Game<S> for PixcilGame {
 
     fn command(&mut self, system: &mut S, name: &str, data: &[u8]) -> Result<()> {
         match name {
-            "notifyInputNumber" => {
-                let data: InputNumber = serde_json::from_slice(data).or_fail()?;
+            "notifyInputNumber" | "notifyInputSize" => {
+                let data: Input = serde_json::from_slice(data).or_fail()?;
                 let event = Event::Input {
                     id: data.id,
                     text: data.number,

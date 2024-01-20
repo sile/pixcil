@@ -73,14 +73,14 @@ impl Widget for SizeBoxWidget {
         } else {
             let mut offset = canvas.draw_number(
                 number_position,
-                self.value.width as u32,
+                self.value.height as u32,
                 &app.assets().digits_10x14,
             );
-            offset.x += canvas
+            offset.x -= canvas
                 .offset(offset)
                 .draw_text(&Text::new(vec![Alphabet::X]), &app.assets().alphabet_10x14)
                 .x;
-            canvas.draw_number(offset, self.value.height as u32, &app.assets().digits_10x14);
+            canvas.draw_number(offset, self.value.width as u32, &app.assets().digits_10x14);
         }
     }
 
