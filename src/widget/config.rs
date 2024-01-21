@@ -74,7 +74,7 @@ impl ConfigWidget {
 
             // Layer
             layer_enable: BlockWidget::new(
-                "ENABLE LAYER".parse().expect("unreachable"),
+                "LAYER".parse().expect("unreachable"),
                 ToggleWidget::new(layer.is_enabled()),
             ),
             layer_count: BlockWidget::new(
@@ -84,7 +84,7 @@ impl ConfigWidget {
 
             // Animation
             animation_enable: BlockWidget::new(
-                "ENABLE ANIMATION".parse().expect("unreachable"),
+                "ANIMATION".parse().expect("unreachable"),
                 ToggleWidget::new(animation.is_enabled()),
             ),
             frame_count: BlockWidget::new(
