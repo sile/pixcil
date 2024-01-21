@@ -1,6 +1,6 @@
 use super::{
     block::BlockWidget, number_box::NumberBoxWidget, pixel_size::PixelSizeWidget,
-    toggle::ToggleWidget, FixedSizeWidget, VariableSizeWidget, Widget,
+    size_box::SizeBoxWidget, toggle::ToggleWidget, FixedSizeWidget, VariableSizeWidget, Widget,
 };
 use crate::{
     app::App,
@@ -13,18 +13,16 @@ use pagurus::image::Canvas;
 use pagurus::spatial::{Position, Region, Size};
 
 const MARGIN: u32 = 8;
-const GROUP_MARGIN: u32 = 24;
 
 #[derive(Debug)]
 pub struct ConfigWidget {
     region: Region,
 
-    // General settings
-    minimum_pixel_size: BlockWidget<PixelSizeWidget>,
+    // Size settings
+    frame_size: BlockWidget<SizeBoxWidget>,
+    pixel_size: BlockWidget<PixelSizeWidget>,
 
     // Frame settings
-    frame_width: BlockWidget<NumberBoxWidget>,
-    frame_height: BlockWidget<NumberBoxWidget>,
     frame_preview: BlockWidget<ToggleWidget>,
     frame_preview_scale: BlockWidget<NumberBoxWidget>,
 
@@ -48,21 +46,17 @@ impl ConfigWidget {
         Self {
             region: Region::default(),
 
-            // General
-            minimum_pixel_size: BlockWidget::new(
+            // Size
+            frame_size: BlockWidget::new(
+                "FRAME SIZE".parse().expect("unreachable"),
+                SizeBoxWidget::new(frame_size),
+            ),
+            pixel_size: BlockWidget::new(
                 "PIXEL SIZE".parse().expect("unreachable"),
                 PixelSizeWidget::new(app),
             ),
 
             // Frame
-            frame_width: BlockWidget::new(
-                "FRAME WIDTH".parse().expect("unreachable"),
-                NumberBoxWidget::new(1, frame_size.width as u32, 9999),
-            ),
-            frame_height: BlockWidget::new(
-                "FRAME HEIGHT".parse().expect("unreachable"),
-                NumberBoxWidget::new(1, frame_size.height as u32, 9999),
-            ),
             frame_preview: BlockWidget::new(
                 "FRAME PREVIEW".parse().expect("unreachable"),
                 ToggleWidget::new(frame_preview),
@@ -113,12 +107,11 @@ impl Widget for ConfigWidget {
     }
 
     fn render(&self, app: &App, canvas: &mut Canvas) {
-        // General
-        self.minimum_pixel_size.render_if_need(app, canvas);
+        // Size
+        self.frame_size.render_if_need(app, canvas);
+        self.pixel_size.render_if_need(app, canvas);
 
         // Frame
-        self.frame_width.render_if_need(app, canvas);
-        self.frame_height.render_if_need(app, canvas);
         self.frame_preview.render_if_need(app, canvas);
         self.frame_preview_scale.render_if_need(app, canvas);
 
@@ -133,29 +126,22 @@ impl Widget for ConfigWidget {
     }
 
     fn handle_event(&mut self, app: &mut App, event: &mut Event) -> Result<()> {
-        // General
-        self.minimum_pixel_size.handle_event(app, event).or_fail()?;
-        app.models_mut()
-            .config
-            .minimum_pixel_size
-            .set(self.minimum_pixel_size.body().value());
-
-        // Frame
+        // Size
         let frame = app.models().config.frame;
-        self.frame_width.handle_event(app, event).or_fail()?;
+        self.frame_size.handle_event(app, event).or_fail()?;
         app.models_mut()
             .config
             .frame
-            .set_width(self.frame_width.body().value() as u16);
-
-        self.frame_height.handle_event(app, event).or_fail()?;
-        app.models_mut()
-            .config
-            .frame
-            .set_height(self.frame_height.body().value() as u16);
+            .set_from_pixel_size(self.frame_size.body().value());
         if frame != app.models().config.frame {
             app.request_redraw(app.screen_size().to_region());
         }
+
+        self.pixel_size.handle_event(app, event).or_fail()?;
+        app.models_mut()
+            .config
+            .minimum_pixel_size
+            .set(self.pixel_size.body().value());
 
         // Frame Preview
         self.frame_preview.handle_event(app, event).or_fail()?;
@@ -217,11 +203,10 @@ impl Widget for ConfigWidget {
 
     fn children(&mut self) -> Vec<&mut dyn Widget> {
         vec![
-            // General
-            &mut self.minimum_pixel_size,
+            // Size
+            &mut self.frame_size,
+            &mut self.pixel_size,
             // Frame
-            &mut self.frame_width,
-            &mut self.frame_height,
             &mut self.frame_preview,
             &mut self.frame_preview_scale,
             // Layer
@@ -237,12 +222,9 @@ impl Widget for ConfigWidget {
 
 impl FixedSizeWidget for ConfigWidget {
     fn requiring_size(&self, app: &App) -> Size {
-        // General
-        let general_settings_size = self.minimum_pixel_size.requiring_size(app);
-
-        // Frame
-        let mut frame_settings_size = self.frame_width.requiring_size(app);
-        frame_settings_size.width += MARGIN + self.frame_height.requiring_size(app).width;
+        // Size
+        let mut size_settings_size = self.frame_size.requiring_size(app);
+        size_settings_size.width += MARGIN + self.pixel_size.requiring_size(app).width;
 
         // Frame Preview
         let mut frame_preview_settings_size = self.frame_preview.requiring_size(app);
@@ -259,20 +241,17 @@ impl FixedSizeWidget for ConfigWidget {
         animation_settings_size.width += MARGIN + self.fps.requiring_size(app).width;
 
         Size::from_wh(
-            general_settings_size
+            size_settings_size
                 .width
-                .max(frame_settings_size.width)
                 .max(frame_preview_settings_size.width)
                 .max(layer_settings_size.width)
                 .max(animation_settings_size.width),
-            general_settings_size.height
-                + GROUP_MARGIN
-                + frame_settings_size.height
-                + GROUP_MARGIN
+            size_settings_size.height
+                + MARGIN
                 + frame_preview_settings_size.height
-                + GROUP_MARGIN
+                + MARGIN
                 + layer_settings_size.height
-                + GROUP_MARGIN
+                + MARGIN
                 + animation_settings_size.height,
         ) + MARGIN * 2
     }
@@ -282,23 +261,16 @@ impl FixedSizeWidget for ConfigWidget {
 
         let mut region = self.region.without_margin(MARGIN);
 
-        // General
-        let mut minimum_pixel_size_region = region;
-        minimum_pixel_size_region.size.height = self.minimum_pixel_size.requiring_size(app).height;
-        self.minimum_pixel_size
-            .set_region(app, minimum_pixel_size_region);
-        region.consume_y(minimum_pixel_size_region.size.height + MARGIN);
+        // Size
+        let mut frame_size_region = region;
+        frame_size_region.size = self.frame_size.requiring_size(app);
+        self.frame_size.set_region(app, frame_size_region);
 
-        // Frame
-        let mut frame_width_region = region;
-        frame_width_region.size = self.frame_width.requiring_size(app);
-        self.frame_width.set_region(app, frame_width_region);
-
-        let mut frame_height_region = region;
-        frame_height_region.position.x = frame_width_region.end().x + MARGIN as i32;
-        frame_height_region.size = self.frame_height.requiring_size(app);
-        self.frame_height.set_region(app, frame_height_region);
-        region.consume_y(frame_height_region.size.height + GROUP_MARGIN);
+        let mut pixel_size_region = region;
+        pixel_size_region.position.x = frame_size_region.end().x + MARGIN as i32;
+        pixel_size_region.size = self.pixel_size.requiring_size(app);
+        self.pixel_size.set_region(app, pixel_size_region);
+        region.consume_y(pixel_size_region.size.height + MARGIN);
 
         // Frame Preview
         let mut frame_preview_region = region;
@@ -308,7 +280,7 @@ impl FixedSizeWidget for ConfigWidget {
             app,
             frame_preview_region.move_x((self.frame_preview.region().size.width + MARGIN) as i32),
         );
-        region.consume_y(frame_preview_region.size.height + GROUP_MARGIN);
+        region.consume_y(frame_preview_region.size.height + MARGIN);
 
         // Layer
         let mut layer_enable_region = region;
@@ -319,7 +291,7 @@ impl FixedSizeWidget for ConfigWidget {
         layer_count_region.position.x = layer_enable_region.end().x + MARGIN as i32;
         layer_count_region.size = self.layer_count.requiring_size(app);
         self.layer_count.set_region(app, layer_count_region);
-        region.consume_y(layer_count_region.size.height + GROUP_MARGIN);
+        region.consume_y(layer_count_region.size.height + MARGIN);
 
         // Animation
         let mut animation_enable_region = region;

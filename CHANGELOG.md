@@ -27,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Merge frame width / height settings into frame size setting
 - Don't save undo buffer in the image file
 - Change default pixel size to 1
 - Change PWA display mode from "minimal-ui" to "standalone"

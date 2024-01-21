@@ -351,6 +351,10 @@ impl FrameRegion {
             .move_x(region.size().width as i16 * frame as i16)
     }
 
+    pub fn set_from_pixel_size(&mut self, size: PixelSize) {
+        self.region = PixelRegion::from_position_and_size(self.region.start, size);
+    }
+
     pub fn set_width(&mut self, width: u16) {
         let mut size = self.region.size();
         size.width = width;
