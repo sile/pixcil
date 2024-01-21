@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+- Remove frame count setting
 - Remove layer count setting
 - Remove max undos setting
 - Remove import-from-clipboard feature

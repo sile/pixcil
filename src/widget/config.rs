@@ -8,7 +8,7 @@ use pagurus::image::Canvas;
 use pagurus::spatial::{Position, Region, Size};
 
 const MARGIN_X: u32 = 8;
-const MARGIN_Y: u32 = 12;
+const MARGIN_Y: u32 = 14;
 
 #[derive(Debug)]
 pub struct ConfigWidget {
@@ -23,12 +23,9 @@ pub struct ConfigWidget {
     frame_preview_scale: BlockWidget<NumberBoxWidget>,
     silhouette: BlockWidget<ToggleWidget>,
 
-    // Layer settings
+    // Layer / animation settings
     layer_enable: BlockWidget<ToggleWidget>,
-
-    // Animation
     animation_enable: BlockWidget<ToggleWidget>,
-    frame_count: BlockWidget<NumberBoxWidget>,
     fps: BlockWidget<NumberBoxWidget>,
 }
 
@@ -67,24 +64,14 @@ impl ConfigWidget {
                 ToggleWidget::new(silhouette_preview),
             ),
 
-            // Layer
+            // Layer / animation
             layer_enable: BlockWidget::new(
                 "LAYER".parse().expect("unreachable"),
                 ToggleWidget::new(layer.is_enabled()),
             ),
-
-            // Animation
             animation_enable: BlockWidget::new(
                 "ANIMATION".parse().expect("unreachable"),
                 ToggleWidget::new(animation.is_enabled()),
-            ),
-            frame_count: BlockWidget::new(
-                "FRAME COUNT".parse().expect("unreachable"),
-                NumberBoxWidget::new(
-                    Animation::MIN_FRAME_COUNT as u32,
-                    animation.frame_count() as u32,
-                    Animation::MAX_FRAME_COUNT as u32,
-                ),
             ),
             fps: BlockWidget::new(
                 "FPS".parse().expect("unreachable"),
@@ -113,12 +100,9 @@ impl Widget for ConfigWidget {
         self.frame_preview_scale.render_if_need(app, canvas);
         self.silhouette.render_if_need(app, canvas);
 
-        // Layer
+        // Layer / animation
         self.layer_enable.render_if_need(app, canvas);
-
-        // Animation
         self.animation_enable.render_if_need(app, canvas);
-        self.frame_count.render_if_need(app, canvas);
         self.fps.render_if_need(app, canvas);
     }
 
@@ -157,7 +141,7 @@ impl Widget for ConfigWidget {
         self.silhouette.handle_event(app, event).or_fail()?;
         app.models_mut().config.silhouette_preview = self.silhouette.body().is_on();
 
-        // Layer
+        // Layer / animation
         let layer = app.models().config.layer;
         self.layer_enable.handle_event(app, event).or_fail()?;
         app.models_mut()
@@ -168,19 +152,12 @@ impl Widget for ConfigWidget {
             app.request_redraw(app.screen_size().to_region());
         }
 
-        // Animation
         let animation = app.models_mut().config.animation;
         self.animation_enable.handle_event(app, event).or_fail()?;
         app.models_mut()
             .config
             .animation
             .set_enabled(self.animation_enable.body().is_on());
-
-        self.frame_count.handle_event(app, event).or_fail()?;
-        app.models_mut()
-            .config
-            .animation
-            .set_frame_count(self.frame_count.body().value() as u16);
 
         self.fps.handle_event(app, event).or_fail()?;
         app.models_mut()
@@ -203,11 +180,9 @@ impl Widget for ConfigWidget {
             &mut self.frame_preview,
             &mut self.frame_preview_scale,
             &mut self.silhouette,
-            // Layer
+            // Layer / animation
             &mut self.layer_enable,
-            // Animation
             &mut self.animation_enable,
-            &mut self.frame_count,
             &mut self.fps,
         ]
     }
@@ -225,27 +200,21 @@ impl FixedSizeWidget for ConfigWidget {
             MARGIN_X + self.frame_preview_scale.requiring_size(app).width;
         preview_settings_size.width += MARGIN_X + self.silhouette.requiring_size(app).width;
 
-        // Layer
-        let layer_settings_size = self.layer_enable.requiring_size(app);
-
-        // Animation
-        let mut animation_settings_size = self.animation_enable.requiring_size(app);
-        animation_settings_size.width += MARGIN_X + self.frame_count.requiring_size(app).width;
-        animation_settings_size.width += MARGIN_X + self.fps.requiring_size(app).width;
+        // Layer / animation
+        let mut layer_settings_size = self.layer_enable.requiring_size(app);
+        layer_settings_size.width += MARGIN_X + self.animation_enable.requiring_size(app).width;
+        layer_settings_size.width += MARGIN_X + self.fps.requiring_size(app).width;
 
         Size::from_wh(
             size_settings_size
                 .width
                 .max(preview_settings_size.width)
-                .max(layer_settings_size.width)
-                .max(animation_settings_size.width),
+                .max(layer_settings_size.width),
             size_settings_size.height
                 + MARGIN_Y
                 + preview_settings_size.height
                 + MARGIN_Y
-                + layer_settings_size.height
-                + MARGIN_Y
-                + animation_settings_size.height,
+                + layer_settings_size.height,
         ) + MARGIN_X * 2
     }
 
@@ -283,25 +252,19 @@ impl FixedSizeWidget for ConfigWidget {
 
         region.consume_y(frame_preview_region.size.height + MARGIN_Y);
 
-        // Layer
+        // Layer / animation
         let mut layer_enable_region = region;
         layer_enable_region.size = self.layer_enable.requiring_size(app);
         self.layer_enable.set_region(app, layer_enable_region);
-        region.consume_y(layer_enable_region.size.height + MARGIN_Y);
 
-        // Animation
         let mut animation_enable_region = region;
+        animation_enable_region.position.x = layer_enable_region.end().x + MARGIN_X as i32;
         animation_enable_region.size = self.animation_enable.requiring_size(app);
         self.animation_enable
             .set_region(app, animation_enable_region);
 
-        let mut frame_count_region = region;
-        frame_count_region.position.x = animation_enable_region.end().x + MARGIN_X as i32;
-        frame_count_region.size = self.frame_count.requiring_size(app);
-        self.frame_count.set_region(app, frame_count_region);
-
         let mut fps_region = region;
-        fps_region.position.x = frame_count_region.end().x + MARGIN_X as i32;
+        fps_region.position.x = animation_enable_region.end().x + MARGIN_X as i32;
         fps_region.size = self.fps.requiring_size(app);
         self.fps.set_region(app, fps_region);
     }
