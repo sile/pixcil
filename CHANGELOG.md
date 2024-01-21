@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Add a setting to enable frame previews in silhouette mode
 - Add non square pixel size support
 - Add `orfail` crate to the dependencies
 

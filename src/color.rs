@@ -19,6 +19,8 @@ pub const PREVIEW_FOCUSED_BORDER: Color = rgb(255, 0, 0);
 
 pub const BUTTONS_BACKGROUND: Color = rgb(221, 220, 213); // W-3
 
+pub const SILHOUETTE: Color = rgb(0, 0, 0);
+
 pub const FRAME_EDGE: Color = rgb(160, 160, 160);
 pub const CURRENT_FRAME_EDGE: Color = rgb(80, 80, 80);
 

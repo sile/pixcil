@@ -101,6 +101,7 @@ struct PreviewFrameWidget {
     region: Region,
     frame_size: Option<PixelSize>,
     playing: Option<Playing>,
+    silhouette: bool,
 }
 
 impl PreviewFrameWidget {
@@ -150,7 +151,12 @@ impl PreviewFrameWidget {
                 i32::from(pixel.position.x) * scale + offset.x,
                 i32::from(pixel.position.y) * scale + offset.y,
             );
-            canvas.fill_rectangle(Region::new(position, size), pixel.color.into());
+            let color = if app.models().config.silhouette_preview {
+                color::SILHOUETTE
+            } else {
+                pixel.color.into()
+            };
+            canvas.fill_rectangle(Region::new(position, size), color);
         }
     }
 
@@ -221,6 +227,11 @@ impl Widget for PreviewFrameWidget {
             let size = preview_pixel_region.size();
             self.frame_size = Some(size);
             self.region.size = Size::from_wh(u32::from(size.width), u32::from(size.height));
+        }
+
+        if self.silhouette != app.models().config.silhouette_preview {
+            self.silhouette = app.models().config.silhouette_preview;
+            app.request_redraw(self.region);
         }
 
         let dirty_pixels = app.models().pixel_canvas.dirty_positions();
