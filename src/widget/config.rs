@@ -157,11 +157,15 @@ impl Widget for ConfigWidget {
         app.models_mut().config.silhouette_preview = self.silhouette.body().is_on();
 
         // Layer
+        let layer = app.models().config.layer;
         self.layer_enable.handle_event(app, event).or_fail()?;
         app.models_mut()
             .config
             .layer
             .set_enabled(self.layer_enable.body().is_on());
+        if layer != app.models().config.layer {
+            app.request_redraw(app.screen_size().to_region());
+        }
 
         // Animation
         let animation = app.models_mut().config.animation;

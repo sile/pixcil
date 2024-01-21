@@ -134,8 +134,10 @@ impl PixelCanvasModel {
         PixelRegion::from_positions(self.pixels.pixels.keys().copied())
     }
 
-    pub fn get_non_neg_right_bottom(&self) -> PixelPosition {
-        self.pixels.non_neg_right_bottom
+    pub fn get_layers(&self, config: &ConfigModel) -> u16 {
+        let bottom = self.pixels.non_neg_right_bottom.y as u16;
+        let height = config.frame.get_base_region().size().height;
+        (bottom / height) + 1
     }
 
     pub fn get_pixels(

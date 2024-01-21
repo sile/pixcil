@@ -320,6 +320,12 @@ impl Widget for PixelCanvasWidget {
             let dirty_region =
                 PixelRegion::from_positions(dirty_pixels.into_iter()).to_screen_region(app);
             app.request_redraw(dirty_region);
+
+            let layers = app.models().pixel_canvas.get_layers(&app.models().config);
+            if layers != app.models().config.layer.count() {
+                app.models_mut().config.layer.set_count(layers);
+                app.request_redraw(app.screen_size().to_region());
+            }
         }
 
         if self.tool != app.models().tool {
