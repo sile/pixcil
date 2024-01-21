@@ -7,7 +7,8 @@ use orfail::{OrFail, Result};
 use pagurus::image::Canvas;
 use pagurus::spatial::{Position, Region, Size};
 
-const MARGIN: u32 = 8;
+const MARGIN_X: u32 = 8;
+const MARGIN_Y: u32 = 12;
 
 #[derive(Debug)]
 pub struct ConfigWidget {
@@ -216,20 +217,21 @@ impl FixedSizeWidget for ConfigWidget {
     fn requiring_size(&self, app: &App) -> Size {
         // Size
         let mut size_settings_size = self.frame_size.requiring_size(app);
-        size_settings_size.width += MARGIN + self.pixel_size.requiring_size(app).width;
+        size_settings_size.width += MARGIN_X + self.pixel_size.requiring_size(app).width;
 
         // Preview
         let mut preview_settings_size = self.frame_preview.requiring_size(app);
-        preview_settings_size.width += MARGIN + self.frame_preview_scale.requiring_size(app).width;
-        preview_settings_size.width += MARGIN + self.silhouette.requiring_size(app).width;
+        preview_settings_size.width +=
+            MARGIN_X + self.frame_preview_scale.requiring_size(app).width;
+        preview_settings_size.width += MARGIN_X + self.silhouette.requiring_size(app).width;
 
         // Layer
         let layer_settings_size = self.layer_enable.requiring_size(app);
 
         // Animation
         let mut animation_settings_size = self.animation_enable.requiring_size(app);
-        animation_settings_size.width += MARGIN + self.frame_count.requiring_size(app).width;
-        animation_settings_size.width += MARGIN + self.fps.requiring_size(app).width;
+        animation_settings_size.width += MARGIN_X + self.frame_count.requiring_size(app).width;
+        animation_settings_size.width += MARGIN_X + self.fps.requiring_size(app).width;
 
         Size::from_wh(
             size_settings_size
@@ -238,19 +240,19 @@ impl FixedSizeWidget for ConfigWidget {
                 .max(layer_settings_size.width)
                 .max(animation_settings_size.width),
             size_settings_size.height
-                + MARGIN
+                + MARGIN_Y
                 + preview_settings_size.height
-                + MARGIN
+                + MARGIN_Y
                 + layer_settings_size.height
-                + MARGIN
+                + MARGIN_Y
                 + animation_settings_size.height,
-        ) + MARGIN * 2
+        ) + MARGIN_X * 2
     }
 
     fn set_position(&mut self, app: &App, position: Position) {
         self.region = Region::new(position, self.requiring_size(app));
 
-        let mut region = self.region.without_margin(MARGIN);
+        let mut region = self.region.without_margin(MARGIN_X);
 
         // Size
         let mut frame_size_region = region;
@@ -258,10 +260,10 @@ impl FixedSizeWidget for ConfigWidget {
         self.frame_size.set_region(app, frame_size_region);
 
         let mut pixel_size_region = region;
-        pixel_size_region.position.x = frame_size_region.end().x + MARGIN as i32;
+        pixel_size_region.position.x = frame_size_region.end().x + MARGIN_X as i32;
         pixel_size_region.size = self.pixel_size.requiring_size(app);
         self.pixel_size.set_region(app, pixel_size_region);
-        region.consume_y(pixel_size_region.size.height + MARGIN);
+        region.consume_y(pixel_size_region.size.height + MARGIN_Y);
 
         // Preview
         let mut frame_preview_region = region;
@@ -269,23 +271,23 @@ impl FixedSizeWidget for ConfigWidget {
         self.frame_preview.set_region(app, frame_preview_region);
 
         let mut preview_scale_region = region;
-        preview_scale_region.position.x = frame_preview_region.end().x + MARGIN as i32;
+        preview_scale_region.position.x = frame_preview_region.end().x + MARGIN_X as i32;
         preview_scale_region.size = self.frame_preview_scale.requiring_size(app);
         self.frame_preview_scale
             .set_region(app, preview_scale_region);
 
         let mut silhouette_region = region;
-        silhouette_region.position.x = preview_scale_region.end().x + MARGIN as i32;
+        silhouette_region.position.x = preview_scale_region.end().x + MARGIN_X as i32;
         silhouette_region.size = self.silhouette.requiring_size(app);
         self.silhouette.set_region(app, silhouette_region);
 
-        region.consume_y(frame_preview_region.size.height + MARGIN);
+        region.consume_y(frame_preview_region.size.height + MARGIN_Y);
 
         // Layer
         let mut layer_enable_region = region;
         layer_enable_region.size = self.layer_enable.requiring_size(app);
         self.layer_enable.set_region(app, layer_enable_region);
-        region.consume_y(layer_enable_region.size.height + MARGIN);
+        region.consume_y(layer_enable_region.size.height + MARGIN_Y);
 
         // Animation
         let mut animation_enable_region = region;
@@ -294,12 +296,12 @@ impl FixedSizeWidget for ConfigWidget {
             .set_region(app, animation_enable_region);
 
         let mut frame_count_region = region;
-        frame_count_region.position.x = animation_enable_region.end().x + MARGIN as i32;
+        frame_count_region.position.x = animation_enable_region.end().x + MARGIN_X as i32;
         frame_count_region.size = self.frame_count.requiring_size(app);
         self.frame_count.set_region(app, frame_count_region);
 
         let mut fps_region = region;
-        fps_region.position.x = frame_count_region.end().x + MARGIN as i32;
+        fps_region.position.x = frame_count_region.end().x + MARGIN_X as i32;
         fps_region.size = self.fps.requiring_size(app);
         self.fps.set_region(app, fps_region);
     }
