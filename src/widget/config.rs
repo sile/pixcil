@@ -2,12 +2,7 @@ use super::{
     block::BlockWidget, number_box::NumberBoxWidget, pixel_size::PixelSizeWidget,
     size_box::SizeBoxWidget, toggle::ToggleWidget, FixedSizeWidget, VariableSizeWidget, Widget,
 };
-use crate::{
-    app::App,
-    event::Event,
-    model::config::{Animation, Layer},
-    region_ext::RegionExt,
-};
+use crate::{app::App, event::Event, model::config::Animation, region_ext::RegionExt};
 use orfail::{OrFail, Result};
 use pagurus::image::Canvas;
 use pagurus::spatial::{Position, Region, Size};
@@ -29,7 +24,6 @@ pub struct ConfigWidget {
 
     // Layer settings
     layer_enable: BlockWidget<ToggleWidget>,
-    layer_count: BlockWidget<NumberBoxWidget>,
 
     // Animation
     animation_enable: BlockWidget<ToggleWidget>,
@@ -77,10 +71,6 @@ impl ConfigWidget {
                 "LAYER".parse().expect("unreachable"),
                 ToggleWidget::new(layer.is_enabled()),
             ),
-            layer_count: BlockWidget::new(
-                "LAYER COUNT".parse().expect("unreachable"),
-                NumberBoxWidget::new(Layer::MIN as u32, layer.count() as u32, Layer::MAX as u32),
-            ),
 
             // Animation
             animation_enable: BlockWidget::new(
@@ -124,7 +114,6 @@ impl Widget for ConfigWidget {
 
         // Layer
         self.layer_enable.render_if_need(app, canvas);
-        self.layer_count.render_if_need(app, canvas);
 
         // Animation
         self.animation_enable.render_if_need(app, canvas);
@@ -168,21 +157,11 @@ impl Widget for ConfigWidget {
         app.models_mut().config.silhouette_preview = self.silhouette.body().is_on();
 
         // Layer
-        let layer = app.models_mut().config.layer;
         self.layer_enable.handle_event(app, event).or_fail()?;
         app.models_mut()
             .config
             .layer
             .set_enabled(self.layer_enable.body().is_on());
-
-        self.layer_count.handle_event(app, event).or_fail()?;
-        app.models_mut()
-            .config
-            .layer
-            .set_count(self.layer_count.body().value() as u16);
-        if layer != app.models_mut().config.layer {
-            app.request_redraw(app.screen_size().to_region());
-        }
 
         // Animation
         let animation = app.models_mut().config.animation;
@@ -221,7 +200,6 @@ impl Widget for ConfigWidget {
             &mut self.silhouette,
             // Layer
             &mut self.layer_enable,
-            &mut self.layer_count,
             // Animation
             &mut self.animation_enable,
             &mut self.frame_count,
@@ -242,8 +220,7 @@ impl FixedSizeWidget for ConfigWidget {
         preview_settings_size.width += MARGIN + self.silhouette.requiring_size(app).width;
 
         // Layer
-        let mut layer_settings_size = self.layer_enable.requiring_size(app);
-        layer_settings_size.width += MARGIN + self.layer_count.requiring_size(app).width;
+        let layer_settings_size = self.layer_enable.requiring_size(app);
 
         // Animation
         let mut animation_settings_size = self.animation_enable.requiring_size(app);
@@ -304,12 +281,7 @@ impl FixedSizeWidget for ConfigWidget {
         let mut layer_enable_region = region;
         layer_enable_region.size = self.layer_enable.requiring_size(app);
         self.layer_enable.set_region(app, layer_enable_region);
-
-        let mut layer_count_region = region;
-        layer_count_region.position.x = layer_enable_region.end().x + MARGIN as i32;
-        layer_count_region.size = self.layer_count.requiring_size(app);
-        self.layer_count.set_region(app, layer_count_region);
-        region.consume_y(layer_count_region.size.height + MARGIN);
+        region.consume_y(layer_enable_region.size.height + MARGIN);
 
         // Animation
         let mut animation_enable_region = region;
