@@ -29,6 +29,8 @@ pub struct ConfigModel {
 
     // TODO: remove this field in the future version
     pub attrs: AttributesModel,
+
+    pub silhouette_preview: bool,
 }
 
 impl Serialize for ConfigModel {
@@ -45,6 +47,7 @@ impl Serialize for ConfigModel {
         self.finger_mode.serialize(writer).or_fail()?;
         self.frame_preview_scale.serialize(writer).or_fail()?;
         self.attrs.serialize(writer).or_fail()?;
+        self.silhouette_preview.serialize(writer).or_fail()?;
         Ok(())
     }
 }
@@ -64,6 +67,7 @@ impl Deserialize for ConfigModel {
             finger_mode: Deserialize::deserialize_or_default(reader).or_fail()?,
             frame_preview_scale: Deserialize::deserialize_or_default(reader).or_fail()?,
             attrs: Deserialize::deserialize_or_default(reader).or_fail()?,
+            silhouette_preview: Deserialize::deserialize_or_default(reader).or_fail()?,
         })
     }
 }

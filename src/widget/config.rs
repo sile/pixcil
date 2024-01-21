@@ -22,9 +22,10 @@ pub struct ConfigWidget {
     frame_size: BlockWidget<SizeBoxWidget>,
     pixel_size: BlockWidget<PixelSizeWidget>,
 
-    // Frame settings
+    // Preview settings
     frame_preview: BlockWidget<ToggleWidget>,
     frame_preview_scale: BlockWidget<NumberBoxWidget>,
+    silhouette: BlockWidget<ToggleWidget>,
 
     // Layer settings
     layer_enable: BlockWidget<ToggleWidget>,
@@ -41,6 +42,7 @@ impl ConfigWidget {
         let frame_size = app.models().config.frame.get_base_region().size();
         let frame_preview = app.models().config.frame_preview.get();
         let frame_preview_scale = app.models().config.frame_preview_scale.get();
+        let silhouette_preview = app.models().config.silhouette_preview;
         let layer = app.models().config.layer;
         let animation = app.models().config.animation;
         Self {
@@ -56,7 +58,7 @@ impl ConfigWidget {
                 PixelSizeWidget::new(app),
             ),
 
-            // Frame
+            // Preview
             frame_preview: BlockWidget::new(
                 "PREVIEW".parse().expect("unreachable"),
                 ToggleWidget::new(frame_preview),
@@ -64,6 +66,10 @@ impl ConfigWidget {
             frame_preview_scale: BlockWidget::new(
                 "PREVIEW SCALE".parse().expect("unreachable"),
                 NumberBoxWidget::new(1, frame_preview_scale as u32, 32),
+            ),
+            silhouette: BlockWidget::new(
+                "SILHOUETTE".parse().expect("unreachable"),
+                ToggleWidget::new(silhouette_preview),
             ),
 
             // Layer
@@ -111,9 +117,10 @@ impl Widget for ConfigWidget {
         self.frame_size.render_if_need(app, canvas);
         self.pixel_size.render_if_need(app, canvas);
 
-        // Frame
+        // Preview
         self.frame_preview.render_if_need(app, canvas);
         self.frame_preview_scale.render_if_need(app, canvas);
+        self.silhouette.render_if_need(app, canvas);
 
         // Layer
         self.layer_enable.render_if_need(app, canvas);
@@ -143,7 +150,7 @@ impl Widget for ConfigWidget {
             .minimum_pixel_size
             .set(self.pixel_size.body().value());
 
-        // Frame Preview
+        // Preview
         self.frame_preview.handle_event(app, event).or_fail()?;
         app.models_mut()
             .config
@@ -157,6 +164,8 @@ impl Widget for ConfigWidget {
             .frame_preview_scale
             .set(self.frame_preview_scale.body().value() as u8)
             .or_fail()?;
+        self.silhouette.handle_event(app, event).or_fail()?;
+        app.models_mut().config.silhouette_preview = self.silhouette.body().is_on();
 
         // Layer
         let layer = app.models_mut().config.layer;
@@ -206,9 +215,10 @@ impl Widget for ConfigWidget {
             // Size
             &mut self.frame_size,
             &mut self.pixel_size,
-            // Frame
+            // Preview
             &mut self.frame_preview,
             &mut self.frame_preview_scale,
+            &mut self.silhouette,
             // Layer
             &mut self.layer_enable,
             &mut self.layer_count,
@@ -226,10 +236,10 @@ impl FixedSizeWidget for ConfigWidget {
         let mut size_settings_size = self.frame_size.requiring_size(app);
         size_settings_size.width += MARGIN + self.pixel_size.requiring_size(app).width;
 
-        // Frame Preview
-        let mut frame_preview_settings_size = self.frame_preview.requiring_size(app);
-        frame_preview_settings_size.width +=
-            MARGIN + self.frame_preview_scale.requiring_size(app).width;
+        // Preview
+        let mut preview_settings_size = self.frame_preview.requiring_size(app);
+        preview_settings_size.width += MARGIN + self.frame_preview_scale.requiring_size(app).width;
+        preview_settings_size.width += MARGIN + self.silhouette.requiring_size(app).width;
 
         // Layer
         let mut layer_settings_size = self.layer_enable.requiring_size(app);
@@ -243,12 +253,12 @@ impl FixedSizeWidget for ConfigWidget {
         Size::from_wh(
             size_settings_size
                 .width
-                .max(frame_preview_settings_size.width)
+                .max(preview_settings_size.width)
                 .max(layer_settings_size.width)
                 .max(animation_settings_size.width),
             size_settings_size.height
                 + MARGIN
-                + frame_preview_settings_size.height
+                + preview_settings_size.height
                 + MARGIN
                 + layer_settings_size.height
                 + MARGIN
@@ -272,7 +282,7 @@ impl FixedSizeWidget for ConfigWidget {
         self.pixel_size.set_region(app, pixel_size_region);
         region.consume_y(pixel_size_region.size.height + MARGIN);
 
-        // Frame Preview
+        // Preview
         let mut frame_preview_region = region;
         frame_preview_region.size = self.frame_preview.requiring_size(app);
         self.frame_preview.set_region(app, frame_preview_region);
@@ -282,6 +292,12 @@ impl FixedSizeWidget for ConfigWidget {
         preview_scale_region.size = self.frame_preview_scale.requiring_size(app);
         self.frame_preview_scale
             .set_region(app, preview_scale_region);
+
+        let mut silhouette_region = region;
+        silhouette_region.position.x = preview_scale_region.end().x + MARGIN as i32;
+        silhouette_region.size = self.silhouette.requiring_size(app);
+        self.silhouette.set_region(app, silhouette_region);
+
         region.consume_y(frame_preview_region.size.height + MARGIN);
 
         // Layer
