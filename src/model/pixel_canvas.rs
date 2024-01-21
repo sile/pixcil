@@ -140,6 +140,12 @@ impl PixelCanvasModel {
         (bottom / height) + 1
     }
 
+    pub fn get_frames(&self, config: &ConfigModel) -> u16 {
+        let right = self.pixels.non_neg_right_bottom.x as u16;
+        let width = config.frame.get_base_region().size().width;
+        (right / width) + 1
+    }
+
     pub fn get_pixels(
         &self,
         config: &ConfigModel,

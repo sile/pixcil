@@ -326,6 +326,12 @@ impl Widget for PixelCanvasWidget {
                 app.models_mut().config.layer.set_count(layers);
                 app.request_redraw(app.screen_size().to_region());
             }
+
+            let frames = app.models().pixel_canvas.get_frames(&app.models().config);
+            if frames != app.models().config.animation.frame_count() {
+                app.models_mut().config.animation.set_frame_count(frames);
+                app.request_redraw(app.screen_size().to_region());
+            }
         }
 
         if self.tool != app.models().tool {

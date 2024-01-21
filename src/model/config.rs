@@ -641,7 +641,7 @@ impl Default for Layer {
     fn default() -> Self {
         Self {
             enabled: false,
-            count: 2,
+            count: 1,
         }
     }
 }
@@ -719,7 +719,7 @@ impl Default for Animation {
         Self {
             enabled: false,
             fps: 10,
-            frame_count: 2,
+            frame_count: 1,
         }
     }
 }
