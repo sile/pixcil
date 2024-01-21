@@ -75,6 +75,10 @@ impl PixelPosition {
         self.y += delta;
         self
     }
+
+    pub fn is_non_negative(self) -> bool {
+        self.x >= 0 && self.y >= 0
+    }
 }
 
 impl Serialize for PixelPosition {

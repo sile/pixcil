@@ -103,7 +103,7 @@ impl PixelCanvasModel {
         // TODO: optimize (e.g., to use cache to get target pixels)
 
         let mut command = PixelCanvasCommand::default();
-        for (&position, &color) in &self.pixels.0 {
+        for (&position, &color) in &self.pixels.pixels {
             if color != old {
                 continue;
             }
@@ -131,7 +131,11 @@ impl PixelCanvasModel {
     }
 
     pub fn region(&self) -> PixelRegion {
-        PixelRegion::from_positions(self.pixels.0.keys().copied())
+        PixelRegion::from_positions(self.pixels.pixels.keys().copied())
+    }
+
+    pub fn get_non_neg_right_bottom(&self) -> PixelPosition {
+        self.pixels.non_neg_right_bottom
     }
 
     pub fn get_pixels(
@@ -357,34 +361,88 @@ impl Deserialize for PixelCanvasCommand {
 }
 
 #[derive(Debug, Default)]
-struct Pixels(BTreeMap<PixelPosition, Rgba>);
+struct Pixels {
+    pixels: BTreeMap<PixelPosition, Rgba>,
+    non_neg_right_bottom: PixelPosition,
+    non_neg_ys: BTreeMap<i16, usize>,
+    non_neg_xs: BTreeMap<i16, usize>,
+}
 
 impl Pixels {
     fn get_pixel(&self, position: PixelPosition) -> Option<Rgba> {
-        self.0.get(&position).copied()
+        self.pixels.get(&position).copied()
     }
 
     fn draw_pixel(&mut self, pixel: Pixel) -> Result<()> {
         let prev = if pixel.color.a == 0 {
-            self.0.remove(&pixel.position)
+            self.pixels.remove(&pixel.position)
         } else {
-            self.0.insert(pixel.position, pixel.color)
+            self.pixels.insert(pixel.position, pixel.color)
         };
-        prev.is_none().or_fail()
+        prev.is_none().or_fail()?;
+
+        if pixel.position.is_non_negative() {
+            self.on_non_neg_pixel_drawn(pixel.position);
+        }
+
+        Ok(())
     }
 
     fn erase_pixel(&mut self, pixel: Pixel) -> Result<()> {
-        let prev = self.0.remove(&pixel.position);
-        (prev == Some(pixel.color)).or_fail()
+        let prev = self.pixels.remove(&pixel.position);
+        (prev == Some(pixel.color)).or_fail()?;
+
+        if pixel.position.is_non_negative() {
+            self.on_non_neg_pixel_erased(pixel.position);
+        }
+
+        Ok(())
+    }
+
+    fn on_non_neg_pixel_erased(&mut self, position: PixelPosition) {
+        *self.non_neg_xs.get_mut(&position.x).expect("unreachable") -= 1;
+        if self.non_neg_xs[&position.x] == 0 {
+            self.non_neg_xs.remove(&position.x);
+            self.non_neg_right_bottom.x = self
+                .non_neg_xs
+                .last_key_value()
+                .map(|(x, _)| *x)
+                .unwrap_or(0);
+        }
+
+        *self.non_neg_ys.get_mut(&position.y).expect("unreachable") -= 1;
+        if self.non_neg_ys[&position.y] == 0 {
+            self.non_neg_ys.remove(&position.y);
+            self.non_neg_right_bottom.y = self
+                .non_neg_ys
+                .last_key_value()
+                .map(|(y, _)| *y)
+                .unwrap_or(0);
+        }
+    }
+
+    fn on_non_neg_pixel_drawn(&mut self, position: PixelPosition) {
+        self.non_neg_right_bottom.x = self.non_neg_right_bottom.x.max(position.x);
+        self.non_neg_right_bottom.y = self.non_neg_right_bottom.y.max(position.y);
+
+        self.non_neg_xs
+            .entry(position.x)
+            .and_modify(|count| *count += 1)
+            .or_insert(1);
+
+        self.non_neg_ys
+            .entry(position.y)
+            .and_modify(|count| *count += 1)
+            .or_insert(1);
     }
 }
 
 impl Serialize for Pixels {
     fn serialize<W: Write>(&self, writer: &mut W) -> Result<()> {
-        self.0.len().serialize(writer).or_fail()?;
-        serialize_positions(writer, || self.0.keys().copied()).or_fail()?;
+        self.pixels.len().serialize(writer).or_fail()?;
+        serialize_positions(writer, || self.pixels.keys().copied()).or_fail()?;
 
-        for color in self.0.values() {
+        for color in self.pixels.values() {
             color.serialize(writer).or_fail()?;
         }
 
@@ -395,11 +453,20 @@ impl Serialize for Pixels {
 impl Deserialize for Pixels {
     fn deserialize<R: Read>(reader: &mut R) -> Result<Self> {
         let n = usize::deserialize(reader).or_fail()?;
-        deserialize_positions(reader, n)
+        let pixels = deserialize_positions(reader, n)
             .or_fail()?
             .map(|pos| Ok((pos, Rgba::deserialize(reader).or_fail()?)))
-            .collect::<Result<_>>()
-            .map(Self)
+            .collect::<Result<BTreeMap<_, _>>>()?;
+
+        let mut this = Self::default();
+        for position in pixels.keys().copied() {
+            if position.is_non_negative() {
+                this.on_non_neg_pixel_drawn(position);
+            }
+        }
+        this.pixels = pixels;
+
+        Ok(this)
     }
 }
 
