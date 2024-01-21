@@ -58,7 +58,7 @@ impl ConfigWidget {
 
             // Frame
             frame_preview: BlockWidget::new(
-                "FRAME PREVIEW".parse().expect("unreachable"),
+                "PREVIEW".parse().expect("unreachable"),
                 ToggleWidget::new(frame_preview),
             ),
             frame_preview_scale: BlockWidget::new(
@@ -276,10 +276,12 @@ impl FixedSizeWidget for ConfigWidget {
         let mut frame_preview_region = region;
         frame_preview_region.size = self.frame_preview.requiring_size(app);
         self.frame_preview.set_region(app, frame_preview_region);
-        self.frame_preview_scale.set_region(
-            app,
-            frame_preview_region.move_x((self.frame_preview.region().size.width + MARGIN) as i32),
-        );
+
+        let mut preview_scale_region = region;
+        preview_scale_region.position.x = frame_preview_region.end().x + MARGIN as i32;
+        preview_scale_region.size = self.frame_preview_scale.requiring_size(app);
+        self.frame_preview_scale
+            .set_region(app, preview_scale_region);
         region.consume_y(frame_preview_region.size.height + MARGIN);
 
         // Layer
