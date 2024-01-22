@@ -15,7 +15,6 @@ pub mod manipulate;
 pub mod manipulate_tool;
 pub mod move_camera;
 pub mod move_frame;
-pub mod move_tool;
 pub mod number_box;
 pub mod pixel_canvas;
 pub mod pixel_size;

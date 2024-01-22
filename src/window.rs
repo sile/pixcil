@@ -6,7 +6,6 @@ pub mod color_selector;
 pub mod config;
 pub mod draw_tool;
 pub mod main;
-pub mod move_tool;
 pub mod select_tool;
 pub mod widget;
 
