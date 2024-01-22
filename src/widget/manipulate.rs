@@ -16,7 +16,7 @@ pub struct ManipulateWidget {
     region: Region,
     terminated: bool,
     selected_pixels: HashSet<PixelPosition>,
-    manipulating_pixels: HashMap<PixelPosition, Rgba>,
+    manipulating_pixels: HashMap<PixelPosition, Option<Rgba>>,
     delta: PixelPosition,
     state: State,
     tool: ManipulateToolWidget,
@@ -27,11 +27,9 @@ impl ManipulateWidget {
         let manipulating_pixels = selected_pixels
             .iter()
             .copied()
-            .filter_map(|pos| {
-                app.models()
-                    .pixel_canvas
-                    .get_direct_pixel(pos)
-                    .map(|color| (pos, color))
+            .map(|pos| {
+                let color = app.models().pixel_canvas.get_direct_pixel(pos);
+                (pos, color)
             })
             .collect();
         let mut this = Self {
@@ -64,15 +62,12 @@ impl ManipulateWidget {
 
         let manipulating_pixels = image
             .pixels()
-            .filter_map(|(position, color)| {
-                if color.a == 0 {
-                    return None;
-                }
-
+            .map(|(position, color)| {
+                let color = if color.a == 0 { None } else { Some(color) };
                 let mut pixel_position = base;
                 pixel_position.x += position.x as i16;
                 pixel_position.y += position.y as i16;
-                Some((pixel_position, color))
+                (pixel_position, color)
             })
             .collect();
         let mut this = Self {
@@ -97,14 +92,18 @@ impl ManipulateWidget {
     }
 
     fn render_manipulating_pixels(&self, app: &App, canvas: &mut Canvas) {
-        for (position, color) in &self.manipulating_pixels {
+        for (position, &color) in &self.manipulating_pixels {
             let region = (*position + self.delta).to_screen_region(app);
-            let mut color = *color;
-            color.a /= match self.state {
-                State::Neutral => 2,
-                State::Focused => 3,
-                State::Dragging { .. } => 4,
-            }; // TODO
+            let color = if let Some(mut color) = color {
+                color.a /= match self.state {
+                    State::Neutral => 2,
+                    State::Focused => 3,
+                    State::Dragging { .. } => 4,
+                }; // TODO
+                color
+            } else {
+                Rgba::new(200, 200, 200, 80) // TODO: use const
+            };
             canvas.fill_rectangle(region, color.into());
         }
     }
@@ -118,7 +117,9 @@ impl ManipulateWidget {
                 self.selected_pixels.iter().copied(),
                 self.manipulating_pixels
                     .iter()
-                    .map(|(position, color)| Pixel::new(*position + self.delta, *color)),
+                    .filter_map(|(position, &color)| {
+                        color.map(|c| Pixel::new(*position + self.delta, c))
+                    }),
             )
             .or_fail()?;
 

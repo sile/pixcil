@@ -37,13 +37,6 @@ impl Mark for LassoMarker {
             stack.extend([p.move_x(-1), p.move_x(1), p.move_y(-1), p.move_y(1)]);
         }
 
-        let pixel_canvas = &app.models().pixel_canvas;
-        let mut drawn_pixels = Vec::new();
-        for p in pixels {
-            if pixel_canvas.get_pixel(&app.models().config, p).is_some() {
-                drawn_pixels.push(p);
-            }
-        }
-        Box::new(drawn_pixels.into_iter())
+        Box::new(pixels.into_iter())
     }
 }
