@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Show prev / next frame buttons if animation is enabled
 - Automatically determine the number of animation frames
 - Automatically determine the number of layers
 - Add a setting to enable frame previews in silhouette mode
