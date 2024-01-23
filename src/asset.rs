@@ -75,6 +75,7 @@ impl Assets {
             IconId::VerticalFlip => &self.icons.vertical_flip,
             IconId::HorizontalFlip => &self.icons.horizontal_flip,
             IconId::ClockwiseRotate => &self.icons.clockwise_rotate,
+            IconId::OpacityRotate => &self.icons.opacity_rotate,
             IconId::Halve => &self.icons.halve,
             IconId::Double => &self.icons.double,
         }
@@ -127,6 +128,7 @@ pub enum IconId {
     VerticalFlip,
     HorizontalFlip,
     ClockwiseRotate,
+    OpacityRotate,
     Halve,
     Double,
 }
@@ -295,6 +297,7 @@ pub struct Icons {
     pub vertical_flip: Sprite,
     pub horizontal_flip: Sprite,
     pub clockwise_rotate: Sprite,
+    pub opacity_rotate: Sprite,
     pub halve: Sprite,
     pub double: Sprite,
 }
@@ -347,6 +350,7 @@ impl Icons {
             horizontal_flip: rotate.clip(block).or_fail()?,
             vertical_flip: rotate.clip(block.shift_x(1)).or_fail()?,
             clockwise_rotate: rotate.clip(block.shift_x(2)).or_fail()?,
+            opacity_rotate: rotate.clip(block.shift_x(3)).or_fail()?,
             halve: pixel_size_op.clip(middle_block).or_fail()?,
             double: pixel_size_op.clip(middle_block.shift_y(1)).or_fail()?,
         })
