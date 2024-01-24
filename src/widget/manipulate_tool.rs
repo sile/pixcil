@@ -21,6 +21,7 @@ pub struct ManipulateToolWidget {
     vertical_flip: ButtonWidget,
     horizontal_flip: ButtonWidget,
     clockwise_rotate: ButtonWidget,
+    opacity_rotate: ButtonWidget,
 }
 
 impl ManipulateToolWidget {
@@ -44,6 +45,10 @@ impl ManipulateToolWidget {
     pub fn is_clockwise_rotate_clicked(&mut self, app: &mut App) -> bool {
         self.clockwise_rotate.take_clicked(app)
     }
+
+    pub fn is_opacity_rotate_clicked(&mut self, app: &mut App) -> bool {
+        self.opacity_rotate.take_clicked(app)
+    }
 }
 
 impl Default for ManipulateToolWidget {
@@ -55,6 +60,7 @@ impl Default for ManipulateToolWidget {
             vertical_flip: ButtonWidget::new(ButtonKind::Basic, IconId::VerticalFlip),
             horizontal_flip: ButtonWidget::new(ButtonKind::Basic, IconId::HorizontalFlip),
             clockwise_rotate: ButtonWidget::new(ButtonKind::Basic, IconId::ClockwiseRotate),
+            opacity_rotate: ButtonWidget::new(ButtonKind::Basic, IconId::OpacityRotate),
         }
     }
 }
@@ -72,6 +78,7 @@ impl Widget for ManipulateToolWidget {
         self.vertical_flip.render_if_need(app, canvas);
         self.horizontal_flip.render_if_need(app, canvas);
         self.clockwise_rotate.render_if_need(app, canvas);
+        self.opacity_rotate.render_if_need(app, canvas);
     }
 
     fn handle_event(&mut self, app: &mut App, event: &mut Event) -> Result<()> {
@@ -80,6 +87,7 @@ impl Widget for ManipulateToolWidget {
         self.vertical_flip.handle_event(app, event).or_fail()?;
         self.horizontal_flip.handle_event(app, event).or_fail()?;
         self.clockwise_rotate.handle_event(app, event).or_fail()?;
+        self.opacity_rotate.handle_event(app, event).or_fail()?;
         event.consume_if_contained(self.region);
         Ok(())
     }
@@ -91,6 +99,7 @@ impl Widget for ManipulateToolWidget {
             &mut self.vertical_flip,
             &mut self.horizontal_flip,
             &mut self.clockwise_rotate,
+            &mut self.opacity_rotate,
         ]
     }
 }
@@ -98,16 +107,16 @@ impl Widget for ManipulateToolWidget {
 impl FixedSizeWidget for ManipulateToolWidget {
     fn requiring_size(&self, app: &App) -> Size {
         let button_size = self.cut.requiring_size(app);
-        let buttons = 5;
+        let buttons = 6;
         Size::from_wh(
             button_size.width + MARGIN * 2,
-            (button_size.height + MARGIN) * buttons + MARGIN,
+            (button_size.height + MARGIN) * buttons + MARGIN * 2,
         )
     }
 
     fn set_position(&mut self, app: &App, position: Position) {
         self.region = Region::new(position, self.requiring_size(app));
-        let buttons = 5;
+        let buttons = 6;
 
         let mut block = self.region;
         block.size.height /= buttons;
@@ -122,5 +131,7 @@ impl FixedSizeWidget for ManipulateToolWidget {
             .set_position(app, block.shift_y(3).without_margin(MARGIN).position);
         self.clockwise_rotate
             .set_position(app, block.shift_y(4).without_margin(MARGIN).position);
+        self.opacity_rotate
+            .set_position(app, block.shift_y(5).without_margin(MARGIN).position);
     }
 }
