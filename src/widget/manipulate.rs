@@ -193,6 +193,24 @@ impl ManipulateWidget {
         app.request_redraw(region.to_screen_region(app));
     }
 
+    fn opacity_rotate(&mut self, app: &mut App) {
+        let region = PixelRegion::from_positions(self.manipulating_pixels.keys().copied());
+        app.request_redraw(region.to_screen_region(app));
+
+        let alpha_delta = 64;
+        self.manipulating_pixels = self
+            .manipulating_pixels
+            .drain()
+            .map(|(position, color)| {
+                let color = color.map(|mut c| {
+                    c.a = c.a.wrapping_sub(alpha_delta);
+                    c
+                });
+                (position, color)
+            })
+            .collect();
+    }
+
     pub fn is_consumed_by_tool(&self, event: &Event) -> bool {
         if let Some(p) = event.position() {
             !matches!(self.state, State::Dragging { .. }) && self.tool.region().contains(&p)
@@ -242,6 +260,9 @@ impl Widget for ManipulateWidget {
             }
             if self.tool.is_clockwise_rotate_clicked(app) {
                 self.clockwise_rotate(app);
+            }
+            if self.tool.is_opacity_rotate_clicked(app) {
+                self.opacity_rotate(app);
             }
         }
 
