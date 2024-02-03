@@ -141,7 +141,6 @@ pub enum SelectTool {
     #[default]
     Rectangle,
     Lasso,
-    Bucket,
 }
 
 impl SelectTool {
@@ -149,7 +148,6 @@ impl SelectTool {
         match self {
             SelectTool::Rectangle => MarkerKind::FillRectangle,
             SelectTool::Lasso => MarkerKind::Lasso,
-            SelectTool::Bucket => MarkerKind::Fill,
         }
     }
 
@@ -157,7 +155,6 @@ impl SelectTool {
         match self {
             SelectTool::Rectangle => IconId::Select,
             SelectTool::Lasso => IconId::Lasso,
-            SelectTool::Bucket => IconId::SelectBucket,
         }
     }
 }

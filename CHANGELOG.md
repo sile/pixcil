@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+- Remove select-bucket tool
 - Remove move-tool window
 - Remove frame count setting
 - Remove layer count setting
