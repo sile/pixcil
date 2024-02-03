@@ -78,6 +78,7 @@ impl Assets {
             IconId::OpacityRotate => &self.icons.opacity_rotate,
             IconId::Halve => &self.icons.halve,
             IconId::Double => &self.icons.double,
+            IconId::Frame => &self.icons.frame,
         }
     }
 
@@ -131,6 +132,7 @@ pub enum IconId {
     OpacityRotate,
     Halve,
     Double,
+    Frame,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -300,6 +302,7 @@ pub struct Icons {
     pub opacity_rotate: Sprite,
     pub halve: Sprite,
     pub double: Sprite,
+    pub frame: Sprite,
 }
 
 impl Icons {
@@ -353,6 +356,7 @@ impl Icons {
             opacity_rotate: rotate.clip(block.shift_x(3)).or_fail()?,
             halve: pixel_size_op.clip(middle_block).or_fail()?,
             double: pixel_size_op.clip(middle_block.shift_y(1)).or_fail()?,
+            frame: pixel_size_op.clip(middle_block.shift_y(2)).or_fail()?,
         })
     }
 }

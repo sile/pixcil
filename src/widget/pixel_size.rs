@@ -10,6 +10,7 @@ use pagurus::image::Canvas;
 use pagurus::spatial::{Position, Region, Size};
 
 const MARGIN: u32 = 8;
+const HALF_MARGIN: u32 = MARGIN / 2;
 
 #[derive(Debug)]
 pub struct PixelSizeWidget {
@@ -17,6 +18,7 @@ pub struct PixelSizeWidget {
     pixel_size: SizeBoxWidget,
     halve: ButtonWidget,
     double: ButtonWidget,
+    frame: ButtonWidget,
 }
 
 impl PixelSizeWidget {
@@ -27,6 +29,7 @@ impl PixelSizeWidget {
             pixel_size: SizeBoxWidget::new(pixel_size),
             halve: ButtonWidget::new(ButtonKind::Middle, IconId::Halve),
             double: ButtonWidget::new(ButtonKind::Middle, IconId::Double),
+            frame: ButtonWidget::new(ButtonKind::Middle, IconId::Frame),
         }
     }
 
@@ -44,6 +47,7 @@ impl Widget for PixelSizeWidget {
         self.pixel_size.render_if_need(app, canvas);
         self.halve.render_if_need(app, canvas);
         self.double.render_if_need(app, canvas);
+        self.frame.render_if_need(app, canvas);
     }
 
     fn handle_event(&mut self, app: &mut App, event: &mut Event) -> Result<()> {
@@ -59,19 +63,31 @@ impl Widget for PixelSizeWidget {
             self.pixel_size.set_value(app, self.pixel_size.value() * 2);
         }
 
+        self.frame.handle_event(app, event).or_fail()?;
+        if self.frame.take_clicked(app) {
+            self.pixel_size
+                .set_value(app, app.models().config.frame.get_base_region().size());
+        }
+
         Ok(())
     }
 
     fn children(&mut self) -> Vec<&mut dyn Widget> {
-        vec![&mut self.pixel_size, &mut self.halve, &mut self.double]
+        vec![
+            &mut self.pixel_size,
+            &mut self.halve,
+            &mut self.double,
+            &mut self.frame,
+        ]
     }
 }
 
 impl FixedSizeWidget for PixelSizeWidget {
     fn requiring_size(&self, app: &App) -> Size {
         let mut size = self.pixel_size.requiring_size(app);
-        size.width += (MARGIN * 3) + self.halve.requiring_size(app).width;
-        size.width += MARGIN + self.double.requiring_size(app).width;
+        size.width += MARGIN + self.halve.requiring_size(app).width;
+        size.width += HALF_MARGIN + self.double.requiring_size(app).width;
+        size.width += MARGIN + self.frame.requiring_size(app).width;
         size
     }
 
@@ -79,12 +95,15 @@ impl FixedSizeWidget for PixelSizeWidget {
         self.region = Region::new(position, self.requiring_size(app));
 
         self.pixel_size.set_position(app, position);
-        position.x = self.pixel_size.region().end().x + (MARGIN * 3) as i32;
+        position.x = self.pixel_size.region().end().x + MARGIN as i32;
         position.y += 4;
 
         self.halve.set_position(app, position);
-        position.x = self.halve.region().end().x + MARGIN as i32;
+        position.x = self.halve.region().end().x + HALF_MARGIN as i32;
 
         self.double.set_position(app, position);
+        position.x = self.double.region().end().x + MARGIN as i32;
+
+        self.frame.set_position(app, position);
     }
 }
