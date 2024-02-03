@@ -46,7 +46,7 @@ impl ConfigWidget {
                 SizeBoxWidget::new(frame_size),
             ),
             pixel_size: BlockWidget::new(
-                "PIXEL SIZE".parse().expect("unreachable"),
+                "TOOL SIZE".parse().expect("unreachable"),
                 PixelSizeWidget::new(app),
             ),
 
