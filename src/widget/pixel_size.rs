@@ -65,8 +65,19 @@ impl Widget for PixelSizeWidget {
 
         self.frame.handle_event(app, event).or_fail()?;
         if self.frame.take_clicked(app) {
-            self.pixel_size
-                .set_value(app, app.models().config.frame.get_base_region().size());
+            if self.frame.icon() == IconId::UnitFrame {
+                self.pixel_size
+                    .set_value(app, app.models().config.frame.get_base_region().size());
+            } else {
+                self.pixel_size.set_value(app, PixelSize::square(1));
+            }
+        }
+        if app.models().config.minimum_pixel_size.get()
+            == app.models().config.frame.get_base_region().size()
+        {
+            self.frame.set_icon(app, IconId::UnitPixel);
+        } else {
+            self.frame.set_icon(app, IconId::UnitFrame);
         }
 
         Ok(())
