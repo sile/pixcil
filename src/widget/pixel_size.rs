@@ -29,7 +29,7 @@ impl PixelSizeWidget {
             pixel_size: SizeBoxWidget::new(pixel_size),
             halve: ButtonWidget::new(ButtonKind::Middle, IconId::Halve),
             double: ButtonWidget::new(ButtonKind::Middle, IconId::Double),
-            frame: ButtonWidget::new(ButtonKind::Middle, IconId::Frame),
+            frame: ButtonWidget::new(ButtonKind::Middle, IconId::UnitFrame),
         }
     }
 
