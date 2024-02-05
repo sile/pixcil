@@ -11,6 +11,7 @@ use orfail::{OrFail, Result};
 use pagurus::image::Canvas;
 use pagurus::spatial::{Position, Region, Size};
 
+const Y_OFFSET: i32 = 32;
 const MARGIN: u32 = 8;
 
 #[derive(Debug)]
@@ -115,7 +116,7 @@ impl FixedSizeWidget for ManipulateToolWidget {
     }
 
     fn set_position(&mut self, app: &App, position: Position) {
-        self.region = Region::new(position, self.requiring_size(app));
+        self.region = Region::new(position.move_y(Y_OFFSET), self.requiring_size(app));
         let buttons = 6;
 
         let mut block = self.region;
