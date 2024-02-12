@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Add timeout query-string parameter
 - Add a button to set the frame size to the tool size
 - Add a button to adjust opacity of the selected pixels
 - Show prev / next frame buttons if animation is enabled
