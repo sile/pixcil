@@ -60,14 +60,8 @@
       const wasmPath = "./pixcil.wasm";
       const params = new URLSearchParams(window.location.search);
       const workspacePath = params.get("load");
-      const timeout = params.get("timeout");
       Pixcil.App.load({wasmPath, canvas, canvasArea, parent: window, workspacePath})
                 .then((app) => {
-                    if (timeout) {
-                        setTimeout(() => {
-                            alert("Timeout");
-                        }, timeout*1000);
-                    }
                     app.run()
                 })
                 .catch((e) => {
