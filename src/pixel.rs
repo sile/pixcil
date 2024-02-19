@@ -323,8 +323,8 @@ impl PixelSize {
 
     fn clamp(self) -> Self {
         Self {
-            width: self.width.clamp(1, 999),
-            height: self.height.clamp(1, 999),
+            width: self.width.clamp(1, 1024),
+            height: self.height.clamp(1, 1024),
         }
     }
 }

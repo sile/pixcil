@@ -1,6 +1,7 @@
+use super::frame_size::FrameSizeWidget;
 use super::{
     block::BlockWidget, number_box::NumberBoxWidget, pixel_size::PixelSizeWidget,
-    size_box::SizeBoxWidget, toggle::ToggleWidget, FixedSizeWidget, VariableSizeWidget, Widget,
+    toggle::ToggleWidget, FixedSizeWidget, VariableSizeWidget, Widget,
 };
 use crate::{app::App, event::Event, model::config::Animation, region_ext::RegionExt};
 use orfail::{OrFail, Result};
@@ -15,7 +16,7 @@ pub struct ConfigWidget {
     region: Region,
 
     // Size settings
-    frame_size: BlockWidget<SizeBoxWidget>,
+    frame_size: BlockWidget<FrameSizeWidget>,
     pixel_size: BlockWidget<PixelSizeWidget>,
 
     // Preview settings
@@ -31,7 +32,6 @@ pub struct ConfigWidget {
 
 impl ConfigWidget {
     pub fn new(app: &App) -> Self {
-        let frame_size = app.models().config.frame.get_base_region().size();
         let frame_preview = app.models().config.frame_preview.get();
         let frame_preview_scale = app.models().config.frame_preview_scale.get();
         let silhouette_preview = app.models().config.silhouette_preview;
@@ -43,7 +43,7 @@ impl ConfigWidget {
             // Size
             frame_size: BlockWidget::new(
                 "FRAME SIZE".parse().expect("unreachable"),
-                SizeBoxWidget::new(frame_size),
+                FrameSizeWidget::new(app),
             ),
             pixel_size: BlockWidget::new(
                 "TOOL SIZE".parse().expect("unreachable"),
@@ -190,9 +190,11 @@ impl Widget for ConfigWidget {
 
 impl FixedSizeWidget for ConfigWidget {
     fn requiring_size(&self, app: &App) -> Size {
-        // Size
-        let mut size_settings_size = self.frame_size.requiring_size(app);
-        size_settings_size.width += MARGIN_X + self.pixel_size.requiring_size(app).width;
+        // Frame size
+        let frame_size_settings_size = self.frame_size.requiring_size(app);
+
+        // Pixel size
+        let pixel_size_settings_size = self.pixel_size.requiring_size(app);
 
         // Preview
         let mut preview_settings_size = self.frame_preview.requiring_size(app);
@@ -206,11 +208,14 @@ impl FixedSizeWidget for ConfigWidget {
         layer_settings_size.width += MARGIN_X + self.fps.requiring_size(app).width;
 
         Size::from_wh(
-            size_settings_size
+            frame_size_settings_size
                 .width
+                .max(pixel_size_settings_size.width)
                 .max(preview_settings_size.width)
                 .max(layer_settings_size.width),
-            size_settings_size.height
+            frame_size_settings_size.height
+                + MARGIN_Y
+                + pixel_size_settings_size.height
                 + MARGIN_Y
                 + preview_settings_size.height
                 + MARGIN_Y
@@ -227,9 +232,9 @@ impl FixedSizeWidget for ConfigWidget {
         let mut frame_size_region = region;
         frame_size_region.size = self.frame_size.requiring_size(app);
         self.frame_size.set_region(app, frame_size_region);
+        region.consume_y(frame_size_region.size.height + MARGIN_Y);
 
         let mut pixel_size_region = region;
-        pixel_size_region.position.x = frame_size_region.end().x + MARGIN_X as i32;
         pixel_size_region.size = self.pixel_size.requiring_size(app);
         self.pixel_size.set_region(app, pixel_size_region);
         region.consume_y(pixel_size_region.size.height + MARGIN_Y);

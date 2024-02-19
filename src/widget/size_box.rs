@@ -20,15 +20,23 @@ pub struct SizeBoxWidget {
     value: PixelSize,
     focused: bool,
     input: Option<InputId>,
+    min: PixelSize,
+    max: PixelSize,
 }
 
 impl SizeBoxWidget {
     pub fn new(value: PixelSize) -> Self {
+        Self::with_min_max(value, PixelSize::square(1), PixelSize::square(1024))
+    }
+
+    pub fn with_min_max(value: PixelSize, min: PixelSize, max: PixelSize) -> Self {
         Self {
             region: Region::default(),
             value,
             focused: false,
             input: None,
+            min,
+            max,
         }
     }
 
@@ -36,7 +44,9 @@ impl SizeBoxWidget {
         self.value
     }
 
-    pub fn set_value(&mut self, app: &mut App, v: PixelSize) {
+    pub fn set_value(&mut self, app: &mut App, mut v: PixelSize) {
+        v.width = v.width.clamp(self.min.width, self.max.width);
+        v.height = v.height.clamp(self.min.height, self.max.height);
         if self.value != v {
             self.value = v;
             app.request_redraw(self.region);
