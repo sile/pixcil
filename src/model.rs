@@ -89,6 +89,7 @@ impl Models {
             );
             encoder.set_color(png::ColorType::Rgba);
             encoder.set_depth(png::BitDepth::Eight);
+            encoder.set_compression(png::Compression::Best);
 
             if frame_count > 1 {
                 encoder.set_animated(frame_count as u32, 0).or_fail()?;
