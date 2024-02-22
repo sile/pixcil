@@ -38,6 +38,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Switch to the erase-tool if picker-tool selects a pixel doesn't have a color
 - Rename config item name: s/PIXEL SIZE/TOOL SIZE/
 - Allow non-drawn selected region to be draggable during manipulation
 - Merge frame width / height settings into frame size setting
