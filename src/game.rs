@@ -1,3 +1,4 @@
+use crate::gesture::PointerEvent;
 use crate::png::decode_sprite;
 use crate::tags::RENDERING_TAG;
 use crate::{
@@ -200,6 +201,11 @@ impl<S: System> Game<S> for PixcilGame {
             "disableSaveWorkspaceButton" => {
                 let app = self.app.as_mut().or_fail()?;
                 app.runtime_options.disable_save_workspace_button = true;
+                Ok(())
+            }
+            "handlePointerEvent" => {
+                let event: PointerEvent = serde_json::from_slice(data).or_fail()?;
+                pagurus::dbg!(event);
                 Ok(())
             }
             _ => Err(orfail::Failure::new(format!("unknown command: {name:?}"))),
