@@ -1,4 +1,5 @@
 use crate::app::App;
+use crate::gesture::GestureEvent;
 use pagurus::event::{Event as PagurusEvent, MouseEvent, TimeoutTag};
 use pagurus::image::Sprite;
 use pagurus::spatial::Position;
@@ -19,6 +20,7 @@ pub enum Event {
         position: Position,
         consumed: bool,
     },
+    Gesture(GestureEvent),
     Noop, // TODO: rename
 }
 

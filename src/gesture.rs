@@ -1,3 +1,5 @@
+use crate::{app::App, event::Event};
+
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PointerEvent {
@@ -28,4 +30,39 @@ pub enum PointerType {
     Touch,
     #[serde(other)]
     Other,
+}
+
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+pub enum GestureEvent {
+    // Select picker Tool
+    Tap,
+
+    // Select selection Tool
+    DoubleTap,
+
+    // Move camera
+    Swipe,
+
+    // Zoom in / out
+    DoubleTapSwipe,
+    Pinch,
+
+    // Undo
+    TwoFingerTap,
+
+    // Redo
+    ThreeFingerTap,
+}
+
+#[derive(Debug, Default)]
+pub struct GestureRecognizer {}
+
+impl GestureRecognizer {
+    pub fn handle_pointer_event(
+        &mut self,
+        app: &mut App,
+        event: PointerEvent,
+    ) -> orfail::Result<Event> {
+        todo!()
+    }
 }
