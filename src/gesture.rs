@@ -1,7 +1,7 @@
 use crate::app::App;
 use pagurus::{event::MouseEvent, spatial::Position};
 
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, Copy, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PointerEvent {
     pub event_type: EventType,
@@ -13,8 +13,17 @@ pub struct PointerEvent {
 }
 
 impl PointerEvent {
-    fn position(&self) -> Position {
+    pub fn position(&self) -> Position {
         Position::from_xy(self.x, self.y)
+    }
+
+    pub fn to_mouse_event(self) -> MouseEvent {
+        let position = self.position();
+        match self.event_type {
+            EventType::Pointerdown => MouseEvent::Down { position },
+            EventType::Pointermove => MouseEvent::Move { position },
+            _ => MouseEvent::Up { position },
+        }
     }
 }
 

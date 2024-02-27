@@ -101,6 +101,7 @@ impl Widget for SizeBoxWidget {
                 action,
                 position,
                 consumed: false,
+                ..
             } if self.region.contains(position) => match action {
                 MouseAction::Down => {}
                 MouseAction::Up => {

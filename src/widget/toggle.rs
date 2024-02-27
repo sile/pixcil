@@ -58,6 +58,7 @@ impl Widget for ToggleWidget {
                 action,
                 position,
                 consumed: false,
+                ..
             } if self.region.contains(position) => {
                 self.state.focus();
                 if *action == MouseAction::Up {

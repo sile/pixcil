@@ -51,6 +51,7 @@ impl Widget for MoveCameraWidget {
                 consumed: false,
                 action: MouseAction::Down,
                 position,
+                ..
             } => {
                 self.start = Some(*position);
             }
@@ -58,6 +59,7 @@ impl Widget for MoveCameraWidget {
                 consumed: false,
                 action: MouseAction::Move,
                 position,
+                ..
             } if self.start.is_some() => {
                 let start = self.start.expect("unreachable");
                 let end = *position;

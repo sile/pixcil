@@ -118,6 +118,7 @@ impl Widget for SliderWidget {
             consumed: false,
             action: MouseAction::Up,
             position,
+            ..
         } = event
         {
             let bar_region = self.bar_region();

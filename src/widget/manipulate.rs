@@ -274,6 +274,7 @@ impl Widget for ManipulateWidget {
                     consumed: false,
                     action: MouseAction::Move,
                     position,
+                    ..
                 },
             ) => {
                 let unit = app.models().config.minimum_pixel_size;
@@ -292,6 +293,7 @@ impl Widget for ManipulateWidget {
                     consumed: false,
                     action: MouseAction::Down,
                     position,
+                    ..
                 },
             ) => {
                 let unit = app.models().config.minimum_pixel_size;
@@ -314,6 +316,7 @@ impl Widget for ManipulateWidget {
                     consumed: false,
                     action: MouseAction::Move,
                     position,
+                    ..
                 },
             ) => {
                 let unit = app.models().config.minimum_pixel_size;
@@ -332,6 +335,7 @@ impl Widget for ManipulateWidget {
                     consumed: false,
                     action: MouseAction::Up,
                     position,
+                    ..
                 },
             ) => {
                 let unit = app.models().config.minimum_pixel_size;
