@@ -77,7 +77,7 @@ impl GestureRecognizer {
     pub fn to_gesture_event(
         &mut self,
         app: &mut App,
-        event: &PointerEvent,
+        event: PointerEvent,
     ) -> orfail::Result<Option<GestureEvent>> {
         // TODO: gen_mode handling
 
@@ -86,14 +86,5 @@ impl GestureRecognizer {
         }
 
         todo!()
-    }
-
-    pub fn to_mouse_event(&self, event: &PointerEvent) -> MouseEvent {
-        let position = event.position();
-        match event.event_type {
-            EventType::Pointerdown => MouseEvent::Down { position },
-            EventType::Pointermove => MouseEvent::Move { position },
-            _ => MouseEvent::Up { position },
-        }
     }
 }

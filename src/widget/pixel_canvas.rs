@@ -6,6 +6,7 @@ use crate::{
     canvas_ext::CanvasExt,
     color,
     event::Event,
+    gesture::{GestureRecognizer, PointerType},
     marker::{MarkerHandler, MarkerKind},
     model::tool::{DrawTool, ToolKind, ToolModel},
     pixel::{Pixel, PixelPosition, PixelRegion},
@@ -22,6 +23,7 @@ pub struct PixelCanvasWidget {
     tool: ToolModel,
     manipulate: Option<ManipulateWidget>,
     move_camera: Option<MoveCameraWidget>,
+    gesture_recognizer: GestureRecognizer,
 }
 
 impl PixelCanvasWidget {
@@ -202,6 +204,34 @@ impl PixelCanvasWidget {
             canvas.fill_rectangle(region, color.into());
         }
     }
+
+    fn handle_gesture(&mut self, app: &mut App, event: &mut Event) -> Result<()> {
+        if event.is_consumed() {
+            return Ok(());
+        };
+        let Event::Mouse {
+            pointer: Some(pointer),
+            ..
+        } = *event
+        else {
+            return Ok(());
+        };
+        if !matches!(pointer.pointer_type, PointerType::Touch) {
+            return Ok(());
+        }
+        // TODO: check config (pen mode)
+        event.consume();
+
+        let Some(gesture) = self
+            .gesture_recognizer
+            .to_gesture_event(app, pointer)
+            .or_fail()?
+        else {
+            return Ok(());
+        };
+
+        Ok(())
+    }
 }
 
 impl Widget for PixelCanvasWidget {
@@ -244,6 +274,8 @@ impl Widget for PixelCanvasWidget {
             self.manipulate = Some(ManipulateWidget::with_imported_image(app, image));
             return Ok(());
         }
+
+        self.handle_gesture(app, event).or_fail()?;
 
         if let Some(w) = &mut self.manipulate {
             w.handle_event(app, event).or_fail()?;
