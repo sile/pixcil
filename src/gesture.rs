@@ -54,7 +54,7 @@ pub enum PointerType {
     Other,
 }
 
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, Copy, serde::Serialize, serde::Deserialize)]
 pub enum GestureEvent {
     // Select picker tool
     Tap,
@@ -72,7 +72,7 @@ pub enum GestureEvent {
     Pinch { delta: Position },
 }
 
-const MOVE_DELTA_THRESHOLD: i32 = 10;
+const INITIAL_MOVE_THRESHOLD: i32 = 10;
 
 #[derive(Debug, Clone, Copy)]
 struct Touch {
@@ -80,6 +80,7 @@ struct Touch {
     last_position: Position,
     is_primary: bool,
     moved: bool,
+    move_threshold: i32,
 }
 
 impl Touch {
@@ -89,18 +90,20 @@ impl Touch {
             last_position: event.position(),
             is_primary: event.is_primary,
             moved: false,
+            move_threshold: INITIAL_MOVE_THRESHOLD,
         }
     }
 
-    fn set_position(&mut self, position: Position) {
+    fn set_position(&mut self, position: Position) -> bool {
         let delta = position - self.position;
-        if delta.x.abs() < MOVE_DELTA_THRESHOLD || delta.y.abs() < MOVE_DELTA_THRESHOLD {
-            return;
+        if delta.x.abs() < self.move_threshold && delta.y.abs() < self.move_threshold {
+            return false;
         }
 
         self.last_position = self.position;
         self.position = position;
         self.moved = true;
+        true
     }
 }
 
@@ -108,6 +111,7 @@ impl Touch {
 pub struct GestureRecognizer {
     touches: HashMap<i32, Touch>,
     pending_gesture: Option<GestureEvent>,
+    last_gesture: Option<GestureEvent>,
 }
 
 impl GestureRecognizer {
@@ -136,12 +140,13 @@ impl GestureRecognizer {
         match pointer.event_type {
             EventType::Pointerdown => {
                 self.touches.insert(pointer.pointer_id, Touch::new(pointer));
-                if self.touches.values().all(|touch| !touch.moved) {
-                    self.pending_gesture = match self.touches.len() {
-                        1 => Some(GestureEvent::Tap),
-                        2 => Some(GestureEvent::TwoFingerTap),
-                        _ => None,
-                    }
+                if self.last_gesture.is_some() || self.touches.values().any(|touch| touch.moved) {
+                    return Ok(None);
+                }
+                self.pending_gesture = match self.touches.len() {
+                    1 => Some(GestureEvent::Tap),
+                    2 => Some(GestureEvent::TwoFingerTap),
+                    _ => None,
                 }
             }
             EventType::Pointermove => {
@@ -149,15 +154,21 @@ impl GestureRecognizer {
                 let Some(touch) = self.touches.get_mut(&pointer.pointer_id) else {
                     return Ok(None);
                 };
-                touch.set_position(pointer.position());
-                if !touch.moved {
+
+                if !touch.set_position(pointer.position()) {
                     return Ok(None);
                 }
                 self.pending_gesture = None;
 
                 if n == 1 {
+                    if !matches!(self.last_gesture, None | Some(GestureEvent::Swipe { .. })) {
+                        return Ok(None);
+                    }
+
                     let delta = touch.position - touch.last_position;
-                    return Ok(Some(GestureEvent::Swipe { delta }));
+                    touch.move_threshold = 0;
+                    self.last_gesture = Some(GestureEvent::Swipe { delta });
+                    return Ok(self.last_gesture);
                 } else if n != 2 {
                     return Ok(None);
                 }
@@ -167,6 +178,7 @@ impl GestureRecognizer {
             _ => {
                 self.touches.remove(&pointer.pointer_id);
                 if self.touches.is_empty() {
+                    self.last_gesture = None;
                     return Ok(self.pending_gesture.take());
                 }
             }
@@ -175,7 +187,7 @@ impl GestureRecognizer {
         Ok(None)
     }
 
-    fn decide_two_finger_gesture(&self) -> Option<GestureEvent> {
+    fn decide_two_finger_gesture(&mut self) -> Option<GestureEvent> {
         if self.touches.len() != 2 {
             return None;
         }
@@ -189,17 +201,35 @@ impl GestureRecognizer {
         let d0 = t0.position - t0.last_position;
         let d1 = t1.position - t1.last_position;
 
-        let delta = if t0.is_primary { d0 } else { d1 };
-        if d0.x.is_positive() && d1.x.is_positive() {
-            Some(GestureEvent::TwoFingerSwipe { delta })
-        } else if d0.x.is_negative() && d1.x.is_negative() {
-            Some(GestureEvent::TwoFingerSwipe { delta })
-        } else if d0.y.is_positive() && d1.y.is_positive() {
-            Some(GestureEvent::TwoFingerSwipe { delta })
-        } else if d0.y.is_negative() && d1.y.is_negative() {
+        self.last_gesture = if d0.x.is_positive() && d1.x.is_positive()
+            || d0.x.is_negative() && d1.x.is_negative()
+            || d0.y.is_positive() && d1.y.is_positive()
+            || d0.y.is_negative() && d1.y.is_negative()
+        {
+            if self.last_gesture.is_some() {
+                return None;
+            }
+
+            let delta = if t0.is_primary { d0 } else { d1 };
             Some(GestureEvent::TwoFingerSwipe { delta })
         } else {
+            if !matches!(self.last_gesture, None | Some(GestureEvent::Pinch { .. })) {
+                return None;
+            }
+
+            for t in self.touches.values_mut() {
+                t.move_threshold = INITIAL_MOVE_THRESHOLD * 2;
+            }
+
+            let mut d0 = t0.last_position - t1.last_position;
+            let mut d1 = t0.position - t1.position;
+            d0.x = d0.x.abs();
+            d0.y = d0.y.abs();
+            d1.x = d1.x.abs();
+            d1.y = d1.y.abs();
+            let delta = d1 - d0;
             Some(GestureEvent::Pinch { delta })
-        }
+        };
+        self.last_gesture
     }
 }
