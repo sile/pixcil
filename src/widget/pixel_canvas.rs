@@ -6,7 +6,7 @@ use crate::{
     canvas_ext::CanvasExt,
     color,
     event::Event,
-    gesture::{GestureRecognizer, PointerType},
+    gesture::GestureRecognizer,
     marker::{MarkerHandler, MarkerKind},
     model::tool::{DrawTool, ToolKind, ToolModel},
     pixel::{Pixel, PixelPosition, PixelRegion},
@@ -206,29 +206,11 @@ impl PixelCanvasWidget {
     }
 
     fn handle_gesture(&mut self, app: &mut App, event: &mut Event) -> Result<()> {
-        if event.is_consumed() {
+        let Some(gesture) = self.gesture_recognizer.handle_event(app, event).or_fail()? else {
             return Ok(());
         };
-        let Event::Mouse {
-            pointer: Some(pointer),
-            ..
-        } = *event
-        else {
-            return Ok(());
-        };
-        if !matches!(pointer.pointer_type, PointerType::Touch) {
-            return Ok(());
-        }
-        // TODO: check config (pen mode)
-        event.consume();
-
-        let Some(gesture) = self
-            .gesture_recognizer
-            .to_gesture_event(app, pointer)
-            .or_fail()?
-        else {
-            return Ok(());
-        };
+        pagurus::dbg!(gesture);
+        // TODO
 
         Ok(())
     }

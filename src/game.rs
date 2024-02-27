@@ -203,16 +203,20 @@ impl<S: System> Game<S> for PixcilGame {
                 Ok(())
             }
             "handlePointerEvent" => {
-                let pointer_event: PointerEvent = serde_json::from_slice(data).or_fail()?;
+                let mut pointer_event: PointerEvent = serde_json::from_slice(data).or_fail()?;
                 let pagurus_event = PagurusEvent::Mouse(pointer_event.to_mouse_event());
 
                 #[cfg(feature = "auto-scaling")]
                 let pagurus_event = self.screen.handle_event(pagurus_event);
 
                 let mut event = Event::from_pagurus_event(pagurus_event).or_fail()?;
-                let Event::Mouse { pointer, .. } = &mut event else {
+                let Event::Mouse {
+                    pointer, position, ..
+                } = &mut event
+                else {
                     return Err(orfail::Failure::new("unreachable"));
                 };
+                pointer_event.set_position(*position);
                 *pointer = Some(pointer_event);
                 self.handle_pixcil_event(system, Some(event)).or_fail()?;
 
