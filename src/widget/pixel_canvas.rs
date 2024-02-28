@@ -7,6 +7,7 @@ use crate::{
     color,
     event::Event,
     gesture::{GestureEvent, GestureRecognizer},
+    io::IoRequest,
     marker::{MarkerHandler, MarkerKind},
     model::tool::{DrawTool, ToolKind, ToolModel},
     pixel::{Pixel, PixelPosition, PixelRegion},
@@ -213,9 +214,11 @@ impl PixelCanvasWidget {
         match gesture {
             GestureEvent::Tap => {
                 app.models_mut().tool.current = ToolKind::Pick;
+                app.enqueue_io_request(IoRequest::Vibrate);
             }
             GestureEvent::TwoFingerTap => {
                 app.models_mut().tool.current = ToolKind::Select;
+                app.enqueue_io_request(IoRequest::Vibrate);
             }
             GestureEvent::Swipe { mut delta } => {
                 delta.x = -delta.x;
@@ -236,9 +239,11 @@ impl PixelCanvasWidget {
                         .redo_command(&config)
                         .or_fail()?;
                 }
+                app.enqueue_io_request(IoRequest::Vibrate);
             }
             GestureEvent::Pinch { zoom_in } => {
                 app.zoom(zoom_in);
+                app.enqueue_io_request(IoRequest::Vibrate);
             }
         }
 
