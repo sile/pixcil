@@ -93,25 +93,13 @@ impl Touch {
             move_threshold: INITIAL_MOVE_THRESHOLD,
         }
     }
-
-    fn set_position(&mut self, position: Position) -> bool {
-        let delta = position - self.position;
-        if delta.x.abs() < self.move_threshold && delta.y.abs() < self.move_threshold {
-            return false;
-        }
-
-        self.last_position = self.position;
-        self.position = position;
-        self.moved = true;
-        true
-    }
 }
 
 #[derive(Debug, Default)]
 pub struct GestureRecognizer {
     touches: HashMap<i32, Touch>,
     max_touches: usize,
-    recognized_gesture: Option<GestureEvent>,
+    gesture: Option<GestureEvent>,
 }
 
 impl GestureRecognizer {
@@ -159,31 +147,40 @@ impl GestureRecognizer {
 
     fn handle_pointer_move(&mut self, pointer: PointerEvent) -> Option<GestureEvent> {
         let n = self.touches.len();
-        let Some(touch) = self.touches.get_mut(&pointer.pointer_id) else {
+        let Some(touch) = self.touches.get(&pointer.pointer_id).copied() else {
             return None;
         };
 
-        if !touch.set_position(pointer.position()) {
-            return None;
-        }
-
         if n == 1 {
-            if !matches!(
-                self.recognized_gesture,
-                None | Some(GestureEvent::Swipe { .. })
-            ) {
-                return None;
-            }
-
-            let delta = touch.position - touch.last_position;
-            touch.move_threshold = 0;
-            self.recognized_gesture = Some(GestureEvent::Swipe { delta });
-            return self.recognized_gesture;
+            self.handle_one_finger_move(pointer, touch);
+            return self.gesture;
         } else if n != 2 {
             return None;
         }
 
         self.decide_two_finger_gesture()
+    }
+
+    fn handle_one_finger_move(&mut self, pointer: PointerEvent, mut touch: Touch) {
+        let delta = pointer.position() - touch.position;
+        match self.gesture {
+            None => {
+                let threshold = 10;
+                if delta.x.abs().max(delta.y.abs()) < threshold {
+                    return;
+                }
+
+                touch.position = pointer.position();
+                self.touches.insert(pointer.pointer_id, touch);
+                self.gesture = Some(GestureEvent::Swipe { delta });
+            }
+            Some(GestureEvent::Swipe { .. }) => {
+                touch.position = pointer.position();
+                self.touches.insert(pointer.pointer_id, touch);
+                self.gesture = Some(GestureEvent::Swipe { delta });
+            }
+            _ => {}
+        }
     }
 
     fn handle_pointer_up(&mut self, pointer: PointerEvent) -> Option<GestureEvent> {
@@ -194,7 +191,7 @@ impl GestureRecognizer {
             return None;
         }
 
-        let gesture = self.recognized_gesture.take();
+        let gesture = self.gesture.take();
         let max_touches = self.max_touches;
         self.max_touches = 0;
 
@@ -223,22 +220,19 @@ impl GestureRecognizer {
         let d0 = t0.position - t0.last_position;
         let d1 = t1.position - t1.last_position;
 
-        self.recognized_gesture = if d0.x.is_positive() && d1.x.is_positive()
+        self.gesture = if d0.x.is_positive() && d1.x.is_positive()
             || d0.x.is_negative() && d1.x.is_negative()
             || d0.y.is_positive() && d1.y.is_positive()
             || d0.y.is_negative() && d1.y.is_negative()
         {
-            if self.recognized_gesture.is_some() {
+            if self.gesture.is_some() {
                 return None;
             }
 
             let delta = if t0.is_primary { d0 } else { d1 };
             Some(GestureEvent::TwoFingerSwipe { delta })
         } else {
-            if !matches!(
-                self.recognized_gesture,
-                None | Some(GestureEvent::Pinch { .. })
-            ) {
+            if !matches!(self.gesture, None | Some(GestureEvent::Pinch { .. })) {
                 return None;
             }
 
@@ -255,6 +249,6 @@ impl GestureRecognizer {
             let delta = d1 - d0;
             Some(GestureEvent::Pinch { delta })
         };
-        self.recognized_gesture
+        self.gesture
     }
 }
