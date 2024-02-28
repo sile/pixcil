@@ -111,7 +111,6 @@ impl Touch {
 pub struct GestureRecognizer {
     touches: HashMap<i32, Touch>,
     max_touches: usize,
-    pending_gesture: Option<GestureEvent>,
     recognized_gesture: Option<GestureEvent>,
 }
 
@@ -140,47 +139,10 @@ impl GestureRecognizer {
 
         match pointer.event_type {
             EventType::Pointerdown => {
-                self.touches.insert(pointer.pointer_id, Touch::new(pointer));
-                self.max_touches = self.max_touches.max(self.touches.len());
-                if self.recognized_gesture.is_some()
-                    || self.touches.values().any(|touch| touch.moved)
-                {
-                    return Ok(None);
-                }
-                self.pending_gesture = match self.touches.len() {
-                    1 => Some(GestureEvent::Tap),
-                    2 => Some(GestureEvent::TwoFingerTap),
-                    _ => None,
-                }
+                self.handle_pointer_down(pointer);
             }
             EventType::Pointermove => {
-                let n = self.touches.len();
-                let Some(touch) = self.touches.get_mut(&pointer.pointer_id) else {
-                    return Ok(None);
-                };
-
-                if !touch.set_position(pointer.position()) {
-                    return Ok(None);
-                }
-                self.pending_gesture = None;
-
-                if n == 1 {
-                    if !matches!(
-                        self.recognized_gesture,
-                        None | Some(GestureEvent::Swipe { .. })
-                    ) {
-                        return Ok(None);
-                    }
-
-                    let delta = touch.position - touch.last_position;
-                    touch.move_threshold = 0;
-                    self.recognized_gesture = Some(GestureEvent::Swipe { delta });
-                    return Ok(self.recognized_gesture);
-                } else if n != 2 {
-                    return Ok(None);
-                }
-
-                return Ok(self.decide_two_finger_gesture());
+                return Ok(self.handle_pointer_move(pointer));
             }
             _ => {
                 return Ok(self.handle_pointer_up(pointer));
@@ -188,6 +150,40 @@ impl GestureRecognizer {
         }
 
         Ok(None)
+    }
+
+    fn handle_pointer_down(&mut self, pointer: PointerEvent) {
+        self.touches.insert(pointer.pointer_id, Touch::new(pointer));
+        self.max_touches = self.max_touches.max(self.touches.len());
+    }
+
+    fn handle_pointer_move(&mut self, pointer: PointerEvent) -> Option<GestureEvent> {
+        let n = self.touches.len();
+        let Some(touch) = self.touches.get_mut(&pointer.pointer_id) else {
+            return None;
+        };
+
+        if !touch.set_position(pointer.position()) {
+            return None;
+        }
+
+        if n == 1 {
+            if !matches!(
+                self.recognized_gesture,
+                None | Some(GestureEvent::Swipe { .. })
+            ) {
+                return None;
+            }
+
+            let delta = touch.position - touch.last_position;
+            touch.move_threshold = 0;
+            self.recognized_gesture = Some(GestureEvent::Swipe { delta });
+            return self.recognized_gesture;
+        } else if n != 2 {
+            return None;
+        }
+
+        self.decide_two_finger_gesture()
     }
 
     fn handle_pointer_up(&mut self, pointer: PointerEvent) -> Option<GestureEvent> {
