@@ -243,14 +243,7 @@ impl PixelCanvasWidget {
                 } else {
                     delta.y
                 };
-                if v.is_positive() {
-                    app.models_mut().config.zoom.increment();
-                    // TODO: adjust camera position
-                } else {
-                    app.models_mut().config.zoom.decrement();
-                    // TODO: adjust camera position
-                }
-                app.request_redraw(app.screen_size().to_region());
+                app.zoom(v.is_positive());
             }
         }
 
