@@ -57,7 +57,7 @@ class App {
     options.canvas.onpointerup = (e) => this.handlePointerEvent(e);
     options.canvas.onpointercancel = (e) => this.handlePointerEvent(e);
     options.canvas.onpointerout = (e) => this.handlePointerEvent(e);
-    options.canvas.onpointerover = (e) => this.handlePointerEvent(e);
+    options.canvas.onpointerleave = (e) => this.handlePointerEvent(e);
 
     this.parent.postMessage({ type: "ready" });
   }
