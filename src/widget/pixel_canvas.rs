@@ -223,27 +223,22 @@ impl PixelCanvasWidget {
                 app.models_mut().config.camera.r#move(delta);
                 app.request_redraw(app.screen_size().to_region());
             }
-            GestureEvent::TwoFingerSwipe { delta } => {
+            GestureEvent::TwoFingerSwipe { undo } => {
                 let config = app.models().config.clone();
-                if delta.x.is_positive() {
-                    app.models_mut()
-                        .pixel_canvas
-                        .redo_command(&config)
-                        .or_fail()?;
-                } else {
+                if undo {
                     app.models_mut()
                         .pixel_canvas
                         .undo_command(&config)
                         .or_fail()?;
+                } else {
+                    app.models_mut()
+                        .pixel_canvas
+                        .redo_command(&config)
+                        .or_fail()?;
                 }
             }
-            GestureEvent::Pinch { delta } => {
-                let v = if delta.x.abs() > delta.y.abs() {
-                    delta.x
-                } else {
-                    delta.y
-                };
-                app.zoom(v.is_positive());
+            GestureEvent::Pinch { zoom_in } => {
+                app.zoom(zoom_in);
             }
         }
 

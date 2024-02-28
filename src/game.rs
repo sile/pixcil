@@ -216,7 +216,7 @@ impl<S: System> Game<S> for PixcilGame {
                 else {
                     return Err(orfail::Failure::new("unreachable"));
                 };
-                pointer_event.set_position(*position);
+                pointer_event.position = *position;
                 *pointer = Some(pointer_event);
                 self.handle_pixcil_event(system, Some(event)).or_fail()?;
 
