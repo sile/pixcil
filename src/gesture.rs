@@ -98,6 +98,10 @@ pub struct GestureRecognizer {
 }
 
 impl GestureRecognizer {
+    pub fn has_active_touches(&self) -> bool {
+        self.touches.len() > 0
+    }
+
     pub fn handle_event(
         &mut self,
         _app: &mut App,
@@ -217,7 +221,7 @@ impl GestureRecognizer {
 
         if (d0.x.is_positive() && d1.x.is_positive()) || (d0.x.is_negative() && d1.x.is_negative())
         {
-            let threshold = 80;
+            let threshold = 100;
             if d0.x.abs() < threshold || d1.x.abs() < threshold {
                 return None;
             }

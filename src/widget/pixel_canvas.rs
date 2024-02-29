@@ -31,6 +31,7 @@ impl PixelCanvasWidget {
     pub fn is_operating(&self) -> bool {
         self.marker_handler.is_operating()
             || self.manipulate.as_ref().map_or(false, |x| x.is_dragging())
+            || self.gesture_recognizer.has_active_touches()
     }
 
     fn render_grid(&self, app: &App, canvas: &mut Canvas) {
