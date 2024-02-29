@@ -104,10 +104,10 @@ impl GestureRecognizer {
 
     pub fn handle_event(
         &mut self,
-        _app: &mut App,
+        app: &mut App,
         event: &mut Event,
     ) -> orfail::Result<Option<GestureEvent>> {
-        if event.is_consumed() {
+        if event.is_consumed() || !app.models().config.gesture {
             return Ok(None);
         }
         let Event::Mouse {
@@ -120,7 +120,6 @@ impl GestureRecognizer {
         if !matches!(pointer.pointer_type, PointerType::Touch) {
             return Ok(None);
         }
-        // TODO: pen_mode handling
 
         event.consume();
 
