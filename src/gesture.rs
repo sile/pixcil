@@ -99,7 +99,7 @@ pub struct GestureRecognizer {
 
 impl GestureRecognizer {
     pub fn has_active_touches(&self) -> bool {
-        self.touches.len() > 0
+        !self.touches.is_empty()
     }
 
     pub fn handle_event(
@@ -162,9 +162,7 @@ impl GestureRecognizer {
     }
 
     fn handle_pointer_up(&mut self, pointer: PointerEvent) -> Option<GestureEvent> {
-        if self.touches.remove(&pointer.pointer_id).is_none() {
-            return None;
-        }
+        self.touches.remove(&pointer.pointer_id)?;
         if !self.touches.is_empty() {
             return None;
         }
