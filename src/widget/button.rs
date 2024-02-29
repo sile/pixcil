@@ -194,6 +194,7 @@ impl Widget for ButtonWidget {
                 consumed: false,
                 action,
                 position,
+                ..
             } => {
                 let disabled = self.is_disabled(app);
                 if !disabled && self.region.contains(position) {

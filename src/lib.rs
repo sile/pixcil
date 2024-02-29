@@ -4,6 +4,7 @@ pub mod canvas_ext;
 pub mod color;
 pub mod event;
 pub mod game;
+pub mod gesture;
 pub mod io;
 pub mod marker;
 pub mod model;

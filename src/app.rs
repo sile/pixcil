@@ -1,4 +1,7 @@
-use crate::{asset::Assets, event::InputId, io::IoRequest, model::Models, window::Window};
+use crate::{
+    asset::Assets, event::InputId, io::IoRequest, model::Models, pixel::PixelPosition,
+    window::Window,
+};
 use orfail::OrFail;
 use pagurus::{
     event::TimeoutTag,
@@ -117,5 +120,18 @@ impl App {
         for (tag, durtion) in self.pending_timeouts.drain(..) {
             system.clock_set_timeout(tag, durtion);
         }
+    }
+
+    pub fn zoom(&mut self, zoom_in: bool) {
+        let screen_center = self.screen_size().to_region().center();
+        let center_pixel = PixelPosition::from_screen_position(self, screen_center);
+        if zoom_in {
+            self.models_mut().config.zoom.increment();
+        } else {
+            self.models_mut().config.zoom.decrement();
+        }
+        let delta = center_pixel.to_screen_position(self) - screen_center;
+        self.models_mut().config.camera.r#move(delta);
+        self.request_redraw(self.screen_size().to_region());
     }
 }

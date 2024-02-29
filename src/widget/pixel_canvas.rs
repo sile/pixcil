@@ -6,6 +6,8 @@ use crate::{
     canvas_ext::CanvasExt,
     color,
     event::Event,
+    gesture::{GestureEvent, GestureRecognizer},
+    io::IoRequest,
     marker::{MarkerHandler, MarkerKind},
     model::tool::{DrawTool, ToolKind, ToolModel},
     pixel::{Pixel, PixelPosition, PixelRegion},
@@ -22,12 +24,14 @@ pub struct PixelCanvasWidget {
     tool: ToolModel,
     manipulate: Option<ManipulateWidget>,
     move_camera: Option<MoveCameraWidget>,
+    gesture_recognizer: GestureRecognizer,
 }
 
 impl PixelCanvasWidget {
     pub fn is_operating(&self) -> bool {
         self.marker_handler.is_operating()
             || self.manipulate.as_ref().map_or(false, |x| x.is_dragging())
+            || self.gesture_recognizer.has_active_touches()
     }
 
     fn render_grid(&self, app: &App, canvas: &mut Canvas) {
@@ -202,6 +206,50 @@ impl PixelCanvasWidget {
             canvas.fill_rectangle(region, color.into());
         }
     }
+
+    fn handle_gesture(&mut self, app: &mut App, event: &mut Event) -> Result<()> {
+        let Some(gesture) = self.gesture_recognizer.handle_event(app, event).or_fail()? else {
+            return Ok(());
+        };
+
+        match gesture {
+            GestureEvent::Tap => {
+                app.models_mut().tool.current = ToolKind::Pick;
+                app.enqueue_io_request(IoRequest::Vibrate);
+            }
+            GestureEvent::TwoFingerTap => {
+                app.models_mut().tool.current = ToolKind::Select;
+                app.enqueue_io_request(IoRequest::Vibrate);
+            }
+            GestureEvent::Swipe { mut delta } => {
+                delta.x = -delta.x;
+                delta.y = -delta.y;
+                app.models_mut().config.camera.r#move(delta);
+                app.request_redraw(app.screen_size().to_region());
+            }
+            GestureEvent::TwoFingerSwipe { undo } => {
+                let config = app.models().config.clone();
+                if undo {
+                    app.models_mut()
+                        .pixel_canvas
+                        .undo_command(&config)
+                        .or_fail()?;
+                } else {
+                    app.models_mut()
+                        .pixel_canvas
+                        .redo_command(&config)
+                        .or_fail()?;
+                }
+                app.enqueue_io_request(IoRequest::Vibrate);
+            }
+            GestureEvent::Pinch { zoom_in } => {
+                app.zoom(zoom_in);
+                app.enqueue_io_request(IoRequest::Vibrate);
+            }
+        }
+
+        Ok(())
+    }
 }
 
 impl Widget for PixelCanvasWidget {
@@ -244,6 +292,8 @@ impl Widget for PixelCanvasWidget {
             self.manipulate = Some(ManipulateWidget::with_imported_image(app, image));
             return Ok(());
         }
+
+        self.handle_gesture(app, event).or_fail()?;
 
         if let Some(w) = &mut self.manipulate {
             w.handle_event(app, event).or_fail()?;

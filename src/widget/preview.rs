@@ -49,8 +49,9 @@ impl Widget for PreviewWidget {
     }
 
     fn handle_event_after(&mut self, app: &mut App) -> Result<()> {
-        if self.preview_off != !app.models().config.frame_preview.get() {
-            self.preview_off = !app.models().config.frame_preview.get();
+        let preview_off = !app.models().config.frame_preview.get();
+        if self.preview_off != preview_off {
+            self.preview_off = preview_off;
             app.request_redraw(self.region);
             return Ok(());
         }

@@ -52,6 +52,13 @@ class App {
       game.command(system, "disableSaveWorkspaceButton", new Uint8Array());
     }
 
+    options.canvas.onpointerdown = (e) => this.handlePointerEvent(e);
+    options.canvas.onpointermove = (e) => this.handlePointerEvent(e);
+    options.canvas.onpointerup = (e) => this.handlePointerEvent(e);
+    options.canvas.onpointercancel = (e) => this.handlePointerEvent(e);
+    options.canvas.onpointerout = (e) => this.handlePointerEvent(e);
+    options.canvas.onpointerleave = (e) => this.handlePointerEvent(e);
+
     this.parent.postMessage({ type: "ready" });
   }
 
@@ -94,6 +101,19 @@ class App {
     }
   }
 
+  private handlePointerEvent(event: PointerEvent): void {
+      const data = {
+          eventType: event.type,
+          x: Math.round(event.offsetX),
+          y: Math.round(event.offsetY),
+          pointerId: event.pointerId,
+          pointerType: event.pointerType,
+          isPrimary: event.isPrimary,
+      };
+      const jsonBytes = new TextEncoder().encode(JSON.stringify(data));
+      this.game.command(this.system, "handlePointerEvent", jsonBytes);
+  }
+
   static async load(options: Options): Promise<App> {
     const canvas = options.canvas;
     const canvasCtx = canvas.getContext("2d");
@@ -102,7 +122,8 @@ class App {
     }
     const canvasArea = options.canvasArea;
     const game = await Game.load(options.wasmPath);
-    const system = System.create(game.memory, { canvas });
+    const system = System.create(game.memory, { canvas, disableMouseEvents: true, disableTouchEvents: true });
+
     const onResizeCanvas = () => {
       canvas.height = canvasArea.clientHeight;
       canvas.width = canvasArea.clientWidth;

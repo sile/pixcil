@@ -1,4 +1,4 @@
-use crate::app::App;
+use crate::gesture::{GestureEvent, PointerEvent};
 use pagurus::event::{Event as PagurusEvent, MouseEvent, TimeoutTag};
 use pagurus::image::Sprite;
 use pagurus::spatial::Position;
@@ -18,7 +18,9 @@ pub enum Event {
         action: MouseAction,
         position: Position,
         consumed: bool,
+        pointer: Option<PointerEvent>,
     },
+    Gesture(GestureEvent),
     Noop, // TODO: rename
 }
 
@@ -54,7 +56,7 @@ impl Event {
         matches!(self, Self::Mouse { consumed: true, .. })
     }
 
-    pub fn from_pagurus_event(_app: &mut App, event: PagurusEvent) -> Option<Self> {
+    pub fn from_pagurus_event(event: PagurusEvent) -> Option<Self> {
         match event {
             PagurusEvent::Timeout(e) => Some(Self::Timeout(e)),
             PagurusEvent::Mouse(e) => match e {
@@ -62,16 +64,19 @@ impl Event {
                     action: MouseAction::Move,
                     position,
                     consumed: false,
+                    pointer: None,
                 }),
                 MouseEvent::Down { position } => Some(Self::Mouse {
                     action: MouseAction::Down,
                     position,
                     consumed: false,
+                    pointer: None,
                 }),
                 MouseEvent::Up { position } => Some(Self::Mouse {
                     action: MouseAction::Up,
                     position,
                     consumed: false,
+                    pointer: None,
                 }),
             },
             _ => None,

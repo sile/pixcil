@@ -1,3 +1,4 @@
+use crate::gesture::PointerEvent;
 use crate::png::decode_sprite;
 use crate::tags::RENDERING_TAG;
 use crate::{
@@ -131,8 +132,7 @@ impl<S: System> Game<S> for PixcilGame {
             _ => {}
         };
 
-        let app = self.app.as_mut().or_fail()?;
-        let event = Event::from_pagurus_event(app, event);
+        let event = Event::from_pagurus_event(event);
         self.handle_pixcil_event(system, event).or_fail()?;
 
         Ok(true)
@@ -200,6 +200,26 @@ impl<S: System> Game<S> for PixcilGame {
             "disableSaveWorkspaceButton" => {
                 let app = self.app.as_mut().or_fail()?;
                 app.runtime_options.disable_save_workspace_button = true;
+                Ok(())
+            }
+            "handlePointerEvent" => {
+                let mut pointer_event: PointerEvent = serde_json::from_slice(data).or_fail()?;
+                let pagurus_event = PagurusEvent::Mouse(pointer_event.to_mouse_event());
+
+                #[cfg(feature = "auto-scaling")]
+                let pagurus_event = self.screen.handle_event(pagurus_event);
+
+                let mut event = Event::from_pagurus_event(pagurus_event).or_fail()?;
+                let Event::Mouse {
+                    pointer, position, ..
+                } = &mut event
+                else {
+                    return Err(orfail::Failure::new("unreachable"));
+                };
+                pointer_event.position = *position;
+                *pointer = Some(pointer_event);
+                self.handle_pixcil_event(system, Some(event)).or_fail()?;
+
                 Ok(())
             }
             _ => Err(orfail::Failure::new(format!("unknown command: {name:?}"))),
