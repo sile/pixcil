@@ -145,9 +145,7 @@ impl GestureRecognizer {
     }
 
     fn handle_pointer_move(&mut self, pointer: PointerEvent) -> Option<GestureEvent> {
-        let Some(touch) = self.touches.get_mut(&pointer.pointer_id) else {
-            return None;
-        };
+        let touch = self.touches.get_mut(&pointer.pointer_id)?;
         touch.last_position = pointer.position;
 
         let n = self.touches.len();
