@@ -16,11 +16,19 @@ pub struct PointerEvent {
 impl PointerEvent {
     pub fn to_mouse_event(self) -> MouseEvent {
         let position = self.position;
-        match self.event_type {
+        pagurus::dbg!(match self.event_type {
             EventType::Pointerdown => MouseEvent::Down { position },
             EventType::Pointermove => MouseEvent::Move { position },
             _ => MouseEvent::Up { position },
-        }
+        })
+    }
+
+    pub fn is_duplicate(self, other: Self) -> bool {
+        self.event_type.is_up_like()
+            && other.event_type.is_up_like()
+            && self.pointer_id == other.pointer_id
+            && self.position == other.position
+            && self.pointer_type == other.pointer_type
     }
 }
 
@@ -35,7 +43,19 @@ pub enum EventType {
     Pointerleave,
 }
 
-#[derive(Debug, Clone, Copy, serde::Serialize, serde::Deserialize)]
+impl EventType {
+    pub fn is_up_like(self) -> bool {
+        matches!(
+            self,
+            EventType::Pointerup
+                | EventType::Pointercancel
+                | EventType::Pointerout
+                | EventType::Pointerleave
+        )
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum PointerType {
     Mouse,
