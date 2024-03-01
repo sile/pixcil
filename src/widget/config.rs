@@ -183,6 +183,7 @@ impl Widget for ConfigWidget {
 
         // Gesture
         self.gesture.handle_event(app, event).or_fail()?;
+        app.models_mut().config.gesture = self.gesture.body().is_on();
 
         Ok(())
     }
