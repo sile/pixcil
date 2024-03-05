@@ -7,6 +7,7 @@ pub mod block;
 pub mod bottom_bar;
 pub mod button;
 pub mod color_config;
+pub mod color_palette;
 pub mod color_selector;
 pub mod config;
 pub mod draw_tool;
