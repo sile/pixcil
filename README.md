@@ -43,9 +43,3 @@ $ ls target/wasm32-unknown-unknown/release/pixcil.wasm
 $ cd web/
 $ start-your-favorite-http-server
 ```
-
-### Windows
-
-```console
-$ cargo run --release -p pixcil_windows
-```
