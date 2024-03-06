@@ -27,14 +27,13 @@ pub struct ColorSelectorWidget {
 impl ColorSelectorWidget {
     pub fn new(app: &App) -> Self {
         let color = app.models().config.color.get();
+        let hsv = HsvSelectorWidget::new(app);
+        let width = hsv.requiring_size(app).width;
         Self {
             region: Region::default(),
             old_color: color,
             replaced: false,
-            hsv: BlockWidget::new(
-                "HSV".parse().expect("unreachable"),
-                HsvSelectorWidget::new(app),
-            ),
+            hsv: BlockWidget::new("HSV".parse().expect("unreachable"), hsv),
             rgb: BlockWidget::new(
                 "RGB".parse().expect("unreachable"),
                 RgbSelectorWidget::new(app),
@@ -58,7 +57,7 @@ impl ColorSelectorWidget {
             ),
             palette: BlockWidget::new(
                 "PALETTE".parse().expect("unreachable"),
-                ColorPaletteWidget::new(app),
+                ColorPaletteWidget::new(app, width),
             ),
             replace: BlockWidget::new(
                 "REPLACE OLD COLOR PIXELS".parse().expect("unreachable"),

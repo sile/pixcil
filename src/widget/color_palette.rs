@@ -12,9 +12,9 @@ pub struct ColorPaletteWidget {
 }
 
 impl ColorPaletteWidget {
-    pub fn new(_app: &App) -> Self {
+    pub fn new(_app: &App, width: u32) -> Self {
         Self {
-            region: Region::default(),
+            region: Region::new(Position::default(), Size::from_wh(width, 0)),
         }
     }
 }
@@ -99,7 +99,7 @@ impl FixedSizeWidget for ColorPaletteWidget {
         //         + MARGIN
         //         + replace.height,
         // )
-        Size::default()
+        self.region.size
     }
 
     fn set_position(&mut self, app: &App, position: Position) {
