@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - If the `gesture` setting is enabled, the following gestures will become available:
     - Tap: switch to picker tool
     - Two-finger tap: switch to selection tool
+    - Three-finger tap: switch to bucket tool
     - Swipe: camera move
     - Two-finger horizontal swipe: undo / redo
     - Pinch: zoom in / out

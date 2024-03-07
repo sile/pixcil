@@ -73,6 +73,9 @@ pub enum GestureEvent {
     // Select selection tool
     TwoFingerTap,
 
+    // Select bucket tool
+    ThreeFingerTap,
+
     // Move camera
     Swipe { delta: Position },
 
@@ -195,6 +198,7 @@ impl GestureRecognizer {
         match max_touches {
             1 => Some(GestureEvent::Tap),
             2 => Some(GestureEvent::TwoFingerTap),
+            3 => Some(GestureEvent::ThreeFingerTap),
             _ => None,
         }
     }

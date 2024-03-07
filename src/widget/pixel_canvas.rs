@@ -221,6 +221,11 @@ impl PixelCanvasWidget {
                 app.models_mut().tool.current = ToolKind::Select;
                 app.enqueue_io_request(IoRequest::Vibrate);
             }
+            GestureEvent::ThreeFingerTap => {
+                app.models_mut().tool.current = ToolKind::Draw;
+                app.models_mut().tool.draw = DrawTool::Bucket;
+                app.enqueue_io_request(IoRequest::Vibrate);
+            }
             GestureEvent::Swipe { mut delta } => {
                 delta.x = -delta.x;
                 delta.y = -delta.y;
