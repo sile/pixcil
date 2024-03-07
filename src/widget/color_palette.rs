@@ -1,21 +1,77 @@
-use super::{FixedSizeWidget, Widget};
-use crate::{app::App, event::Event};
-use orfail::Result;
+use std::collections::HashSet;
+
+use super::{button::ButtonWidget, FixedSizeWidget, Widget};
+use crate::{
+    app::App,
+    asset::{ButtonKind, IconId},
+    color::Hsv,
+    event::Event,
+};
+use orfail::{OrFail, Result};
 use pagurus::{
-    image::Canvas,
-    spatial::{Position, Region, Size},
+    image::{Canvas, Rgba},
+    spatial::{Contains, Position, Region, Size},
 };
 
 #[derive(Debug, Default)]
 pub struct ColorPaletteWidget {
     region: Region,
+    colors: Vec<Rgba>,
+    buttons: Vec<ButtonWidget>,
 }
 
 impl ColorPaletteWidget {
-    pub fn new(_app: &App, width: u32) -> Self {
+    pub fn new(app: &App, width: u32) -> Self {
+        let colors = Self::get_colors(app);
+        let buttons = colors
+            .iter()
+            .map(|_| ButtonWidget::new(ButtonKind::Middle, IconId::Null))
+            .collect();
         Self {
             region: Region::new(Position::default(), Size::from_wh(width, 0)),
+            colors,
+            buttons,
         }
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.colors.is_empty()
+    }
+
+    fn get_colors(app: &App) -> Vec<Rgba> {
+        let models = app.models();
+        let frame_count = models.config.animation.enabled_frame_count();
+        let mut colors = (0..frame_count)
+            .flat_map(|frame| {
+                models
+                    .config
+                    .frame
+                    .get_preview_region(&models.config, frame as usize)
+                    .pixels()
+                    .map(|position| {
+                        models
+                            .pixel_canvas
+                            .get_pixel(&models.config, position)
+                            .unwrap_or(Rgba::new(0, 0, 0, 0))
+                    })
+            })
+            .filter(|c| c.a > 0)
+            .collect::<HashSet<_>>()
+            .into_iter()
+            .collect::<Vec<_>>();
+
+        colors.sort_by_key(|rgba| {
+            let hsv = Hsv::from_rgb(rgba.to_rgb());
+            let mut k = 0;
+            if hsv.s > 0.1 {
+                k += ((hsv.h * 10.0).round() as u32 + 1) * 0xFF_FF;
+                k += (hsv.s * 3.0).round() as u32 * 0xFF;
+            }
+            k += (hsv.v * 100.0).round() as u32;
+            k
+        });
+
+        colors
     }
 }
 
@@ -25,102 +81,49 @@ impl Widget for ColorPaletteWidget {
     }
 
     fn render(&self, app: &App, canvas: &mut Canvas) {
-        // self.render_color_preview(app, canvas);
-        // self.hsv.render_if_need(app, canvas);
-        // self.rgb.render_if_need(app, canvas);
-        // self.alpha.render_if_need(app, canvas);
-        // self.replace.render_if_need(app, canvas);
+        let mut canvas = canvas.mask_region(self.region);
+        for color in &self.buttons {
+            color.render(app, &mut canvas);
+        }
     }
 
     fn handle_event(&mut self, app: &mut App, event: &mut Event) -> Result<()> {
-        // let old_color = app.models().config.color.get();
-
-        // self.hsv.handle_event(app, event).or_fail()?;
-        // self.rgb.handle_event(app, event).or_fail()?;
-
-        // let alpha = self.alpha.body().value();
-        // self.alpha.handle_event(app, event).or_fail()?;
-        // if alpha != self.alpha.body().value() {
-        //     let mut c = app.models().config.color.get();
-        //     c.a = self.alpha.body().value() as u8;
-        //     app.models_mut().config.color.set(c);
-        // }
-
-        // let old_replace_mode = self.replace.body().is_on();
-        // self.replace.handle_event(app, event).or_fail()?;
-        // let new_replace_mode = self.replace.body().is_on();
-
-        // let new_color = app.models().config.color.get();
-        // if (old_color, old_replace_mode) != (new_color, new_replace_mode) {
-        //     if new_replace_mode {
-        //         self.replace_color(app).or_fail()?;
-        //         app.request_redraw(app.screen_size().to_region());
-        //     } else {
-        //         self.cancel_color_replace_if_need(app).or_fail()?;
-        //         app.request_redraw(self.region);
-        //     }
-        // }
-
+        if let Some(position) = event.position() {
+            if !self.region.contains(&position) {
+                return Ok(());
+            }
+        }
+        for color in &mut self.buttons {
+            color.handle_event(app, event).or_fail()?;
+        }
         Ok(())
     }
 
     fn children(&mut self) -> Vec<&mut dyn Widget> {
-        vec![
-            // &mut self.rgb,
-            // &mut self.hsv,
-            // &mut self.alpha,
-            // &mut self.replace,
-        ]
+        let mut children = Vec::new();
+        children.extend(self.buttons.iter_mut().map(|c| c as &mut dyn Widget));
+        children
     }
 }
 
 impl FixedSizeWidget for ColorPaletteWidget {
     fn requiring_size(&self, app: &App) -> Size {
-        // let preview = Size::from_wh(0, COLOR_PREVIEW_HEIGHT);
-        // let hsv = self.hsv.requiring_size(app);
-        // let rgb = self.rgb.requiring_size(app);
-        // let alpha = self.alpha.requiring_size(app);
-        // let replace = self.alpha.requiring_size(app);
-
-        // Size::from_wh(
-        //     preview
-        //         .width
-        //         .max(rgb.width)
-        //         .max(hsv.width)
-        //         .max(alpha.width)
-        //         .max(replace.width),
-        //     preview.height
-        //         + MARGIN
-        //         + hsv.height
-        //         + MARGIN
-        //         + rgb.height
-        //         + MARGIN
-        //         + alpha.height
-        //         + MARGIN
-        //         + replace.height,
-        // )
-        self.region.size
+        let mut size = self.region.size;
+        size.height = self
+            .buttons
+            .get(0)
+            .map(|c| c.requiring_size(app).height)
+            .unwrap_or_default();
+        size
     }
 
     fn set_position(&mut self, app: &App, position: Position) {
         self.region = Region::new(position, self.requiring_size(app));
 
-        // let mut offset = position;
-        // offset.y += (COLOR_PREVIEW_HEIGHT + MARGIN) as i32;
-        // self.hsv
-        //     .set_region(app, Region::new(offset, self.hsv.requiring_size(app)));
-
-        // offset.y = self.hsv.region().end().y + MARGIN as i32;
-        // self.rgb
-        //     .set_region(app, Region::new(offset, self.rgb.requiring_size(app)));
-
-        // offset.y = self.rgb.region().end().y + MARGIN as i32;
-        // self.alpha
-        //     .set_region(app, Region::new(offset, self.alpha.requiring_size(app)));
-
-        // offset.y = self.alpha.region().end().y + MARGIN as i32;
-        // let mut replace_region = Region::new(offset, self.replace.requiring_size(app));
-        // replace_region.size.width = self.region.size.width;
-        // self.replace.set_region(app, replace_region);
+        let mut position = position;
+        for color in &mut self.buttons {
+            color.set_position(app, position);
+            position.x += color.requiring_size(app).width as i32;
+        }
     }
 }

@@ -10,7 +10,7 @@ use pagurus::spatial::{Position, Region, Size};
 use pagurus::{image::Canvas, image::Rgba};
 
 const COLOR_PREVIEW_HEIGHT: u32 = 64;
-const MARGIN: u32 = 16;
+const MARGIN: u32 = 8;
 
 #[derive(Debug)]
 pub struct ColorSelectorWidget {
@@ -138,7 +138,9 @@ impl Widget for ColorSelectorWidget {
         self.hsv.render_if_need(app, canvas);
         self.rgb.render_if_need(app, canvas);
         self.alpha.render_if_need(app, canvas);
-        self.palette.render_if_need(app, canvas);
+        if !self.palette.body().is_empty() {
+            self.palette.render_if_need(app, canvas);
+        }
         self.replace.render_if_need(app, canvas);
     }
 
@@ -156,7 +158,9 @@ impl Widget for ColorSelectorWidget {
             app.models_mut().config.color.set(c);
         }
 
-        self.palette.handle_event(app, event).or_fail()?;
+        if !self.palette.body().is_empty() {
+            self.palette.handle_event(app, event).or_fail()?;
+        }
 
         let old_replace_mode = self.replace.body().is_on();
         self.replace.handle_event(app, event).or_fail()?;
@@ -193,7 +197,12 @@ impl FixedSizeWidget for ColorSelectorWidget {
         let hsv = self.hsv.requiring_size(app);
         let rgb = self.rgb.requiring_size(app);
         let alpha = self.alpha.requiring_size(app);
-        let palette = self.palette.requiring_size(app);
+
+        let palette = if self.palette.body().is_empty() {
+            Size::EMPTY
+        } else {
+            self.palette.requiring_size(app)
+        };
         let replace = self.alpha.requiring_size(app);
 
         Size::from_wh(
@@ -235,10 +244,12 @@ impl FixedSizeWidget for ColorSelectorWidget {
             .set_region(app, Region::new(offset, self.alpha.requiring_size(app)));
 
         offset.y = self.alpha.region().end().y + MARGIN as i32;
-        self.palette
-            .set_region(app, Region::new(offset, self.palette.requiring_size(app)));
+        if !self.palette.body().is_empty() {
+            self.palette
+                .set_region(app, Region::new(offset, self.palette.requiring_size(app)));
 
-        offset.y = self.palette.region().end().y + MARGIN as i32;
+            offset.y = self.palette.region().end().y + MARGIN as i32;
+        }
         let mut replace_region = Region::new(offset, self.replace.requiring_size(app));
         replace_region.size.width = self.region.size.width;
         self.replace.set_region(app, replace_region);
