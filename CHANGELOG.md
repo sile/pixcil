@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Add auto generated color palette block to the color selector window
 - Add touch gesture support
   - If the `gesture` setting is enabled, the following gestures will become available:
     - Tap: switch to picker tool

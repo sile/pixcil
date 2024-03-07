@@ -155,7 +155,7 @@ impl ButtonKind {
             ButtonKind::BasicPressed => Size::square(64),
             ButtonKind::SliderLeft => Size::square(32),
             ButtonKind::SliderRight => Size::square(32),
-            ButtonKind::Middle => Size::from_wh(48, 24),
+            ButtonKind::Middle => Size::from_wh(48, 26),
         }
     }
 }

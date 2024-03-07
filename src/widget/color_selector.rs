@@ -1,3 +1,4 @@
+use super::color_palette::ColorPaletteWidget;
 use super::{
     block::BlockWidget, hsv_selector::HsvSelectorWidget, rgb_selector,
     rgb_selector::RgbSelectorWidget, slider::SliderWidget, toggle::ToggleWidget, FixedSizeWidget,
@@ -9,7 +10,7 @@ use pagurus::spatial::{Position, Region, Size};
 use pagurus::{image::Canvas, image::Rgba};
 
 const COLOR_PREVIEW_HEIGHT: u32 = 64;
-const MARGIN: u32 = 16;
+const MARGIN: u32 = 8;
 
 #[derive(Debug)]
 pub struct ColorSelectorWidget {
@@ -19,20 +20,20 @@ pub struct ColorSelectorWidget {
     hsv: BlockWidget<HsvSelectorWidget>,
     rgb: BlockWidget<RgbSelectorWidget>,
     alpha: BlockWidget<SliderWidget>,
+    palette: BlockWidget<ColorPaletteWidget>,
     replace: BlockWidget<ToggleWidget>,
 }
 
 impl ColorSelectorWidget {
     pub fn new(app: &App) -> Self {
         let color = app.models().config.color.get();
+        let hsv = HsvSelectorWidget::new(app);
+        let width = hsv.requiring_size(app).width;
         Self {
             region: Region::default(),
             old_color: color,
             replaced: false,
-            hsv: BlockWidget::new(
-                "HSV".parse().expect("unreachable"),
-                HsvSelectorWidget::new(app),
-            ),
+            hsv: BlockWidget::new("HSV".parse().expect("unreachable"), hsv),
             rgb: BlockWidget::new(
                 "RGB".parse().expect("unreachable"),
                 RgbSelectorWidget::new(app),
@@ -53,6 +54,10 @@ impl ColorSelectorWidget {
                         );
                     },
                 ),
+            ),
+            palette: BlockWidget::new(
+                "PALETTE".parse().expect("unreachable"),
+                ColorPaletteWidget::new(app, width),
             ),
             replace: BlockWidget::new(
                 "REPLACE OLD COLOR PIXELS".parse().expect("unreachable"),
@@ -133,6 +138,9 @@ impl Widget for ColorSelectorWidget {
         self.hsv.render_if_need(app, canvas);
         self.rgb.render_if_need(app, canvas);
         self.alpha.render_if_need(app, canvas);
+        if !self.palette.body().is_empty() {
+            self.palette.render_if_need(app, canvas);
+        }
         self.replace.render_if_need(app, canvas);
     }
 
@@ -148,6 +156,10 @@ impl Widget for ColorSelectorWidget {
             let mut c = app.models().config.color.get();
             c.a = self.alpha.body().value() as u8;
             app.models_mut().config.color.set(c);
+        }
+
+        if !self.palette.body().is_empty() {
+            self.palette.handle_event(app, event).or_fail()?;
         }
 
         let old_replace_mode = self.replace.body().is_on();
@@ -173,6 +185,7 @@ impl Widget for ColorSelectorWidget {
             &mut self.rgb,
             &mut self.hsv,
             &mut self.alpha,
+            &mut self.palette,
             &mut self.replace,
         ]
     }
@@ -184,6 +197,12 @@ impl FixedSizeWidget for ColorSelectorWidget {
         let hsv = self.hsv.requiring_size(app);
         let rgb = self.rgb.requiring_size(app);
         let alpha = self.alpha.requiring_size(app);
+
+        let palette = if self.palette.body().is_empty() {
+            Size::EMPTY
+        } else {
+            self.palette.requiring_size(app)
+        };
         let replace = self.alpha.requiring_size(app);
 
         Size::from_wh(
@@ -192,6 +211,7 @@ impl FixedSizeWidget for ColorSelectorWidget {
                 .max(rgb.width)
                 .max(hsv.width)
                 .max(alpha.width)
+                .max(palette.width)
                 .max(replace.width),
             preview.height
                 + MARGIN
@@ -200,6 +220,8 @@ impl FixedSizeWidget for ColorSelectorWidget {
                 + rgb.height
                 + MARGIN
                 + alpha.height
+                + MARGIN
+                + palette.height
                 + MARGIN
                 + replace.height,
         )
@@ -222,6 +244,12 @@ impl FixedSizeWidget for ColorSelectorWidget {
             .set_region(app, Region::new(offset, self.alpha.requiring_size(app)));
 
         offset.y = self.alpha.region().end().y + MARGIN as i32;
+        if !self.palette.body().is_empty() {
+            self.palette
+                .set_region(app, Region::new(offset, self.palette.requiring_size(app)));
+
+            offset.y = self.palette.region().end().y + MARGIN as i32;
+        }
         let mut replace_region = Region::new(offset, self.replace.requiring_size(app));
         replace_region.size.width = self.region.size.width;
         self.replace.set_region(app, replace_region);
