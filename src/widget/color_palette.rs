@@ -4,8 +4,10 @@ use super::{button::ButtonWidget, FixedSizeWidget, Widget};
 use crate::{
     app::App,
     asset::{ButtonKind, IconId},
+    canvas_ext::CanvasExt,
     color::Hsv,
     event::Event,
+    region_ext::RegionExt,
 };
 use orfail::{OrFail, Result};
 use pagurus::{
@@ -73,6 +75,18 @@ impl ColorPaletteWidget {
 
         colors
     }
+
+    fn render_color_label(&self, button: &ButtonWidget, color: Rgba, canvas: &mut Canvas) {
+        let offset = button.state().offset(button.kind()).y;
+        let mut label_region = button.region();
+        label_region.position.x += 2;
+        label_region.size.width -= 4;
+
+        label_region.position.y += 2 + offset;
+        label_region.size.height -= 4 + 4;
+
+        canvas.fill_rectangle(label_region.without_margin(2), color.into());
+    }
 }
 
 impl Widget for ColorPaletteWidget {
@@ -82,8 +96,9 @@ impl Widget for ColorPaletteWidget {
 
     fn render(&self, app: &App, canvas: &mut Canvas) {
         let mut canvas = canvas.mask_region(self.region);
-        for color in &self.buttons {
-            color.render(app, &mut canvas);
+        for (button, &color) in self.buttons.iter().zip(self.colors.iter()) {
+            button.render(app, &mut canvas);
+            self.render_color_label(button, color, &mut canvas);
         }
     }
 
