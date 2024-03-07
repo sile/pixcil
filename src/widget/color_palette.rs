@@ -1,5 +1,3 @@
-use std::collections::HashSet;
-
 use super::{button::ButtonWidget, FixedSizeWidget, Widget};
 use crate::{
     app::App,
@@ -14,6 +12,7 @@ use pagurus::{
     image::{Canvas, Rgba},
     spatial::{Contains, Position, Region, Size},
 };
+use std::collections::HashSet;
 
 #[derive(Debug, Default)]
 pub struct ColorPaletteWidget {
@@ -108,15 +107,21 @@ impl Widget for ColorPaletteWidget {
                 return Ok(());
             }
         }
-        for color in &mut self.buttons {
-            color.handle_event(app, event).or_fail()?;
+
+        for (button, &color) in self.buttons.iter_mut().zip(self.colors.iter()) {
+            button.handle_event(app, event).or_fail()?;
+            if button.take_clicked(app) {
+                app.models_mut().config.color.set(color);
+                break;
+            }
         }
+
         Ok(())
     }
 
     fn children(&mut self) -> Vec<&mut dyn Widget> {
         let mut children = Vec::new();
-        children.extend(self.buttons.iter_mut().map(|c| c as &mut dyn Widget));
+        children.extend(self.buttons.iter_mut().map(|b| b as &mut dyn Widget));
         children
     }
 }
