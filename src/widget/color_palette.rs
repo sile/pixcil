@@ -28,8 +28,11 @@ impl ColorPaletteWidget {
             .iter()
             .map(|_| ButtonWidget::new(ButtonKind::Middle, IconId::Null))
             .collect();
+        let height = ButtonWidget::new(ButtonKind::Middle, IconId::Null)
+            .requiring_size(app)
+            .height;
         Self {
-            region: Region::new(Position::default(), Size::from_wh(width, 0)),
+            region: Region::new(Position::default(), Size::from_wh(width, height)),
             colors,
             buttons,
         }
@@ -127,14 +130,8 @@ impl Widget for ColorPaletteWidget {
 }
 
 impl FixedSizeWidget for ColorPaletteWidget {
-    fn requiring_size(&self, app: &App) -> Size {
-        let mut size = self.region.size;
-        size.height = self
-            .buttons
-            .get(0)
-            .map(|c| c.requiring_size(app).height)
-            .unwrap_or_default();
-        size
+    fn requiring_size(&self, _app: &App) -> Size {
+        self.region.size
     }
 
     fn set_position(&mut self, app: &App, position: Position) {
