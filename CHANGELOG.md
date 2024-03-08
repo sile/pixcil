@@ -47,6 +47,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Move bucket tool from draw sub tools to main tools
 - Switch to the erase-tool if picker-tool selects a pixel doesn't have a color
 - Rename config item name: s/PIXEL SIZE/TOOL SIZE/
 - Allow non-drawn selected region to be draggable during manipulation
