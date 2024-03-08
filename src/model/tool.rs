@@ -128,8 +128,8 @@ impl EraseTool {
 
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
 pub enum SelectTool {
-    #[default]
     Rectangle,
+    #[default]
     Lasso,
 }
 
