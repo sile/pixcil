@@ -91,7 +91,6 @@ pub enum DrawTool {
     PenLine,
     PenRectangle,
     PenCircle,
-    Bucket,
 }
 
 impl DrawTool {
@@ -101,7 +100,6 @@ impl DrawTool {
             DrawTool::PenLine => MarkerKind::Line,
             DrawTool::PenRectangle => MarkerKind::Rectangle,
             DrawTool::PenCircle => MarkerKind::Ellipse,
-            DrawTool::Bucket => MarkerKind::Fill,
         }
     }
 
@@ -111,7 +109,6 @@ impl DrawTool {
             DrawTool::PenLine => IconId::PenLine,
             DrawTool::PenRectangle => IconId::PenRectangle,
             DrawTool::PenCircle => IconId::PenCircle,
-            DrawTool::Bucket => IconId::Bucket,
         }
     }
 }

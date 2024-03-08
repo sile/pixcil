@@ -9,7 +9,7 @@ use crate::{
     gesture::{GestureEvent, GestureRecognizer},
     io::IoRequest,
     marker::{MarkerHandler, MarkerKind},
-    model::tool::{DrawTool, ToolKind, ToolModel},
+    model::tool::{ToolKind, ToolModel},
     pixel::{Pixel, PixelPosition, PixelRegion},
 };
 use orfail::{OrFail, Result};
@@ -125,7 +125,7 @@ impl PixelCanvasWidget {
 
     fn render_drawn_pixels(&self, app: &App, canvas: &mut Canvas) {
         let color = app.models().config.color.get();
-        if self.marker_handler.is_neutral() && app.models().tool.draw != DrawTool::Bucket {
+        if self.marker_handler.is_neutral() {
             let pixel_region = PixelRegion::from_positions(self.marker_handler.marked_pixels(app));
             let region = pixel_region.to_screen_region(app);
             canvas.draw_rectangle(region, color.into());
@@ -222,8 +222,7 @@ impl PixelCanvasWidget {
                 app.enqueue_io_request(IoRequest::Vibrate);
             }
             GestureEvent::ThreeFingerTap => {
-                app.models_mut().tool.current = ToolKind::Draw;
-                app.models_mut().tool.draw = DrawTool::Bucket;
+                app.models_mut().tool.current = ToolKind::Fill;
                 app.enqueue_io_request(IoRequest::Vibrate);
             }
             GestureEvent::Swipe { mut delta } => {

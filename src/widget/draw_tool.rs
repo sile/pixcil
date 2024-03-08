@@ -27,7 +27,6 @@ impl DrawToolWidget {
             ButtonWidget::new(ButtonKind::Basic, IconId::PenLine),
             ButtonWidget::new(ButtonKind::Basic, IconId::PenRectangle),
             ButtonWidget::new(ButtonKind::Basic, IconId::PenCircle),
-            ButtonWidget::new(ButtonKind::Basic, IconId::Bucket),
         ];
         buttons[tool_to_index(current)].set_kind(ButtonKind::BasicPressed);
         Ok(Self {
@@ -94,7 +93,6 @@ fn tool_to_index(tool: DrawTool) -> usize {
         DrawTool::PenLine => 1,
         DrawTool::PenRectangle => 2,
         DrawTool::PenCircle => 3,
-        DrawTool::Bucket => 4,
     }
 }
 
@@ -104,7 +102,6 @@ fn icon_to_tool(icon: IconId) -> Result<DrawTool> {
         IconId::PenLine => Ok(DrawTool::PenLine),
         IconId::PenRectangle => Ok(DrawTool::PenRectangle),
         IconId::PenCircle => Ok(DrawTool::PenCircle),
-        IconId::Bucket => Ok(DrawTool::Bucket),
         _ => Err(orfail::Failure::new("unreachable")),
     }
 }
