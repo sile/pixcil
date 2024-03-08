@@ -314,7 +314,7 @@ impl Widget for PixelCanvasWidget {
         if self.marker_handler.take_completed() {
             let config = app.models().config.clone();
             match self.tool.tool_kind() {
-                ToolKind::Draw => {
+                ToolKind::Draw | ToolKind::Fill => {
                     let color = app.models().config.color.get();
                     let pixels = self
                         .marker_handler

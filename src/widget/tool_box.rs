@@ -28,7 +28,10 @@ impl ToolBoxWidget {
                 if state.is_selected() {
                     let next = ToolKind::from_icon(button.icon()).or_fail()?;
 
-                    if matches!(next, ToolKind::Pick | ToolKind::Erase | ToolKind::Move) {
+                    if matches!(
+                        next,
+                        ToolKind::Pick | ToolKind::Fill | ToolKind::Erase | ToolKind::Move
+                    ) {
                         button.set_kind(ButtonKind::BasicPressed);
                     } else {
                         button.set_kind(ButtonKind::BasicDeep);
@@ -56,6 +59,7 @@ impl Default for ToolBoxWidget {
         let mut buttons = vec![
             ButtonWidget::new(ButtonKind::Basic, IconId::Pick),
             ButtonWidget::new(ButtonKind::Basic, IconId::PenStroke),
+            ButtonWidget::new(ButtonKind::Basic, IconId::Bucket),
             ButtonWidget::new(ButtonKind::Basic, IconId::Erase),
             ButtonWidget::new(ButtonKind::Basic, IconId::Select),
             ButtonWidget::new(ButtonKind::Basic, IconId::Move),
@@ -63,8 +67,9 @@ impl Default for ToolBoxWidget {
         buttons[1].set_kind(ButtonKind::BasicDeep);
 
         buttons[0].set_disabled_callback(|app| app.models().tool.current == ToolKind::Pick);
-        buttons[2].set_disabled_callback(|app| app.models().tool.current == ToolKind::Erase);
-        buttons[4].set_disabled_callback(|app| app.models().tool.current == ToolKind::Move);
+        buttons[2].set_disabled_callback(|app| app.models().tool.current == ToolKind::Fill);
+        buttons[3].set_disabled_callback(|app| app.models().tool.current == ToolKind::Erase);
+        buttons[5].set_disabled_callback(|app| app.models().tool.current == ToolKind::Move);
 
         Self {
             region: Default::default(),
@@ -111,13 +116,13 @@ impl Widget for ToolBoxWidget {
             self.tools.buttons_mut()[DRAW_INDEX].set_icon(app, draw_icon);
         }
 
-        const ERASE_INDEX: usize = 2;
+        const ERASE_INDEX: usize = 3;
         let erase_icon = app.models().tool.erase.icon();
         if self.tools.buttons()[ERASE_INDEX].icon() != erase_icon {
             self.tools.buttons_mut()[ERASE_INDEX].set_icon(app, erase_icon);
         }
 
-        const SELECT_INDEX: usize = 3;
+        const SELECT_INDEX: usize = 4;
         let select_icon = app.models().tool.select.icon();
         if self.tools.buttons()[SELECT_INDEX].icon() != select_icon {
             self.tools.buttons_mut()[SELECT_INDEX].set_icon(app, select_icon);
@@ -156,5 +161,6 @@ fn spawn_window(tool: ToolKind, app: &mut App) -> Result<()> {
             .or_fail(),
         ToolKind::Move => Ok(()),
         ToolKind::Pick => Ok(()),
+        ToolKind::Fill => Ok(()),
     }
 }

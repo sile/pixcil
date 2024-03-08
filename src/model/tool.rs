@@ -6,6 +6,7 @@ use pagurus::Result;
 pub struct ToolModel {
     pub current: ToolKind,
     pub draw: DrawTool,
+    pub fill: FillToolState,
     pub erase: EraseTool,
     pub select: SelectTool,
     pub r#move: MoveToolState,
@@ -24,6 +25,7 @@ impl ToolModel {
             ToolKind::Select => self.select.marker(),
             ToolKind::Move => self.r#move.marker,
             ToolKind::Pick => self.pick.marker,
+            ToolKind::Fill => self.fill.marker,
         }
     }
 }
@@ -42,6 +44,9 @@ impl Default for ToolModel {
                 marker: MarkerKind::Pick,
                 preview_color: None,
             },
+            fill: FillToolState {
+                marker: MarkerKind::Fill,
+            },
         }
     }
 }
@@ -50,6 +55,7 @@ impl Default for ToolModel {
 pub enum ToolKind {
     #[default]
     Draw,
+    Fill,
     Erase,
     Select,
     Move,
@@ -64,7 +70,7 @@ impl ToolKind {
             IconId::PenLine => Ok(Self::Draw),
             IconId::PenRectangle => Ok(Self::Draw),
             IconId::PenCircle => Ok(Self::Draw),
-            IconId::Bucket => Ok(Self::Draw),
+            IconId::Bucket => Ok(Self::Fill),
             IconId::Erase => Ok(Self::Erase),
             IconId::ScissorRectangle => Ok(Self::Erase),
             IconId::ScissorLasso => Ok(Self::Erase),
@@ -168,4 +174,9 @@ pub struct MoveToolState {
 pub struct PickToolState {
     pub marker: MarkerKind,
     pub preview_color: Option<Rgba>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct FillToolState {
+    pub marker: MarkerKind,
 }
