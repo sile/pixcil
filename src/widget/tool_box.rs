@@ -116,12 +116,6 @@ impl Widget for ToolBoxWidget {
             self.tools.buttons_mut()[DRAW_INDEX].set_icon(app, draw_icon);
         }
 
-        const ERASE_INDEX: usize = 3;
-        let erase_icon = app.models().tool.erase.icon();
-        if self.tools.buttons()[ERASE_INDEX].icon() != erase_icon {
-            self.tools.buttons_mut()[ERASE_INDEX].set_icon(app, erase_icon);
-        }
-
         const SELECT_INDEX: usize = 4;
         let select_icon = app.models().tool.select.icon();
         if self.tools.buttons()[SELECT_INDEX].icon() != select_icon {

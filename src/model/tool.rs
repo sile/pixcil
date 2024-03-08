@@ -117,28 +117,15 @@ impl DrawTool {
 }
 
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
-pub enum EraseTool {
-    #[default]
-    Eraser,
-    ScissorLasso,
-    ScissorRectangle,
-}
+pub struct EraseTool;
 
 impl EraseTool {
     fn marker(self) -> MarkerKind {
-        match self {
-            EraseTool::Eraser => MarkerKind::Stroke,
-            EraseTool::ScissorLasso => MarkerKind::Lasso,
-            EraseTool::ScissorRectangle => MarkerKind::FillRectangle,
-        }
+        MarkerKind::Stroke
     }
 
     pub fn icon(self) -> IconId {
-        match self {
-            EraseTool::Eraser => IconId::Erase,
-            EraseTool::ScissorLasso => IconId::ScissorLasso,
-            EraseTool::ScissorRectangle => IconId::ScissorRectangle,
-        }
+        IconId::Erase
     }
 }
 
