@@ -202,6 +202,10 @@ impl PixelCanvasModel {
         self.pixels.get_pixel(position)
     }
 
+    pub fn raw_pixels(&self) -> impl '_ + Iterator<Item = (PixelPosition, Rgba)> {
+        self.pixels.pixels.iter().map(|(&p, &c)| (p, c))
+    }
+
     fn get_layered_pixel(
         &self,
         frame: FrameRegion,

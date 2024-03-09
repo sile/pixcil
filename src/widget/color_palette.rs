@@ -3,7 +3,6 @@ use crate::{
     app::App,
     asset::{ButtonKind, IconId},
     canvas_ext::CanvasExt,
-    color::Hsv,
     event::Event,
     region_ext::RegionExt,
 };
@@ -44,36 +43,16 @@ impl ColorPaletteWidget {
 
     fn get_colors(app: &App) -> Vec<Rgba> {
         let models = app.models();
-        let frame_count = models.config.animation.enabled_frame_count();
-        let mut colors = (0..frame_count)
-            .flat_map(|frame| {
-                models
-                    .config
-                    .frame
-                    .get_preview_region(&models.config, frame as usize)
-                    .pixels()
-                    .map(|position| {
-                        models
-                            .pixel_canvas
-                            .get_pixel(&models.config, position)
-                            .unwrap_or(Rgba::new(0, 0, 0, 0))
-                    })
-            })
-            .filter(|c| c.a > 0)
-            .collect::<HashSet<_>>()
-            .into_iter()
-            .collect::<Vec<_>>();
 
-        colors.sort_by_key(|rgba| {
-            let hsv = Hsv::from_rgb(rgba.to_rgb());
-            let mut k = 0;
-            if hsv.s > 0.1 {
-                k += ((hsv.h * 10.0).round() as u32 + 1) * 0xFF_FF;
-                k += (hsv.s * 3.0).round() as u32 * 0xFF;
+        let mut colors = Vec::new();
+        let mut color_set = HashSet::new();
+        for (_, color) in models.pixel_canvas.raw_pixels() {
+            if color_set.contains(&color) {
+                continue;
             }
-            k += (hsv.v * 100.0).round() as u32;
-            k
-        });
+            color_set.insert(color);
+            colors.push(color);
+        }
 
         colors
     }
