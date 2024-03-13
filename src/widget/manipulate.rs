@@ -91,6 +91,10 @@ impl ManipulateWidget {
         self.terminated
     }
 
+    pub fn tool_region(&self) -> Region {
+        self.tool.region()
+    }
+
     fn render_manipulating_pixels(&self, app: &App, canvas: &mut Canvas) {
         for (position, &color) in &self.manipulating_pixels {
             let region = (*position + self.delta).to_screen_region(app);

@@ -13,8 +13,11 @@ use crate::{
     pixel::{Pixel, PixelPosition, PixelRegion},
 };
 use orfail::{OrFail, Result};
-use pagurus::image::{Canvas, Color, Rgba};
 use pagurus::spatial::Region;
+use pagurus::{
+    image::{Canvas, Color, Rgba},
+    spatial::Contains,
+};
 use std::collections::HashSet;
 
 #[derive(Debug, Default)]
@@ -297,7 +300,16 @@ impl Widget for PixelCanvasWidget {
             return Ok(());
         }
 
-        self.handle_gesture(app, event).or_fail()?;
+        if self
+            .manipulate
+            .as_ref()
+            .and_then(|w| event.position().map(|p| (w, p)))
+            .map_or(true, |(w, p)| {
+                self.gesture_recognizer.has_active_touches() || !w.tool_region().contains(&p)
+            })
+        {
+            self.handle_gesture(app, event).or_fail()?;
+        }
 
         if let Some(w) = &mut self.manipulate {
             w.handle_event(app, event).or_fail()?;
