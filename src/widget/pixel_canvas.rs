@@ -128,7 +128,7 @@ impl PixelCanvasWidget {
 
     fn render_drawn_pixels(&self, app: &App, canvas: &mut Canvas) {
         let color = app.models().config.color.get();
-        if self.marker_handler.is_neutral() {
+        if self.marker_handler.is_neutral() && app.models().tool.tool_kind() != ToolKind::Fill {
             let pixel_region = PixelRegion::from_positions(self.marker_handler.marked_pixels(app));
             let region = pixel_region.to_screen_region(app);
             canvas.draw_rectangle(region, color.into());
@@ -278,7 +278,7 @@ impl Widget for PixelCanvasWidget {
         }
 
         self.render_pixels(app, canvas);
-        if self.tool.tool_kind() == ToolKind::Draw {
+        if matches!(self.tool.tool_kind(), ToolKind::Draw | ToolKind::Fill) {
             self.render_drawn_pixels(app, canvas);
         } else if self.tool.tool_kind() == ToolKind::Select
             || (self.tool.tool_kind() == ToolKind::Erase
