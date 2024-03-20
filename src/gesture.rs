@@ -204,6 +204,10 @@ impl GestureRecognizer {
     }
 
     fn handle_one_finger_move(&mut self) -> Option<GestureEvent> {
+        if self.max_touches != 1 {
+            return None;
+        }
+
         let touch = self.touches.values_mut().next()?;
         let delta = touch.delta();
         match self.gesture {
@@ -224,6 +228,10 @@ impl GestureRecognizer {
     }
 
     fn handle_two_fingers_move(&mut self) -> Option<GestureEvent> {
+        if self.max_touches != 2 {
+            return None;
+        }
+
         match self.gesture {
             None => self.detect_two_fingers_gesture(),
             Some(GestureEvent::Pinch { .. }) => self.handle_pinch(),
