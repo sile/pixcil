@@ -185,9 +185,7 @@ impl Widget for ColorSelectorWidget {
 
         let old_background_mode = self.background.body().is_on();
         self.background.handle_event(app, event).or_fail()?;
-        if self.background.body().is_on()
-            && (old_background_mode == false || old_color != new_color)
-        {
+        if self.background.body().is_on() && (!old_background_mode || old_color != new_color) {
             if new_color.a == 0 {
                 app.models_mut().config.background_color = None;
             } else {
