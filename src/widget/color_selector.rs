@@ -22,6 +22,7 @@ pub struct ColorSelectorWidget {
     alpha: BlockWidget<SliderWidget>,
     palette: BlockWidget<ColorPaletteWidget>,
     replace: BlockWidget<ToggleWidget>,
+    background: BlockWidget<ToggleWidget>,
 }
 
 impl ColorSelectorWidget {
@@ -61,6 +62,10 @@ impl ColorSelectorWidget {
             ),
             replace: BlockWidget::new(
                 "REPLACE OLD COLOR PIXELS".parse().expect("unreachable"),
+                ToggleWidget::default_off(),
+            ),
+            background: BlockWidget::new(
+                "BACKGROUND COLOR".parse().expect("unreachable"),
                 ToggleWidget::default_off(),
             ),
         }
@@ -142,6 +147,7 @@ impl Widget for ColorSelectorWidget {
             self.palette.render_if_need(app, canvas);
         }
         self.replace.render_if_need(app, canvas);
+        self.background.render_if_need(app, canvas);
     }
 
     fn handle_event(&mut self, app: &mut App, event: &mut Event) -> Result<()> {
@@ -177,6 +183,19 @@ impl Widget for ColorSelectorWidget {
             }
         }
 
+        let old_background_mode = self.background.body().is_on();
+        self.background.handle_event(app, event).or_fail()?;
+        if self.background.body().is_on()
+            && (old_background_mode == false || old_color != new_color)
+        {
+            if new_color.a == 0 {
+                app.models_mut().config.background_color = None;
+            } else {
+                app.models_mut().config.background_color = Some(new_color);
+            }
+            app.request_redraw(app.screen_size().to_region());
+        }
+
         Ok(())
     }
 
@@ -187,6 +206,7 @@ impl Widget for ColorSelectorWidget {
             &mut self.alpha,
             &mut self.palette,
             &mut self.replace,
+            &mut self.background,
         ]
     }
 }
@@ -203,7 +223,8 @@ impl FixedSizeWidget for ColorSelectorWidget {
         } else {
             self.palette.requiring_size(app)
         };
-        let replace = self.alpha.requiring_size(app);
+        let replace = self.replace.requiring_size(app);
+        let background = self.background.requiring_size(app);
 
         Size::from_wh(
             preview
@@ -212,7 +233,7 @@ impl FixedSizeWidget for ColorSelectorWidget {
                 .max(hsv.width)
                 .max(alpha.width)
                 .max(palette.width)
-                .max(replace.width),
+                .max(replace.width + MARGIN + background.width),
             preview.height
                 + MARGIN
                 + hsv.height
@@ -223,7 +244,7 @@ impl FixedSizeWidget for ColorSelectorWidget {
                 + MARGIN
                 + palette.height
                 + MARGIN
-                + replace.height,
+                + replace.height.max(background.height),
         )
     }
 
@@ -250,8 +271,14 @@ impl FixedSizeWidget for ColorSelectorWidget {
 
             offset.y = self.palette.region().end().y + MARGIN as i32;
         }
-        let mut replace_region = Region::new(offset, self.replace.requiring_size(app));
-        replace_region.size.width = self.region.size.width;
+        let replace_region = Region::new(offset, self.replace.requiring_size(app));
         self.replace.set_region(app, replace_region);
+
+        let mut background_region = Region::new(
+            offset.move_x((MARGIN + replace_region.size.width) as i32),
+            self.background.requiring_size(app),
+        );
+        background_region.size.width += (self.region.end().x - background_region.end().x) as u32;
+        self.background.set_region(app, background_region);
     }
 }

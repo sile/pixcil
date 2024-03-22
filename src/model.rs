@@ -58,6 +58,10 @@ impl Models {
     }
 
     pub fn to_png(&self) -> Result<Vec<u8>> {
+        let bg_color = self
+            .config
+            .background_color
+            .unwrap_or(Rgba::new(0, 0, 0, 0));
         let frame_count = self.config.animation.enabled_frame_count();
         let frames = (0..frame_count)
             .map(|frame| {
@@ -66,10 +70,12 @@ impl Models {
                     .get_preview_region(&self.config, frame as usize)
                     .pixels()
                     .flat_map(|position| {
-                        let color = self
-                            .pixel_canvas
-                            .get_pixel(&self.config, position)
-                            .unwrap_or(Rgba::new(0, 0, 0, 0));
+                        let color =
+                            if let Some(c) = self.pixel_canvas.get_pixel(&self.config, position) {
+                                c.alpha_blend(bg_color)
+                            } else {
+                                bg_color
+                            };
                         [color.r, color.g, color.b, color.a].into_iter()
                     })
                     .collect::<Vec<_>>()

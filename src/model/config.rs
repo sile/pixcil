@@ -32,6 +32,7 @@ pub struct ConfigModel {
 
     pub silhouette_preview: bool,
     pub gesture: bool,
+    pub background_color: Option<Rgba>,
 }
 
 impl Serialize for ConfigModel {
@@ -50,6 +51,7 @@ impl Serialize for ConfigModel {
         self.attrs.serialize(writer).or_fail()?;
         self.silhouette_preview.serialize(writer).or_fail()?;
         self.gesture.serialize(writer).or_fail()?;
+        self.background_color.serialize(writer).or_fail()?;
         Ok(())
     }
 }
@@ -71,6 +73,7 @@ impl Deserialize for ConfigModel {
             attrs: Deserialize::deserialize_or_default(reader).or_fail()?,
             silhouette_preview: Deserialize::deserialize_or_default(reader).or_fail()?,
             gesture: Deserialize::deserialize_or_default(reader).or_fail()?,
+            background_color: Deserialize::deserialize_or_default(reader).or_fail()?,
         })
     }
 }

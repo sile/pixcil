@@ -4,7 +4,7 @@ use super::{
 use crate::{
     app::App,
     canvas_ext::CanvasExt,
-    color,
+    color::{self, CANVAS_BACKGROUND},
     event::Event,
     gesture::{GestureEvent, GestureRecognizer},
     io::IoRequest,
@@ -267,7 +267,10 @@ impl Widget for PixelCanvasWidget {
     fn render(&self, app: &App, canvas: &mut Canvas) {
         let preview_mode = app.models().preview_mode;
 
-        canvas.fill_rectangle(self.region, color::CANVAS_BACKGROUND);
+        canvas.fill_rectangle(self.region, CANVAS_BACKGROUND);
+        if let Some(bg) = app.models().config.background_color {
+            canvas.fill_rectangle(self.region, bg.into());
+        }
         if preview_mode {
             if app.models().config.animation.enabled_frame_count() > 1 {
                 self.render_frame_edges(app, canvas);

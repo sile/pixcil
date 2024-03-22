@@ -2,7 +2,7 @@ use super::{FixedSizeWidget, Widget};
 use crate::{
     app::App,
     canvas_ext::CanvasExt,
-    color,
+    color::{self, PREVIEW_BACKGROUND},
     event::Event,
     pixel::{PixelPosition, PixelRegion, PixelSize},
     region_ext::RegionExt,
@@ -172,7 +172,10 @@ impl Widget for PreviewFrameWidget {
     }
 
     fn render(&self, app: &App, canvas: &mut Canvas) {
-        canvas.fill_rectangle(self.region, color::PREVIEW_BACKGROUND);
+        canvas.fill_rectangle(self.region, PREVIEW_BACKGROUND);
+        if let Some(bg) = app.models().config.background_color {
+            canvas.fill_rectangle(self.region, bg.into());
+        }
         self.render_pixels(app, canvas);
     }
 
