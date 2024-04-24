@@ -34,9 +34,9 @@ impl Default for ToolModel {
     fn default() -> Self {
         Self {
             current: ToolKind::Draw,
-            draw: DrawTool::default(),
+            draw: DrawTool,
             erase: EraseTool,
-            select: SelectTool::default(),
+            select: SelectTool,
             r#move: MoveToolState {
                 marker: MarkerKind::Noop,
             },
