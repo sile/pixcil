@@ -6,7 +6,6 @@ use crate::{
     color,
     event::Event,
     model::tool::ToolKind,
-    window::{draw_tool::DrawToolWindow, select_tool::SelectToolWindow},
 };
 use orfail::{OrFail, Result};
 use pagurus::image::Canvas;
@@ -27,23 +26,10 @@ impl ToolBoxWidget {
             .on_selected(|state, button| {
                 if state.is_selected() {
                     let next = ToolKind::from_icon(button.icon()).or_fail()?;
+                    button.set_kind(ButtonKind::BasicPressed);
 
-                    if matches!(
-                        next,
-                        ToolKind::Pick | ToolKind::Fill | ToolKind::Erase | ToolKind::Move
-                    ) {
-                        button.set_kind(ButtonKind::BasicPressed);
-                    } else {
-                        button.set_kind(ButtonKind::BasicDeep);
-                    }
-
-                    if self.current == next {
-                        // Double clicked
-                        spawn_window(next, app).or_fail()?;
-                    } else {
-                        self.current = next;
-                        app.models_mut().tool.current = next;
-                    }
+                    self.current = next;
+                    app.models_mut().tool.current = next;
                 } else {
                     button.set_kind(ButtonKind::Basic);
                 }
@@ -61,14 +47,15 @@ impl Default for ToolBoxWidget {
             ButtonWidget::new(ButtonKind::Basic, IconId::PenStroke),
             ButtonWidget::new(ButtonKind::Basic, IconId::Bucket),
             ButtonWidget::new(ButtonKind::Basic, IconId::Erase),
-            ButtonWidget::new(ButtonKind::Basic, IconId::Select),
+            ButtonWidget::new(ButtonKind::Basic, IconId::Lasso),
             ButtonWidget::new(ButtonKind::Basic, IconId::Move),
         ];
-        buttons[1].set_kind(ButtonKind::BasicDeep);
 
         buttons[0].set_disabled_callback(|app| app.models().tool.current == ToolKind::Pick);
+        buttons[1].set_disabled_callback(|app| app.models().tool.current == ToolKind::Draw);
         buttons[2].set_disabled_callback(|app| app.models().tool.current == ToolKind::Fill);
         buttons[3].set_disabled_callback(|app| app.models().tool.current == ToolKind::Erase);
+        buttons[4].set_disabled_callback(|app| app.models().tool.current == ToolKind::Select);
         buttons[5].set_disabled_callback(|app| app.models().tool.current == ToolKind::Move);
 
         Self {
@@ -110,18 +97,6 @@ impl Widget for ToolBoxWidget {
             self.handle_tool_change(app).or_fail()?;
         }
 
-        const DRAW_INDEX: usize = 1;
-        let draw_icon = app.models().tool.draw.icon();
-        if self.tools.buttons()[DRAW_INDEX].icon() != draw_icon {
-            self.tools.buttons_mut()[DRAW_INDEX].set_icon(app, draw_icon);
-        }
-
-        const SELECT_INDEX: usize = 4;
-        let select_icon = app.models().tool.select.icon();
-        if self.tools.buttons()[SELECT_INDEX].icon() != select_icon {
-            self.tools.buttons_mut()[SELECT_INDEX].set_icon(app, select_icon);
-        }
-
         for child in self.children() {
             child.handle_event_after(app).or_fail()?;
         }
@@ -141,20 +116,5 @@ impl FixedSizeWidget for ToolBoxWidget {
     fn set_position(&mut self, app: &App, position: Position) {
         self.region = Region::new(position, self.requiring_size(app));
         self.tools.set_position(app, position + MARGIN as i32);
-    }
-}
-
-fn spawn_window(tool: ToolKind, app: &mut App) -> Result<()> {
-    match tool {
-        ToolKind::Draw => app
-            .spawn_window(DrawToolWindow::new(app).or_fail()?)
-            .or_fail(),
-        ToolKind::Erase => Ok(()),
-        ToolKind::Select => app
-            .spawn_window(SelectToolWindow::new(app).or_fail()?)
-            .or_fail(),
-        ToolKind::Move => Ok(()),
-        ToolKind::Pick => Ok(()),
-        ToolKind::Fill => Ok(()),
     }
 }

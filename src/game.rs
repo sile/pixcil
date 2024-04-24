@@ -1,5 +1,4 @@
 use crate::gesture::PointerEvent;
-use crate::png::decode_sprite;
 use crate::tags::RENDERING_TAG;
 use crate::{
     app::App,
@@ -188,14 +187,6 @@ impl<S: System> Game<S> for PixcilGame {
                 self.handle_pixcil_event(system, Some(Event::Noop))
                     .or_fail()?;
 
-                Ok(())
-            }
-            "importImage" => {
-                let image = decode_sprite(data).or_fail()?;
-                let event = Event::Import { image };
-                let app = self.app.as_mut().or_fail()?;
-                app.request_redraw(app.screen_size().to_region());
-                self.handle_pixcil_event(system, Some(event)).or_fail()?;
                 Ok(())
             }
             "disableSaveWorkspaceButton" => {

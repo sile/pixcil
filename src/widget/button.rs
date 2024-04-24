@@ -270,12 +270,6 @@ impl ButtonState {
                 ButtonState::Pressed => offset.move_y(8),
                 ButtonState::Clicked => offset.move_y(8),
             },
-            ButtonKind::BasicDeep => match self {
-                ButtonState::Neutral => offset.move_y(8),
-                ButtonState::Focused => offset.move_y(12),
-                ButtonState::Pressed => offset.move_y(16),
-                ButtonState::Clicked => offset.move_y(16),
-            },
             ButtonKind::BasicPressed => offset.move_y(8),
             ButtonKind::SliderLeft => match self {
                 ButtonState::Neutral => offset,

@@ -196,7 +196,6 @@ class App {
 
       type RequestJson = "saveWorkspace"
           | "loadWorkspace"
-          | "importImage"
           | { inputNumber: { id: number } }
           | { inputSize: { id: number } }
           | "vibrate";
@@ -210,9 +209,6 @@ class App {
           break;
         case "loadWorkspace":
           this.loadWorkspace();
-          break;
-        case "importImage":
-          this.importImage();
           break;
         case "vibrate":
           if ("vibrate" in window.navigator) {
@@ -245,29 +241,6 @@ class App {
     element.href = URL.createObjectURL(blob);
 
     element.click();
-  }
-
-  private importImage() {
-    const input = document.createElement("input");
-    input.setAttribute("type", "file");
-    input.setAttribute("accept", "image/png");
-    input.onchange = async () => {
-      const files = input.files;
-      if (files === null || files.length === 0) {
-        return;
-      }
-
-      const file = files[0];
-
-      const data = new Uint8Array(await file.arrayBuffer());
-      try {
-        this.game.command(this.system, "importImage", data);
-      } catch (e) {
-        console.warn(e);
-        alert("Failed to load PNG file");
-      }
-    };
-    input.click();
   }
 
   private loadWorkspace() {

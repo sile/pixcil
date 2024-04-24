@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Removed
+
+- Remove sub-tool widgets for drawing and selecting
+  - The following tools are deleted:
+    - Draw line
+    - Draw rectangle
+    - Draw circle
+    - Select rectangle
+    - Import PNG image
+
 ## [0.6.0] - 2024-03-23
 
 ### Fixed

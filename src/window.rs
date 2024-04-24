@@ -4,9 +4,7 @@ use pagurus::{spatial::Region, Result};
 
 pub mod color_selector;
 pub mod config;
-pub mod draw_tool;
 pub mod main;
-pub mod select_tool;
 pub mod widget;
 
 pub trait Window: 'static + std::fmt::Debug {

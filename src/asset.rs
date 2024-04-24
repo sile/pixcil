@@ -86,7 +86,6 @@ impl Assets {
     pub fn get_button(&self, kind: ButtonKind) -> &Button {
         match kind {
             ButtonKind::Basic => &self.buttons.basic,
-            ButtonKind::BasicDeep => &self.buttons.basic_deep,
             ButtonKind::BasicPressed => &self.buttons.basic_pressed,
             ButtonKind::SliderLeft => &self.buttons.slider_left,
             ButtonKind::SliderRight => &self.buttons.slider_right,
@@ -140,7 +139,6 @@ pub enum IconId {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ButtonKind {
     Basic,
-    BasicDeep,
     BasicPressed,
     SliderLeft,
     SliderRight,
@@ -151,7 +149,6 @@ impl ButtonKind {
     pub fn size(self) -> Size {
         match self {
             ButtonKind::Basic => Size::square(64),
-            ButtonKind::BasicDeep => Size::square(64),
             ButtonKind::BasicPressed => Size::square(64),
             ButtonKind::SliderLeft => Size::square(32),
             ButtonKind::SliderRight => Size::square(32),

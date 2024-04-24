@@ -298,11 +298,6 @@ impl Widget for PixelCanvasWidget {
     }
 
     fn handle_event(&mut self, app: &mut App, event: &mut Event) -> Result<()> {
-        if let Event::Import { image } = event {
-            self.manipulate = Some(ManipulateWidget::with_imported_image(app, image));
-            return Ok(());
-        }
-
         if self
             .manipulate
             .as_ref()

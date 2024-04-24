@@ -85,31 +85,15 @@ impl ToolKind {
 }
 
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
-pub enum DrawTool {
-    #[default]
-    PenStroke,
-    PenLine,
-    PenRectangle,
-    PenCircle,
-}
+pub struct DrawTool;
 
 impl DrawTool {
     fn marker(self) -> MarkerKind {
-        match self {
-            DrawTool::PenStroke => MarkerKind::Stroke,
-            DrawTool::PenLine => MarkerKind::Line,
-            DrawTool::PenRectangle => MarkerKind::Rectangle,
-            DrawTool::PenCircle => MarkerKind::Ellipse,
-        }
+        MarkerKind::Stroke
     }
 
     pub fn icon(self) -> IconId {
-        match self {
-            DrawTool::PenStroke => IconId::PenStroke,
-            DrawTool::PenLine => IconId::PenLine,
-            DrawTool::PenRectangle => IconId::PenRectangle,
-            DrawTool::PenCircle => IconId::PenCircle,
-        }
+        IconId::PenStroke
     }
 }
 
@@ -127,25 +111,15 @@ impl EraseTool {
 }
 
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
-pub enum SelectTool {
-    Rectangle,
-    #[default]
-    Lasso,
-}
+pub struct SelectTool;
 
 impl SelectTool {
     fn marker(self) -> MarkerKind {
-        match self {
-            SelectTool::Rectangle => MarkerKind::FillRectangle,
-            SelectTool::Lasso => MarkerKind::Lasso,
-        }
+        MarkerKind::Lasso
     }
 
     pub fn icon(self) -> IconId {
-        match self {
-            SelectTool::Rectangle => IconId::Select,
-            SelectTool::Lasso => IconId::Lasso,
-        }
+        IconId::Lasso
     }
 }
 

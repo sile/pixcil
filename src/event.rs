@@ -1,15 +1,11 @@
 use crate::gesture::{GestureEvent, PointerEvent};
 use pagurus::event::{Event as PagurusEvent, MouseEvent, TimeoutTag};
-use pagurus::image::Sprite;
 use pagurus::spatial::Position;
 use pagurus::spatial::{Contains, Region};
 
 #[derive(Debug)]
 pub enum Event {
     Timeout(TimeoutTag),
-    Import {
-        image: Sprite,
-    },
     Input {
         id: InputId,
         text: String,
