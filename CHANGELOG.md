@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.0] - 2024-08-06
+
 ### Removed
 
 - Remove sub-tool widgets for drawing and selecting
