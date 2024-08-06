@@ -4,7 +4,7 @@
   "publisher": "sile",
   "license": "MIT",
   "description": "Pixel art editor & PNG file viewer",
-  "version": "0.0.13",
+  "version": "0.7.0",
   "engines": {
     "vscode": "^1.74.0"
   },
@@ -52,19 +52,11 @@
     "compile-web": "webpack",
     "watch-web": "webpack --watch",
     "package-web": "webpack --mode production --devtool hidden-source-map",
-    "lint": "eslint src --ext ts",
     "run-in-browser": "vscode-test-web --browserType=chromium --extensionDevelopmentPath=. ."
   },
   "devDependencies": {
-    "@types/mocha": "^10.0.1",
     "@types/vscode": "^1.74.0",
     "@types/webpack-env": "^1.18.0",
-    "@typescript-eslint/eslint-plugin": "^5.45.0",
-    "@typescript-eslint/parser": "^5.45.0",
-    "assert": "^2.0.0",
-    "eslint": "^8.28.0",
-    "mocha": "^10.1.0",
-    "prettier": "^2.8.1",
     "process": "^0.11.10",
     "ts-loader": "^9.4.1",
     "typescript": "^4.9.3",
