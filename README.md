@@ -2,6 +2,7 @@ Pixcil
 ======
 
 [![pixcil](https://img.shields.io/crates/v/pixcil.svg)](https://crates.io/crates/pixcil)
+[![vscode version](https://img.shields.io/vscode-marketplace/v/sile.pixcil.svg?label=vscode)](https://marketplace.visualstudio.com/items?itemName=sile.pixcil)
 [![Actions Status](https://github.com/sile/pixcil/workflows/CI/badge.svg)](https://github.com/sile/pixcil/actions)
 ![License](https://img.shields.io/crates/l/pixcil)
 
