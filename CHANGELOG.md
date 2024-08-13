@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Remove unneccecary debug print
+- Remove unnecessary debug print
 
 ## [0.7.0] - 2024-08-06
 
