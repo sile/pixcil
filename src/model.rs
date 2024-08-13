@@ -1,6 +1,6 @@
 use self::{config::ConfigModel, pixel_canvas::PixelCanvasModel, tool::ToolModel};
 use crate::pixel::PixelSize;
-use crate::png::decode_sprite;
+use crate::png::decode_sprites;
 use crate::{
     pixel::{Pixel, PixelPosition},
     serialize::{Deserialize, Serialize},
@@ -130,22 +130,45 @@ impl Models {
         }
 
         // Load the image with the default settings.
-        //
-        // TODO: Support animated PNG
+        let images = decode_sprites(png_data).or_fail()?;
+        (!images.is_empty()).or_fail()?;
+
+        let mut image_size = images[0].size();
+        for image in &images {
+            if image_size.width < image.size().width {
+                image_size.width = image.size().width;
+            }
+            if image_size.height < image.size().height {
+                image_size.height = image.size().height;
+            }
+        }
+
         let mut models = Self::default();
-        let image = decode_sprite(png_data).or_fail()?;
-        models
-            .pixel_canvas
-            .draw_pixels(
-                &models.config,
-                image.pixels().map(|(pos, rgba)| {
-                    Pixel::new(PixelPosition::from_xy(pos.x as i16, pos.y as i16), rgba)
-                }),
-            )
-            .or_fail()?;
-        models.pixel_canvas.forget_oldest_command();
-        models.config.frame.set_width(image.size().width as u16);
-        models.config.frame.set_height(image.size().height as u16);
+        models.config.frame.set_width(image_size.width as u16);
+        models.config.frame.set_height(image_size.height as u16);
+
+        if images.len() > 1 {
+            models.config.animation.set_enabled(true);
+            models.config.animation.set_fps(10); // TODO: Consider frame delay.
+        }
+        for (i, image) in images.iter().enumerate() {
+            models
+                .pixel_canvas
+                .draw_pixels(
+                    &models.config,
+                    image.pixels().map(|(pos, rgba)| {
+                        Pixel::new(
+                            PixelPosition::from_xy(
+                                pos.x as i16 + (i * image_size.width as usize) as i16,
+                                pos.y as i16,
+                            ),
+                            rgba,
+                        )
+                    }),
+                )
+                .or_fail()?;
+            models.pixel_canvas.forget_oldest_command();
+        }
 
         Ok(models)
     }
