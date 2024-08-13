@@ -16,11 +16,11 @@ pub struct PointerEvent {
 impl PointerEvent {
     pub fn to_mouse_event(self) -> MouseEvent {
         let position = self.position;
-        pagurus::dbg!(match self.event_type {
+        match self.event_type {
             EventType::Pointerdown => MouseEvent::Down { position },
             EventType::Pointermove => MouseEvent::Move { position },
             _ => MouseEvent::Up { position },
-        })
+        }
     }
 
     pub fn is_duplicate(self, other: Self) -> bool {
