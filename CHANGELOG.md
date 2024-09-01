@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fix a bug in Safari that sometimes causes image files to fail to load (input.onchange event was not triggered)
 - Remove unnecessary debug print
 
 ## [0.7.0] - 2024-08-06
