@@ -247,7 +247,13 @@ class App {
     const input = document.createElement("input");
     input.setAttribute("type", "file");
     input.setAttribute("accept", "image/png");
+
+    // [NOTE] This is necessary to trigger the onchange event in Safari.
+    document.body.appendChild(input);
+
     input.onchange = async () => {
+      document.body.removeChild(input);
+
       const files = input.files;
       if (files === null || files.length === 0) {
         return;
@@ -263,6 +269,10 @@ class App {
         alert("Failed to load workspace file");
       }
     };
+    input.oncancel = async () => {
+      document.body.removeChild(input);
+    };
+
     input.click();
   }
 
