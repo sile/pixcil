@@ -41,7 +41,7 @@ impl ConfigWidget {
         let silhouette_preview = app.models().config.silhouette_preview;
         let layer = app.models().config.layer;
         let animation = app.models().config.animation;
-        let apng = app.models().config.apng;
+        let apng = app.models().config.apng();
         let gesture = app.models().config.gesture;
         Self {
             region: Region::default(),
@@ -186,7 +186,7 @@ impl Widget for ConfigWidget {
             .set_fps(self.fps.body().value() as u8);
 
         self.apng.handle_event(app, event).or_fail()?;
-        app.models_mut().config.apng = self.apng.body().is_on();
+        app.models_mut().config.apng = Some(self.apng.body().is_on());
 
         if animation != app.models_mut().config.animation {
             app.request_redraw(app.screen_size().to_region());
@@ -224,8 +224,9 @@ impl FixedSizeWidget for ConfigWidget {
         // Frame size
         let row1 = self.frame_size.requiring_size(app);
 
-        // Pixel size
-        let row2 = self.pixel_size.requiring_size(app);
+        // Pixel size / gesture
+        let mut row2 = self.pixel_size.requiring_size(app);
+        row2.width += MARGIN_X + self.gesture.requiring_size(app).width;
 
         // Preview
         let mut row3 = self.frame_preview.requiring_size(app);
@@ -238,24 +239,9 @@ impl FixedSizeWidget for ConfigWidget {
         row4.width += MARGIN_X + self.fps.requiring_size(app).width;
         row4.width += MARGIN_X + self.apng.requiring_size(app).width;
 
-        // gesture
-        let row5 = self.gesture.requiring_size(app);
-
         Size::from_wh(
-            row1.width
-                .max(row2.width)
-                .max(row3.width)
-                .max(row4.width)
-                .max(row5.width),
-            row1.height
-                + MARGIN_Y
-                + row2.height
-                + MARGIN_Y
-                + row3.height
-                + MARGIN_Y
-                + row4.height
-                + MARGIN_Y
-                + row5.height,
+            row1.width.max(row2.width).max(row3.width).max(row4.width),
+            row1.height + MARGIN_Y + row2.height + MARGIN_Y + row3.height + MARGIN_Y + row4.height,
         ) + MARGIN_X * 2
     }
 
@@ -264,7 +250,7 @@ impl FixedSizeWidget for ConfigWidget {
 
         let mut region = self.region.without_margin(MARGIN_X);
 
-        // Size
+        // Size, gesture
         let mut frame_size_region = region;
         frame_size_region.size = self.frame_size.requiring_size(app);
         self.frame_size.set_region(app, frame_size_region);
@@ -273,7 +259,13 @@ impl FixedSizeWidget for ConfigWidget {
         let mut pixel_size_region = region;
         pixel_size_region.size = self.pixel_size.requiring_size(app);
         self.pixel_size.set_region(app, pixel_size_region);
-        region.consume_y(pixel_size_region.size.height + MARGIN_Y);
+
+        let mut gesture_region = region;
+        gesture_region.position.x = pixel_size_region.end().x + MARGIN_X as i32;
+        gesture_region.size = self.gesture.requiring_size(app);
+        self.gesture.set_region(app, gesture_region);
+
+        region.consume_y(gesture_region.size.height + MARGIN_Y);
 
         // Preview
         let mut frame_preview_region = region;
@@ -313,12 +305,5 @@ impl FixedSizeWidget for ConfigWidget {
         apng_region.position.x = fps_region.end().x + MARGIN_X as i32;
         apng_region.size = self.apng.requiring_size(app);
         self.apng.set_region(app, apng_region);
-
-        region.consume_y(apng_region.size.height + MARGIN_Y);
-
-        // gesture
-        let mut gesture_region = region;
-        gesture_region.size = self.gesture.requiring_size(app);
-        self.gesture.set_region(app, gesture_region);
     }
 }

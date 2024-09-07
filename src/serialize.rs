@@ -113,19 +113,6 @@ pub trait Deserialize: Sized {
             Self::deserialize(&mut buf.chain(reader)).or_fail()
         }
     }
-
-    fn deserialize_or<R: Read>(reader: &mut R, default: Self) -> Result<Self>
-    where
-        Self: Default,
-    {
-        let mut buf = [0];
-        let n = reader.read(&mut buf).or_fail()?;
-        if n == 0 {
-            Ok(default)
-        } else {
-            Self::deserialize(&mut buf.chain(reader)).or_fail()
-        }
-    }
 }
 
 impl<const N: usize> Deserialize for [u8; N] {
