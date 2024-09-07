@@ -33,6 +33,13 @@ pub struct ConfigModel {
     pub silhouette_preview: bool,
     pub gesture: bool,
     pub background_color: Option<Rgba>,
+    pub apng: Option<bool>,
+}
+
+impl ConfigModel {
+    pub fn apng(&self) -> bool {
+        self.apng.unwrap_or(true)
+    }
 }
 
 impl Serialize for ConfigModel {
@@ -52,6 +59,7 @@ impl Serialize for ConfigModel {
         self.silhouette_preview.serialize(writer).or_fail()?;
         self.gesture.serialize(writer).or_fail()?;
         self.background_color.serialize(writer).or_fail()?;
+        self.apng.serialize(writer).or_fail()?;
         Ok(())
     }
 }
@@ -74,6 +82,7 @@ impl Deserialize for ConfigModel {
             silhouette_preview: Deserialize::deserialize_or_default(reader).or_fail()?,
             gesture: Deserialize::deserialize_or_default(reader).or_fail()?,
             background_color: Deserialize::deserialize_or_default(reader).or_fail()?,
+            apng: Deserialize::deserialize_or_default(reader).or_fail()?,
         })
     }
 }

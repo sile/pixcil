@@ -28,6 +28,7 @@ pub struct ConfigWidget {
     layer_enable: BlockWidget<ToggleWidget>,
     animation_enable: BlockWidget<ToggleWidget>,
     fps: BlockWidget<NumberBoxWidget>,
+    apng: BlockWidget<ToggleWidget>,
 
     // Gesture settings
     gesture: BlockWidget<ToggleWidget>,
@@ -40,6 +41,7 @@ impl ConfigWidget {
         let silhouette_preview = app.models().config.silhouette_preview;
         let layer = app.models().config.layer;
         let animation = app.models().config.animation;
+        let apng = app.models().config.apng();
         let gesture = app.models().config.gesture;
         Self {
             region: Region::default(),
@@ -85,6 +87,10 @@ impl ConfigWidget {
                     Animation::MAX_FPS as u32,
                 ),
             ),
+            apng: BlockWidget::new(
+                "APNG".parse().expect("unreachable"),
+                ToggleWidget::new(apng),
+            ),
 
             // Gesture
             gesture: BlockWidget::new(
@@ -114,6 +120,7 @@ impl Widget for ConfigWidget {
         self.layer_enable.render_if_need(app, canvas);
         self.animation_enable.render_if_need(app, canvas);
         self.fps.render_if_need(app, canvas);
+        self.apng.render_if_need(app, canvas);
 
         // Gesture
         self.gesture.render_if_need(app, canvas);
@@ -177,6 +184,10 @@ impl Widget for ConfigWidget {
             .config
             .animation
             .set_fps(self.fps.body().value() as u8);
+
+        self.apng.handle_event(app, event).or_fail()?;
+        app.models_mut().config.apng = Some(self.apng.body().is_on());
+
         if animation != app.models_mut().config.animation {
             app.request_redraw(app.screen_size().to_region());
         }
@@ -201,6 +212,7 @@ impl Widget for ConfigWidget {
             &mut self.layer_enable,
             &mut self.animation_enable,
             &mut self.fps,
+            &mut self.apng,
             // Gesture
             &mut self.gesture,
         ]
@@ -212,19 +224,20 @@ impl FixedSizeWidget for ConfigWidget {
         // Frame size
         let row1 = self.frame_size.requiring_size(app);
 
-        // Pixel size
-        let row2 = self.pixel_size.requiring_size(app);
+        // Pixel size / gesture
+        let mut row2 = self.pixel_size.requiring_size(app);
+        row2.width += MARGIN_X + self.gesture.requiring_size(app).width;
 
         // Preview
         let mut row3 = self.frame_preview.requiring_size(app);
         row3.width += MARGIN_X + self.frame_preview_scale.requiring_size(app).width;
         row3.width += MARGIN_X + self.silhouette.requiring_size(app).width;
 
-        // Layer / animation / gesture
+        // Layer / animation
         let mut row4 = self.layer_enable.requiring_size(app);
         row4.width += MARGIN_X + self.animation_enable.requiring_size(app).width;
         row4.width += MARGIN_X + self.fps.requiring_size(app).width;
-        row4.width += MARGIN_X + self.gesture.requiring_size(app).width;
+        row4.width += MARGIN_X + self.apng.requiring_size(app).width;
 
         Size::from_wh(
             row1.width.max(row2.width).max(row3.width).max(row4.width),
@@ -237,7 +250,7 @@ impl FixedSizeWidget for ConfigWidget {
 
         let mut region = self.region.without_margin(MARGIN_X);
 
-        // Size
+        // Size, gesture
         let mut frame_size_region = region;
         frame_size_region.size = self.frame_size.requiring_size(app);
         self.frame_size.set_region(app, frame_size_region);
@@ -246,7 +259,13 @@ impl FixedSizeWidget for ConfigWidget {
         let mut pixel_size_region = region;
         pixel_size_region.size = self.pixel_size.requiring_size(app);
         self.pixel_size.set_region(app, pixel_size_region);
-        region.consume_y(pixel_size_region.size.height + MARGIN_Y);
+
+        let mut gesture_region = region;
+        gesture_region.position.x = pixel_size_region.end().x + MARGIN_X as i32;
+        gesture_region.size = self.gesture.requiring_size(app);
+        self.gesture.set_region(app, gesture_region);
+
+        region.consume_y(gesture_region.size.height + MARGIN_Y);
 
         // Preview
         let mut frame_preview_region = region;
@@ -266,7 +285,7 @@ impl FixedSizeWidget for ConfigWidget {
 
         region.consume_y(frame_preview_region.size.height + MARGIN_Y);
 
-        // Layer / animation / gesture
+        // Layer / animation
         let mut layer_enable_region = region;
         layer_enable_region.size = self.layer_enable.requiring_size(app);
         self.layer_enable.set_region(app, layer_enable_region);
@@ -282,9 +301,9 @@ impl FixedSizeWidget for ConfigWidget {
         fps_region.size = self.fps.requiring_size(app);
         self.fps.set_region(app, fps_region);
 
-        let mut gesture_region = region;
-        gesture_region.position.x = fps_region.end().x + MARGIN_X as i32;
-        gesture_region.size = self.gesture.requiring_size(app);
-        self.gesture.set_region(app, gesture_region);
+        let mut apng_region = region;
+        apng_region.position.x = fps_region.end().x + MARGIN_X as i32;
+        apng_region.size = self.apng.requiring_size(app);
+        self.apng.set_region(app, apng_region);
     }
 }
