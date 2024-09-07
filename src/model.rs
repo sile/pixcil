@@ -62,8 +62,8 @@ impl Models {
             .config
             .background_color
             .unwrap_or(Rgba::new(0, 0, 0, 0));
-        let frame_count = self.config.animation.enabled_frame_count();
-        let frames = (0..frame_count)
+        let mut frame_count = self.config.animation.enabled_frame_count();
+        let mut frames = (0..frame_count)
             .map(|frame| {
                 self.config
                     .frame
@@ -81,7 +81,21 @@ impl Models {
                     .collect::<Vec<_>>()
             })
             .collect::<Vec<_>>();
-        let image_size = self.config.frame.get_base_region().size();
+        let mut image_size = self.config.frame.get_base_region().size();
+        if !self.config.apng() {
+            let mut sprite_sheet_frame = Vec::new();
+            for row in 0..image_size.height {
+                for frame in &frames {
+                    let row_start = row as usize * image_size.width as usize * 4;
+                    let row_end = row_start + image_size.width as usize * 4;
+                    sprite_sheet_frame.extend_from_slice(&frame[row_start..row_end]);
+                }
+            }
+
+            frames = vec![sprite_sheet_frame];
+            image_size.width *= frame_count as u16;
+            frame_count = 1;
+        }
 
         let mut metadata = Vec::new();
         self.serialize(&mut metadata).or_fail()?;
