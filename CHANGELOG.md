@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add an `APNG` setting to switch the export image format between APNG and sprite sheet (a plain PNG file with animation frames lying adjacently)
+
 ### Fixed
 
 - Fix a bug in Safari that sometimes causes image files to fail to load (input.onchange event was not triggered)
