@@ -93,7 +93,7 @@ impl Models {
             }
 
             frames = vec![sprite_sheet_frame];
-            image_size.width *= frame_count as u16;
+            image_size.width *= frame_count;
             frame_count = 1;
         }
 
