@@ -12,7 +12,7 @@ pub trait CanvasExt {
     fn draw_number(&mut self, position: Position, number: u32, digits: &[Sprite; 10]) -> Position;
 }
 
-impl<'a> CanvasExt for Canvas<'a> {
+impl CanvasExt for Canvas<'_> {
     fn draw_vertical_line(&mut self, start: Position, height: u32, color: Color) {
         for y in start.y..start.y + height as i32 {
             self.draw_pixel(Position::from_xy(start.x, y), color);

@@ -33,7 +33,7 @@ pub struct PixelCanvasWidget {
 impl PixelCanvasWidget {
     pub fn is_operating(&self) -> bool {
         self.marker_handler.is_operating()
-            || self.manipulate.as_ref().map_or(false, |x| x.is_dragging())
+            || self.manipulate.as_ref().is_some_and(|x| x.is_dragging())
             || self.gesture_recognizer.has_active_touches()
     }
 
@@ -302,7 +302,7 @@ impl Widget for PixelCanvasWidget {
             .manipulate
             .as_ref()
             .and_then(|w| event.position().map(|p| (w, p)))
-            .map_or(true, |(w, p)| {
+            .is_none_or(|(w, p)| {
                 self.gesture_recognizer.has_active_touches() || !w.tool_region().contains(&p)
             })
         {

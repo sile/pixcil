@@ -93,7 +93,7 @@ impl ButtonWidget {
     }
 
     pub fn is_disabled(&self, app: &App) -> bool {
-        self.disabled.map_or(false, |f| f(app))
+        self.disabled.is_some_and(|f| f(app))
     }
 
     pub fn number(&self, app: &App) -> u32 {
