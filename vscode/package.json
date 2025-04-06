@@ -29,9 +29,6 @@
     "color": "#fafcfc",
     "theme": "light"
   },
-  "sponsor": {
-    "url": "https://github.com/sponsors/sile"
-  },
   "activationEvents": [],
   "contributes": {
     "customEditors": [
