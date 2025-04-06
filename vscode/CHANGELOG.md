@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.0] - 2025-04-06
+
+### Added
+
+- Add an `APNG` setting to switch the export image format between APNG and sprite sheet (a plain PNG file with animation frames lying adjacently)
+
+### Fixed
+
 - Remove unnecessary debug print
 
 ## [0.7.0] - 2024-08-06
