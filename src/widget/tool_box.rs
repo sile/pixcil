@@ -1,4 +1,4 @@
-use super::{button::ButtonWidget, select_box::SelectBoxWidget, FixedSizeWidget, Widget};
+use super::{FixedSizeWidget, Widget, button::ButtonWidget, select_box::SelectBoxWidget};
 use crate::{
     app::App,
     asset::{ButtonKind, IconId},

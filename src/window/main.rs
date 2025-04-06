@@ -5,8 +5,8 @@ use crate::{
     color,
     event::Event,
     widget::{
-        bottom_bar::BottomBarWidget, pixel_canvas::PixelCanvasWidget, preview::PreviewWidget,
-        side_bar::SideBarWidget, FixedSizeWidget, VariableSizeWidget, Widget,
+        FixedSizeWidget, VariableSizeWidget, Widget, bottom_bar::BottomBarWidget,
+        pixel_canvas::PixelCanvasWidget, preview::PreviewWidget, side_bar::SideBarWidget,
     },
 };
 use orfail::{OrFail, Result};

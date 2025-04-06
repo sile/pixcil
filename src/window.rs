@@ -1,6 +1,6 @@
 use crate::{app::App, event::Event};
 use pagurus::image::Canvas;
-use pagurus::{spatial::Region, Result};
+use pagurus::{Result, spatial::Region};
 
 pub mod color_selector;
 pub mod config;

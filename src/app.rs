@@ -4,9 +4,9 @@ use crate::{
 };
 use orfail::OrFail;
 use pagurus::{
+    Result, System,
     event::TimeoutTag,
     spatial::{Region, Size},
-    Result, System,
 };
 use std::{collections::VecDeque, time::Duration};
 

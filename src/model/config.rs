@@ -518,11 +518,7 @@ impl Layer {
     }
 
     pub fn enabled_count(self) -> u16 {
-        if self.enabled {
-            self.count
-        } else {
-            1
-        }
+        if self.enabled { self.count } else { 1 }
     }
 
     pub fn set_enabled(&mut self, enabled: bool) {
@@ -713,11 +709,7 @@ impl Animation {
     }
 
     pub fn enabled_frame_count(self) -> u16 {
-        if self.enabled {
-            self.frame_count
-        } else {
-            1
-        }
+        if self.enabled { self.frame_count } else { 1 }
     }
 
     pub fn set_frame_count(&mut self, n: u16) {

@@ -1,4 +1,4 @@
-use super::{manipulate_tool::ManipulateToolWidget, FixedSizeWidget, VariableSizeWidget, Widget};
+use super::{FixedSizeWidget, VariableSizeWidget, Widget, manipulate_tool::ManipulateToolWidget};
 use crate::{
     app::App,
     canvas_ext::CanvasExt,

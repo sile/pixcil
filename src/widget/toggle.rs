@@ -5,8 +5,8 @@ use crate::{
 };
 use pagurus::image::Canvas;
 use pagurus::{
-    spatial::{Contains, Position, Region, Size},
     Result,
+    spatial::{Contains, Position, Region, Size},
 };
 
 #[derive(Debug, Default)]

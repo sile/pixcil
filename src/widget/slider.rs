@@ -1,4 +1,4 @@
-use super::{button::ButtonWidget, number_box::NumberBoxWidget, FixedSizeWidget, Widget};
+use super::{FixedSizeWidget, Widget, button::ButtonWidget, number_box::NumberBoxWidget};
 use crate::{
     app::App,
     asset::{ButtonKind, IconId, Text},

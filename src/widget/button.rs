@@ -7,8 +7,8 @@ use crate::{
 };
 use pagurus::image::{Canvas, Sprite};
 use pagurus::{
-    spatial::{Contains, Position, Region, Size},
     Result,
+    spatial::{Contains, Position, Region, Size},
 };
 
 const DISABLED_ALPHA: u8 = 100;

@@ -1,4 +1,4 @@
-use super::{button::ButtonWidget, FixedSizeWidget, Widget};
+use super::{FixedSizeWidget, Widget, button::ButtonWidget};
 use crate::{app::App, event::Event};
 use orfail::{OrFail, Result};
 use pagurus::image::Canvas;

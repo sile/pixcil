@@ -5,7 +5,7 @@ use crate::{
     event::Event,
     io::Input,
     model::Models,
-    window::{main::MainWindow, Window},
+    window::{Window, main::MainWindow},
 };
 use orfail::OrFail;
 #[cfg(feature = "auto-scaling")]
@@ -13,7 +13,7 @@ use pagurus::fixed_window::FixedWindow;
 use pagurus::image::Canvas;
 #[cfg(feature = "auto-scaling")]
 use pagurus::spatial::Size;
-use pagurus::{event::Event as PagurusEvent, video::VideoFrame, Game, Result, System};
+use pagurus::{Game, Result, System, event::Event as PagurusEvent, video::VideoFrame};
 use std::time::Duration;
 
 #[cfg(target_arch = "wasm32")]

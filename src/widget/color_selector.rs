@@ -1,8 +1,8 @@
 use super::color_palette::ColorPaletteWidget;
 use super::{
-    block::BlockWidget, hsv_selector::HsvSelectorWidget, rgb_selector,
-    rgb_selector::RgbSelectorWidget, slider::SliderWidget, toggle::ToggleWidget, FixedSizeWidget,
-    VariableSizeWidget, Widget,
+    FixedSizeWidget, VariableSizeWidget, Widget, block::BlockWidget,
+    hsv_selector::HsvSelectorWidget, rgb_selector, rgb_selector::RgbSelectorWidget,
+    slider::SliderWidget, toggle::ToggleWidget,
 };
 use crate::{app::App, canvas_ext::CanvasExt, color, event::Event};
 use orfail::{OrFail, Result};

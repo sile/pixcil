@@ -1,6 +1,6 @@
 use super::{
-    save_load::SaveLoadWidget, undo_redo::UndoRedoWidget, zoom::ZoomWidget, FixedSizeWidget,
-    VariableSizeWidget, Widget,
+    FixedSizeWidget, VariableSizeWidget, Widget, save_load::SaveLoadWidget,
+    undo_redo::UndoRedoWidget, zoom::ZoomWidget,
 };
 use crate::{app::App, event::Event};
 use orfail::{OrFail, Result};

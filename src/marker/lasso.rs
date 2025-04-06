@@ -1,4 +1,4 @@
-use super::{stroke::StrokeMarker, Mark, MouseState};
+use super::{Mark, MouseState, stroke::StrokeMarker};
 use crate::{
     app::App,
     pixel::{PixelPosition, PixelRegion},

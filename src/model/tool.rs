@@ -1,6 +1,6 @@
 use crate::{asset::IconId, marker::MarkerKind};
-use pagurus::image::Rgba;
 use pagurus::Result;
+use pagurus::image::Rgba;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ToolModel {

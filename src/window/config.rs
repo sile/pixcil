@@ -1,4 +1,4 @@
-use super::{widget::WidgetWindow, Window};
+use super::{Window, widget::WidgetWindow};
 use crate::{app::App, event::Event, widget::config::ConfigWidget};
 use orfail::{OrFail, Result};
 use pagurus::image::Canvas;

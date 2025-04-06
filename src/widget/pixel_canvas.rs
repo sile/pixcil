@@ -1,5 +1,5 @@
 use super::{
-    manipulate::ManipulateWidget, move_camera::MoveCameraWidget, VariableSizeWidget, Widget,
+    VariableSizeWidget, Widget, manipulate::ManipulateWidget, move_camera::MoveCameraWidget,
 };
 use crate::{
     app::App,

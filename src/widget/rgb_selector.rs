@@ -1,4 +1,4 @@
-use super::{slider::SliderWidget, FixedSizeWidget, Widget};
+use super::{FixedSizeWidget, Widget, slider::SliderWidget};
 use crate::{app::App, canvas_ext::CanvasExt, event::Event};
 use orfail::{OrFail, Result};
 use pagurus::spatial::{Position, Region, Size};

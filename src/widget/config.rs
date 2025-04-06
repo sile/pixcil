@@ -1,7 +1,7 @@
 use super::frame_size::FrameSizeWidget;
 use super::{
-    block::BlockWidget, number_box::NumberBoxWidget, pixel_size::PixelSizeWidget,
-    toggle::ToggleWidget, FixedSizeWidget, VariableSizeWidget, Widget,
+    FixedSizeWidget, VariableSizeWidget, Widget, block::BlockWidget, number_box::NumberBoxWidget,
+    pixel_size::PixelSizeWidget, toggle::ToggleWidget,
 };
 use crate::{app::App, event::Event, model::config::Animation, region_ext::RegionExt};
 use orfail::{OrFail, Result};

@@ -1,7 +1,7 @@
 use super::move_frame::MoveFrameWidget;
 use super::{
-    color_config::ColorConfigWidget, tool_box::ToolBoxWidget, FixedSizeWidget, VariableSizeWidget,
-    Widget,
+    FixedSizeWidget, VariableSizeWidget, Widget, color_config::ColorConfigWidget,
+    tool_box::ToolBoxWidget,
 };
 use crate::{app::App, event::Event};
 use orfail::{OrFail, Result};
