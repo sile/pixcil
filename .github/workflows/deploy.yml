@@ -13,20 +13,13 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - name: Install wasm32-unknown-unknown target
-        uses: actions-rs/toolchain@v1
+      - uses: actions/checkout@v4
+      - run: rustup update stable
+      - run: rustup target add wasm32-unknown-unknown
+      - run: cargo build --release --target wasm32-unknown-unknown
+      - uses: actions/setup-node@v4
         with:
-          toolchain: stable
-          target: wasm32-unknown-unknown
-      - name: Run cargo build
-        uses: actions-rs/cargo@v1
-        with:
-          command: build
-          args: --release --target=wasm32-unknown-unknown
-      - uses: actions/setup-node@v3
-        with:
-          node-version: '18'
+          node-version: '20'
           cache: npm
           cache-dependency-path: ts/package-lock.json
       - run: cd ts/ && npm install && npm run build
@@ -40,7 +33,7 @@ jobs:
           cp ts/dist/sw.js _site/
           cp web/*.png _site/
       - name: Upload GitHub Pages artifacts
-        uses: actions/upload-pages-artifact@v1
+        uses: actions/upload-pages-artifact@v3
 
   deploy:
     needs: build
@@ -54,4 +47,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v1
+        uses: actions/deploy-pages@v4
