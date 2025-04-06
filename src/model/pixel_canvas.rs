@@ -504,7 +504,7 @@ where
 fn deserialize_positions<R: Read>(
     reader: &mut R,
     size: usize,
-) -> Result<impl Iterator<Item = PixelPosition>> {
+) -> Result<impl Iterator<Item = PixelPosition> + use<R>> {
     let mut y = 0;
     let mut ys = Vec::with_capacity(size);
     for _ in 0..size {
