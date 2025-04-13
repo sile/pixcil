@@ -29,10 +29,10 @@ Features
 Key Bindings
 ------------
 
-| Key | Action |
-|-----|--------|
-|TAB| Switch to next tool |
-| BACKTAB | Switch to prev tool |
+| Key      | Action              |
+|----------|---------------------|
+| TAB      | Switch to next tool |
+| BACKTAB  | Switch to prev tool |
 
 How to build
 ------------

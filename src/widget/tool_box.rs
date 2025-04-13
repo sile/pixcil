@@ -8,8 +8,8 @@ use crate::{
     model::tool::ToolKind,
 };
 use orfail::{OrFail, Result};
-use pagurus::image::Canvas;
 use pagurus::spatial::{Position, Region, Size};
+use pagurus::{event::Key, image::Canvas};
 
 const MARGIN: u32 = 8;
 
@@ -37,6 +37,47 @@ impl ToolBoxWidget {
                 Ok(())
             })
             .or_fail()
+    }
+
+    fn handle_key_event(&mut self, app: &mut App, event: &Event) -> Result<bool> {
+        let Event::Key(event) = event else {
+            return Ok(false);
+        };
+        match event.key {
+            Key::Tab => {
+                let n = self.tools.buttons().len();
+                let next = (self.tools.selected() + 1) % n;
+                self.tools.select(app, next).or_fail()?;
+                return Ok(true);
+            }
+            Key::BackTab => {
+                let n = self.tools.buttons().len();
+                let prev = (self.tools.selected() + n - 1) % n;
+                self.tools.select(app, prev).or_fail()?;
+                return Ok(true);
+            }
+            // pivot, pen, bucket, eraser, selection, hand
+            // Key::Char('p') | Key::Char('P') => {
+            //     if self.buttons.len() > 0 {
+            //         self.select(app, 0).or_fail()?;
+            //         return Ok(true);
+            //     }
+            // }
+            // Key::Char('h') | Key::Char('H') => {
+            //     if self.buttons.len() > 1 {
+            //         self.select(app, 1).or_fail()?;
+            //         return Ok(true);
+            //     }
+            // }
+            // Key::Char('e') | Key::Char('E') => {
+            //     if self.buttons.len() > 2 {
+            //         self.select(app, 2).or_fail()?;
+            //         return Ok(true);
+            //     }
+            // }
+            _ => {}
+        }
+        Ok(false)
     }
 }
 
@@ -78,7 +119,9 @@ impl Widget for ToolBoxWidget {
     }
 
     fn handle_event(&mut self, app: &mut App, event: &mut Event) -> Result<()> {
-        self.tools.handle_event(app, event).or_fail()?;
+        if !self.handle_key_event(app, event).or_fail()? {
+            self.tools.handle_event(app, event).or_fail()?;
+        }
         self.handle_tool_change(app).or_fail()?;
         event.consume_if_contained(self.region);
         Ok(())

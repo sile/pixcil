@@ -1,7 +1,6 @@
 use super::{FixedSizeWidget, Widget, button::ButtonWidget};
 use crate::{app::App, event::Event};
 use orfail::{OrFail, Result};
-use pagurus::event::{Key, KeyEvent};
 use pagurus::image::Canvas;
 use pagurus::spatial::{Position, Region, Size};
 
@@ -47,6 +46,10 @@ impl SelectBoxWidget {
         Ok(())
     }
 
+    pub fn selected(&self) -> usize {
+        self.selected
+    }
+
     pub fn buttons(&self) -> &[ButtonWidget] {
         &self.buttons
     }
@@ -65,25 +68,6 @@ impl SelectBoxWidget {
         }
         Ok(())
     }
-
-    fn handle_key_event(&mut self, app: &mut App, event: KeyEvent) -> Result<bool> {
-        match event.key {
-            Key::Tab => {
-                let n = self.buttons.len();
-                let next = (self.selected + 1) % n;
-                self.select(app, next).or_fail()?;
-                return Ok(true);
-            }
-            Key::BackTab => {
-                let n = self.buttons.len();
-                let prev = (self.selected + n - 1) % n;
-                self.select(app, prev).or_fail()?;
-                return Ok(true);
-            }
-            _ => {}
-        }
-        Ok(false)
-    }
 }
 
 impl Widget for SelectBoxWidget {
@@ -98,12 +82,6 @@ impl Widget for SelectBoxWidget {
     }
 
     fn handle_event(&mut self, app: &mut App, event: &mut Event) -> Result<()> {
-        if let Event::Key(event) = event {
-            if self.handle_key_event(app, *event).or_fail()? {
-                return Ok(());
-            }
-        }
-
         self.prev_selected = None;
         for (i, button) in self.buttons.iter_mut().enumerate() {
             button.handle_event(app, event).or_fail()?;
