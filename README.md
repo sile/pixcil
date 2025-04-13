@@ -39,6 +39,8 @@ Key Bindings
 | e        | Switch to ERASE tool  |
 | s        | Switch to SELECT tool |
 | m        | Switch to MOVE tool   |
+| +        | increase tool size    |
+| -        | decrease tool size    |
 
 How to build
 ------------

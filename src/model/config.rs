@@ -241,6 +241,13 @@ impl MinimumPixelSize {
         self.0.height = size.height.clamp(Self::MIN.0.height, Self::MAX.0.height);
     }
 
+    pub fn set_delta(&mut self, delta: i16) {
+        let mut s = self.0;
+        s.width = s.width.saturating_add_signed(delta);
+        s.height = s.height.saturating_add_signed(delta);
+        self.set(s);
+    }
+
     pub fn normalize(self, mut position: PixelPosition) -> PixelPosition {
         let w = self.0.width as i16;
         if position.x >= 0 {
