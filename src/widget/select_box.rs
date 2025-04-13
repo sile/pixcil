@@ -46,6 +46,10 @@ impl SelectBoxWidget {
         Ok(())
     }
 
+    pub fn selected(&self) -> usize {
+        self.selected
+    }
+
     pub fn buttons(&self) -> &[ButtonWidget] {
         &self.buttons
     }
@@ -79,7 +83,6 @@ impl Widget for SelectBoxWidget {
 
     fn handle_event(&mut self, app: &mut App, event: &mut Event) -> Result<()> {
         self.prev_selected = None;
-
         for (i, button) in self.buttons.iter_mut().enumerate() {
             button.handle_event(app, event).or_fail()?;
             if button.take_clicked(app) {

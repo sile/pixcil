@@ -8,8 +8,8 @@ use crate::{
     model::tool::ToolKind,
 };
 use orfail::{OrFail, Result};
-use pagurus::image::Canvas;
 use pagurus::spatial::{Position, Region, Size};
+use pagurus::{event::Key, image::Canvas};
 
 const MARGIN: u32 = 8;
 
@@ -37,6 +37,33 @@ impl ToolBoxWidget {
                 Ok(())
             })
             .or_fail()
+    }
+
+    fn handle_key_event(&mut self, app: &mut App, event: &Event) -> Result<bool> {
+        let Event::Key(event) = event else {
+            return Ok(false);
+        };
+        let index = match event.key {
+            Key::Tab => {
+                let n = self.tools.buttons().len();
+                (self.tools.selected() + 1) % n
+            }
+            Key::BackTab => {
+                let n = self.tools.buttons().len();
+                (self.tools.selected() + n - 1) % n
+            }
+            Key::Char('p') => 0, // ToolKind::Pick
+            Key::Char('d') => 1, // ToolKind::Draw
+            Key::Char('f') => 2, // ToolKind::Fill
+            Key::Char('e') => 3, // ToolKind::Erase
+            Key::Char('s') => 4, // ToolKind::Select
+            Key::Char('m') => 5, // ToolKind::Move
+            _ => {
+                return Ok(false);
+            }
+        };
+        self.tools.select(app, index).or_fail()?;
+        Ok(true)
     }
 }
 
@@ -78,7 +105,9 @@ impl Widget for ToolBoxWidget {
     }
 
     fn handle_event(&mut self, app: &mut App, event: &mut Event) -> Result<()> {
-        self.tools.handle_event(app, event).or_fail()?;
+        if !self.handle_key_event(app, event).or_fail()? {
+            self.tools.handle_event(app, event).or_fail()?;
+        }
         self.handle_tool_change(app).or_fail()?;
         event.consume_if_contained(self.region);
         Ok(())

@@ -1,5 +1,5 @@
 use crate::gesture::{GestureEvent, PointerEvent};
-use pagurus::event::{Event as PagurusEvent, MouseEvent, TimeoutTag};
+use pagurus::event::{Event as PagurusEvent, KeyEvent, MouseEvent, TimeoutTag};
 use pagurus::spatial::Position;
 use pagurus::spatial::{Contains, Region};
 
@@ -17,6 +17,7 @@ pub enum Event {
         pointer: Option<PointerEvent>,
     },
     Gesture(GestureEvent),
+    Key(KeyEvent),
     Noop, // TODO: rename
 }
 
@@ -75,6 +76,7 @@ impl Event {
                     pointer: None,
                 }),
             },
+            PagurusEvent::Key(e) => Some(Self::Key(e)),
             _ => None,
         }
     }
