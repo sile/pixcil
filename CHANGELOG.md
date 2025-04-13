@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## Added 
+
+- Add key bindings:
+  - TAB: Switch to next tool
+  - BACKTAB: Switch to prev tool
+  - p: Switch to PICK tool
+  - d: Switch to DRAW tool
+  - f: Switch to FILL tool
+  - e: Switch to ERASE tool
+  - s: Switch to SELECT tool
+  - m: Switch to MOVE tool
+
 ## [0.8.0] - 2025-04-06
 
 ### Added
