@@ -43,41 +43,27 @@ impl ToolBoxWidget {
         let Event::Key(event) = event else {
             return Ok(false);
         };
-        match event.key {
+        let index = match event.key {
             Key::Tab => {
                 let n = self.tools.buttons().len();
-                let next = (self.tools.selected() + 1) % n;
-                self.tools.select(app, next).or_fail()?;
-                return Ok(true);
+                (self.tools.selected() + 1) % n
             }
             Key::BackTab => {
                 let n = self.tools.buttons().len();
-                let prev = (self.tools.selected() + n - 1) % n;
-                self.tools.select(app, prev).or_fail()?;
-                return Ok(true);
+                (self.tools.selected() + n - 1) % n
             }
-            // pivot, pen, bucket, eraser, selection, hand
-            // Key::Char('p') | Key::Char('P') => {
-            //     if self.buttons.len() > 0 {
-            //         self.select(app, 0).or_fail()?;
-            //         return Ok(true);
-            //     }
-            // }
-            // Key::Char('h') | Key::Char('H') => {
-            //     if self.buttons.len() > 1 {
-            //         self.select(app, 1).or_fail()?;
-            //         return Ok(true);
-            //     }
-            // }
-            // Key::Char('e') | Key::Char('E') => {
-            //     if self.buttons.len() > 2 {
-            //         self.select(app, 2).or_fail()?;
-            //         return Ok(true);
-            //     }
-            // }
-            _ => {}
-        }
-        Ok(false)
+            Key::Char('p') => 0, // ToolKind::Pick
+            Key::Char('d') => 1, // ToolKind::Draw
+            Key::Char('f') => 2, // ToolKind::Fill
+            Key::Char('e') => 3, // ToolKind::Erase
+            Key::Char('s') => 4, // ToolKind::Select
+            Key::Char('m') => 5, // ToolKind::Move
+            _ => {
+                return Ok(false);
+            }
+        };
+        self.tools.select(app, index).or_fail()?;
+        Ok(true)
     }
 }
 
