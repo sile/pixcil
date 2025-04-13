@@ -26,6 +26,14 @@ Features
   - Created images are saved as PNG files (with additional metadata)
   - You can load existing PNG files and use Pixcil as a dot-by-dot PNG file editor
 
+Key Bindings
+------------
+
+| Key | Action |
+|-----|--------|
+|TAB| Switch to next tool |
+| BACKTAB | Switch to prev tool |
+
 How to build
 ------------
 

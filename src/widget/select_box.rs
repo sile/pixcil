@@ -68,8 +68,18 @@ impl SelectBoxWidget {
 
     fn handle_key_event(&mut self, app: &mut App, event: KeyEvent) -> Result<bool> {
         match event.key {
-            Key::Tab => todo!(),
-            Key::BackTab => todo!(),
+            Key::Tab => {
+                let n = self.buttons.len();
+                let next = (self.selected + 1) % n;
+                self.select(app, next).or_fail()?;
+                return Ok(true);
+            }
+            Key::BackTab => {
+                let n = self.buttons.len();
+                let prev = (self.selected + n - 1) % n;
+                self.select(app, prev).or_fail()?;
+                return Ok(true);
+            }
             _ => {}
         }
         Ok(false)
