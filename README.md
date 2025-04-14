@@ -41,6 +41,8 @@ Key Bindings
 | m        | Switch to MOVE tool   |
 | Ctrl-z   | undo                  |
 | Ctrl-y   | redo                  |
+| <        | Switch to prev frame  |
+| >        | Switch to next frame  |
 
 How to build
 ------------
