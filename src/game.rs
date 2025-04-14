@@ -5,16 +5,15 @@ use crate::{
     event::Event,
     io::Input,
     model::Models,
-    window::{Window, main::MainWindow},
+    window::{main::MainWindow, Window},
 };
 use orfail::OrFail;
-use pagurus::event::Key;
 #[cfg(feature = "auto-scaling")]
 use pagurus::fixed_window::FixedWindow;
 use pagurus::image::Canvas;
 #[cfg(feature = "auto-scaling")]
 use pagurus::spatial::Size;
-use pagurus::{Game, Result, System, event::Event as PagurusEvent, video::VideoFrame};
+use pagurus::{event::Event as PagurusEvent, video::VideoFrame, Game, Result, System};
 use std::time::Duration;
 
 #[cfg(target_arch = "wasm32")]
@@ -34,26 +33,6 @@ pub struct PixcilGame {
 }
 
 impl PixcilGame {
-    fn handle_global_key_event(&mut self, event: &PagurusEvent) -> Result<()> {
-        let PagurusEvent::Key(event) = event else {
-            return Ok(());
-        };
-
-        let app = self.app.as_mut().or_fail()?;
-        match event.key {
-            Key::Char('+') => {
-                app.models_mut().config.minimum_pixel_size.set_delta(1);
-                app.request_redraw(app.screen_size().to_region());
-            }
-            Key::Char('-') => {
-                app.models_mut().config.minimum_pixel_size.set_delta(-1);
-                app.request_redraw(app.screen_size().to_region());
-            }
-            _ => {}
-        }
-        Ok(())
-    }
-
     fn handle_pixcil_event<S: System>(
         &mut self,
         system: &mut S,
@@ -69,7 +48,7 @@ impl PixcilGame {
                     app.request_redraw(window.region());
                 }
 
-                if matches!(event, Event::Key(_)) {
+                if matches!(event, Event::Key { .. }) {
                     break;
                 }
             }
@@ -156,8 +135,6 @@ impl<S: System> Game<S> for PixcilGame {
             }
             _ => {}
         };
-
-        self.handle_global_key_event(&event).or_fail()?;
 
         let event = Event::from_pagurus_event(event);
         self.handle_pixcil_event(system, event).or_fail()?;

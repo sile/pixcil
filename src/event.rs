@@ -17,7 +17,10 @@ pub enum Event {
         pointer: Option<PointerEvent>,
     },
     Gesture(GestureEvent),
-    Key(KeyEvent),
+    Key {
+        event: KeyEvent,
+        consumed: bool,
+    },
     Noop, // TODO: rename
 }
 
@@ -76,7 +79,10 @@ impl Event {
                     pointer: None,
                 }),
             },
-            PagurusEvent::Key(e) => Some(Self::Key(e)),
+            PagurusEvent::Key(e) => Some(Self::Key {
+                event: e,
+                consumed: false,
+            }),
             _ => None,
         }
     }

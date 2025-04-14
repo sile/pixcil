@@ -1,4 +1,4 @@
-use super::{FixedSizeWidget, Widget, button::ButtonWidget, select_box::SelectBoxWidget};
+use super::{button::ButtonWidget, select_box::SelectBoxWidget, FixedSizeWidget, Widget};
 use crate::{
     app::App,
     asset::{ButtonKind, IconId},
@@ -39,8 +39,8 @@ impl ToolBoxWidget {
             .or_fail()
     }
 
-    fn handle_key_event(&mut self, app: &mut App, event: &Event) -> Result<bool> {
-        let Event::Key(event) = event else {
+    fn handle_key_event(&mut self, app: &mut App, event: &mut Event) -> Result<bool> {
+        let Event::Key { event, consumed } = event else {
             return Ok(false);
         };
         let index = match event.key {
@@ -63,6 +63,7 @@ impl ToolBoxWidget {
             }
         };
         self.tools.select(app, index).or_fail()?;
+        *consumed = true;
         Ok(true)
     }
 }
