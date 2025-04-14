@@ -48,7 +48,7 @@ impl PixcilGame {
                     app.request_redraw(window.region());
                 }
 
-                if matches!(event, Event::Key(_)) {
+                if matches!(event, Event::Key { .. }) {
                     break;
                 }
             }

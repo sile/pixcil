@@ -139,7 +139,7 @@ impl MarkerHandler {
 
     pub fn handle_event(&mut self, app: &mut App, event: &mut Event) -> Result<()> {
         let (pixel_position, action) = match event {
-            Event::Mouse { consumed: true, .. } => {
+            Event::Mouse { consumed: true, .. } | Event::Key { consumed: true, .. } => {
                 self.request_redraw(app, self.last_marked.iter().copied());
 
                 let kind = self.marker_kind();

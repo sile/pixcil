@@ -9,8 +9,8 @@ use crate::{
     region_ext::RegionExt,
 };
 use orfail::{OrFail, Result};
-use pagurus::image::Canvas;
 use pagurus::spatial::{Position, Region, Size};
+use pagurus::{event::Key, image::Canvas};
 
 const MARGIN: u32 = 8;
 const MAX_UNDO: usize = 100;
@@ -28,6 +28,34 @@ impl UndoRedoWidget {
             app.models().pixel_canvas.dirty_positions().iter().copied(),
         );
         app.request_redraw(pixel_region.to_screen_region(app));
+    }
+
+    fn handle_key_event(&mut self, app: &mut App, event: &mut Event) -> Result<bool> {
+        let Event::Key { event, consumed } = event else {
+            return Ok(false);
+        };
+        match event.key {
+            Key::Char('z') if event.ctrl => {
+                let config = app.models().config.clone();
+                app.models_mut()
+                    .pixel_canvas
+                    .undo_command(&config)
+                    .or_fail()?;
+            }
+            Key::Char('y') if event.ctrl => {
+                let config = app.models().config.clone();
+                app.models_mut()
+                    .pixel_canvas
+                    .redo_command(&config)
+                    .or_fail()?;
+            }
+            _ => {
+                return Ok(false);
+            }
+        };
+        self.request_redraw_dirty_canvas_region(app);
+        *consumed = true;
+        Ok(true)
     }
 }
 
@@ -67,6 +95,10 @@ impl Widget for UndoRedoWidget {
     }
 
     fn handle_event(&mut self, app: &mut App, event: &mut Event) -> Result<()> {
+        if self.handle_key_event(app, event).or_fail()? {
+            return Ok(());
+        }
+
         self.redo.handle_event(app, event).or_fail()?;
         if self.redo.take_clicked(app) {
             let config = app.models().config.clone();
