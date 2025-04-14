@@ -9,6 +9,7 @@ use crate::{
 };
 use orfail::{OrFail, Result};
 use pagurus::{
+    event::Key,
     image::Canvas,
     spatial::{Position, Region, Size},
 };
@@ -20,6 +21,28 @@ pub struct MoveFrameWidget {
     region: Region,
     prev_frame: ButtonWidget,
     next_frame: ButtonWidget,
+}
+
+impl MoveFrameWidget {
+    fn handle_key_event(&mut self, event: &mut Event) -> Result<(bool, bool)> {
+        let Event::Key { event, consumed } = event else {
+            return Ok((false, false));
+        };
+
+        match event.key {
+            Key::Char('<') => {
+                *consumed = true;
+                return Ok((true, false));
+            }
+            Key::Char('>') => {
+                *consumed = true;
+                return Ok((false, true));
+            }
+            _ => {}
+        }
+
+        Ok((false, false))
+    }
 }
 
 impl Default for MoveFrameWidget {
@@ -46,10 +69,12 @@ impl Widget for MoveFrameWidget {
     }
 
     fn handle_event(&mut self, app: &mut App, event: &mut Event) -> Result<()> {
+        let (prev_pressed, next_pressed) = self.handle_key_event(event).or_fail()?;
+
         let mut delta = Position::ORIGIN;
 
         self.prev_frame.handle_event(app, event).or_fail()?;
-        if self.prev_frame.take_clicked(app) {
+        if self.prev_frame.take_clicked(app) || prev_pressed {
             let frames = app.models().pixel_canvas.get_frames(&app.models().config) as usize;
             let current = app.models().config.camera.current_frame(app);
             let width = app.models().config.frame.get_base_region().size().width as i32;
@@ -61,7 +86,7 @@ impl Widget for MoveFrameWidget {
         }
 
         self.next_frame.handle_event(app, event).or_fail()?;
-        if self.next_frame.take_clicked(app) {
+        if self.next_frame.take_clicked(app) || next_pressed {
             let frames = app.models().pixel_canvas.get_frames(&app.models().config) as usize;
             let current = app.models().config.camera.current_frame(app);
             let width = app.models().config.frame.get_base_region().size().width as i32;
