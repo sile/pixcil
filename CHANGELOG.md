@@ -7,7 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## Added 
+## [0.9.0] - 2025-04-19
+
+## Added
 
 - Add key bindings:
   - TAB: Switch to next tool
@@ -18,6 +20,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - e: Switch to ERASE tool
   - s: Switch to SELECT tool
   - m: Switch to MOVE tool
+  - Ctrl-z: undo
+  - Ctrl-y: redo
+  - <: Switch to prev frame
+  - >: Switch to next frame
 
 ## [0.8.0] - 2025-04-06
 
