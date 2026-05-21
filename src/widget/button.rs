@@ -215,11 +215,10 @@ impl Widget for ButtonWidget {
                     self.state = ButtonState::Neutral;
                 }
             }
-            Event::Mouse { position, .. } => {
-                if !self.region.contains(position) {
+            Event::Mouse { position, .. }
+                if !self.region.contains(position) => {
                     self.state = ButtonState::Neutral;
                 }
-            }
             _ => {}
         }
 

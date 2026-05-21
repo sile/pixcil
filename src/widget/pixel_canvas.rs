@@ -179,11 +179,10 @@ impl PixelCanvasWidget {
         {
             let mut color = pixel.color;
             let mut alpha = 255;
-            if let Some(w) = &self.manipulate {
-                if w.selected_pixels().contains(&pixel.position) {
+            if let Some(w) = &self.manipulate
+                && w.selected_pixels().contains(&pixel.position) {
                     alpha = 0;
                 }
-            }
 
             let region = pixel.position.to_screen_region(app);
             if erasing_pixels.contains(&pixel.position) {
@@ -366,8 +365,8 @@ impl Widget for PixelCanvasWidget {
                     }
                 }
             }
-        } else if self.tool.tool_kind() == ToolKind::Pick {
-            if let Some(position) = self.marker_handler.marked_pixels(app).next() {
+        } else if self.tool.tool_kind() == ToolKind::Pick
+            && let Some(position) = self.marker_handler.marked_pixels(app).next() {
                 if let Some(color) = app
                     .models()
                     .pixel_canvas
@@ -378,7 +377,6 @@ impl Widget for PixelCanvasWidget {
                     app.models_mut().tool.pick.preview_color = None;
                 }
             }
-        }
         Ok(())
     }
 

@@ -124,7 +124,6 @@ impl FixedSizeWidget for RgbSelectorWidget {
         offset.y += (MARGIN + self.g.requiring_size(app).height) as i32;
 
         self.b.set_position(app, offset);
-        offset.y += (MARGIN + self.b.requiring_size(app).height) as i32;
     }
 }
 

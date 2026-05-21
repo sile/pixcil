@@ -193,7 +193,7 @@ impl Deserialize for Models {
             let mut reader = reader.take(u64::from(config_size));
             config = ConfigModel::deserialize(&mut reader).or_fail()?;
             // Ignore unknown fields.
-            for _ in reader.bytes() {}
+            std::io::copy(&mut reader, &mut std::io::sink()).or_fail()?;
         };
 
         Ok(Self {

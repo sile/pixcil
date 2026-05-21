@@ -133,7 +133,7 @@ impl ManipulateWidget {
     fn vertical_flip(&mut self, app: &mut App) {
         let region = PixelRegion::from_positions(self.manipulating_pixels.keys().copied());
         let center = region.center();
-        let is_even = region.size().height % 2 == 0;
+        let is_even = region.size().height.is_multiple_of(2);
         self.manipulating_pixels = self
             .manipulating_pixels
             .drain()
@@ -151,7 +151,7 @@ impl ManipulateWidget {
     fn horizontal_flip(&mut self, app: &mut App) {
         let region = PixelRegion::from_positions(self.manipulating_pixels.keys().copied());
         let center = region.center();
-        let is_even = region.size().width % 2 == 0;
+        let is_even = region.size().width.is_multiple_of(2);
         self.manipulating_pixels = self
             .manipulating_pixels
             .drain()

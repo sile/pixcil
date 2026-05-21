@@ -84,11 +84,10 @@ impl Widget for ColorPaletteWidget {
     }
 
     fn handle_event(&mut self, app: &mut App, event: &mut Event) -> Result<()> {
-        if let Some(position) = event.position() {
-            if !self.region.contains(&position) {
+        if let Some(position) = event.position()
+            && !self.region.contains(&position) {
                 return Ok(());
             }
-        }
 
         for (button, &color) in self.buttons.iter_mut().zip(self.colors.iter()) {
             button.handle_event(app, event).or_fail()?;

@@ -132,7 +132,6 @@ impl FixedSizeWidget for HsvSelectorWidget {
         offset.y += (MARGIN + self.s.requiring_size(app).height) as i32;
 
         self.v.set_position(app, offset);
-        offset.y += (MARGIN + self.v.requiring_size(app).height) as i32;
     }
 }
 
