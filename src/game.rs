@@ -203,9 +203,10 @@ impl<S: System> Game<S> for PixcilGame {
                 let last_pointer_event = self.last_pointer_event;
                 self.last_pointer_event = Some(pointer_event);
                 if let Some(last) = last_pointer_event
-                    && last.is_duplicate(pointer_event) {
-                        return Ok(());
-                    }
+                    && last.is_duplicate(pointer_event)
+                {
+                    return Ok(());
+                }
 
                 let pagurus_event = PagurusEvent::Mouse(pointer_event.to_mouse_event());
 
