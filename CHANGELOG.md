@@ -88,6 +88,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Remove finger mode
 - Remove button long press feature
 - Remove `pixcil_windows` crate to reduce maintenance costs
+- Remove VSCode extension
 
 ### Changed
 
